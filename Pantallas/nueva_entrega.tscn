@@ -1,0 +1,125 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Pantallas/nueva_entrega.gd" id="1"]
+
+[node name="NuevaEntrega" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.11, 0.12, 0.16, 1)
+
+[node name="Layout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="Layout"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 55)
+
+[node name="HBoxHeader" type="HBoxContainer" parent="Layout/Header"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="MargenIzq" type="Control" parent="Layout/Header/HBoxHeader"]
+layout_mode = 2
+custom_minimum_size = Vector2(15, 0)
+
+[node name="BtnVolver" type="Button" parent="Layout/Header/HBoxHeader"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+text = "< Volver"
+
+[node name="Titulo" type="Label" parent="Layout/Header/HBoxHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Nueva Entrega"
+theme_override_font_sizes/font_size = 20
+vertical_alignment = 1
+
+[node name="Centro" type="CenterContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Panel" type="PanelContainer" parent="Layout/Centro"]
+layout_mode = 2
+custom_minimum_size = Vector2(500, 420)
+
+[node name="Margen" type="MarginContainer" parent="Layout/Centro/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 25
+
+[node name="VBox" type="VBoxContainer" parent="Layout/Centro/Panel/Margen"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TituloForm" type="Label" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+text = "Configurar Nueva Entrega"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Sep1" type="HSeparator" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+
+[node name="NombreLabel" type="Label" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+text = "Nombre de la entrega:"
+
+[node name="NombreInput" type="LineEdit" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 35)
+placeholder_text = "Ej: Examen Tema 3 - Matematicas"
+
+[node name="DescripcionLabel" type="Label" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+text = "Descripcion:"
+
+[node name="DescripcionInput" type="TextEdit" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 100)
+placeholder_text = "Describe el contenido de la entrega..."
+
+[node name="HBoxPuntuacion" type="HBoxContainer" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PuntuacionLabel" type="Label" parent="Layout/Centro/Panel/Margen/VBox/HBoxPuntuacion"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Puntuacion maxima:"
+vertical_alignment = 1
+
+[node name="PuntuacionInput" type="LineEdit" parent="Layout/Centro/Panel/Margen/VBox/HBoxPuntuacion"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 35)
+placeholder_text = "100"
+
+[node name="Sep2" type="HSeparator" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+
+[node name="BtnGuardar" type="Button" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 45)
+text = "Guardar Entrega"
+
+[node name="Mensaje" type="Label" parent="Layout/Centro/Panel/Margen/VBox"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12

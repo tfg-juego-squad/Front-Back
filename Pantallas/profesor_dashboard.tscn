@@ -1,0 +1,170 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Pantallas/profesor_dashboard.gd" id="1"]
+
+[node name="ProfesorDashboard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.11, 0.12, 0.16, 1)
+
+[node name="Layout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="Layout"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 55)
+
+[node name="HBoxHeader" type="HBoxContainer" parent="Layout/Header"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="MargenIzq" type="Control" parent="Layout/Header/HBoxHeader"]
+layout_mode = 2
+custom_minimum_size = Vector2(15, 0)
+
+[node name="Titulo" type="Label" parent="Layout/Header/HBoxHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Panel del Profesor - POKEDUCATION"
+theme_override_font_sizes/font_size = 20
+vertical_alignment = 1
+
+[node name="BtnCerrarSesion" type="Button" parent="Layout/Header/HBoxHeader"]
+layout_mode = 2
+custom_minimum_size = Vector2(130, 0)
+text = "Cerrar Sesion"
+
+[node name="MargenDer" type="Control" parent="Layout/Header/HBoxHeader"]
+layout_mode = 2
+custom_minimum_size = Vector2(15, 0)
+
+[node name="MainContent" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="PanelAlumnos" type="PanelContainer" parent="Layout/MainContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
+
+[node name="MargenAlumnos" type="MarginContainer" parent="Layout/MainContent/PanelAlumnos"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxAlumnos" type="VBoxContainer" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TituloAlumnos" type="Label" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
+layout_mode = 2
+text = "Lista de Alumnos"
+theme_override_font_sizes/font_size = 16
+
+[node name="SepAlumnos" type="HSeparator" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
+layout_mode = 2
+
+[node name="ListaAlumnos" type="ItemList" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SeparadorV" type="VSeparator" parent="Layout/MainContent"]
+layout_mode = 2
+
+[node name="PanelBotones" type="PanelContainer" parent="Layout/MainContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+
+[node name="VBoxBotones" type="VBoxContainer" parent="Layout/MainContent/PanelBotones"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="TituloBotones" type="Label" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+layout_mode = 2
+text = "Tareas"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Sep" type="HSeparator" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+layout_mode = 2
+
+[node name="BtnNuevaEntrega" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 50)
+text = "Anadir Nueva Entrega"
+
+[node name="BtnRevisar" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 50)
+text = "Revisar Entregas"
+
+[node name="Sep2" type="HSeparator" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+layout_mode = 2
+
+[node name="BtnAjustes" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 50)
+text = "Ajustes Alumnado"
+
+[node name="PanelFlotante" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.2
+anchor_top = 0.15
+anchor_right = 0.8
+anchor_bottom = 0.85
+
+[node name="MargenFlotante" type="MarginContainer" parent="PanelFlotante"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxFlotante" type="VBoxContainer" parent="PanelFlotante/MargenFlotante"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderFlotante" type="HBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+layout_mode = 2
+
+[node name="TituloFlotante" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/HeaderFlotante"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Detalle"
+theme_override_font_sizes/font_size = 16
+
+[node name="BtnCerrarFlotante" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/HeaderFlotante"]
+layout_mode = 2
+custom_minimum_size = Vector2(30, 30)
+text = "X"
+
+[node name="SepFlotante" type="HSeparator" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+layout_mode = 2
+
+[node name="ContenidoFlotante" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+layout_mode = 2
+size_flags_vertical = 3
+text = ""
+autowrap_mode = 2
