@@ -1,0 +1,139 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Niveles/HUDAlumno.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.05, 0.05, 0.1, 0.7)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 1, 1, 1) # Neon Cyan
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0, 1, 1, 0.3)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_bg"]
+bg_color = Color(0.1, 0.1, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.2, 0.4, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill"]
+bg_color = Color(0, 1, 1, 1) # Cyan Neon
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.4)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 1, 1, 0.5)
+shadow_size = 8
+
+[node name="HUDAlumno" type="CanvasLayer"]
+script = ExtResource("1")
+
+[node name="UIParent" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="XPBarContainer" type="MarginContainer" parent="UIParent"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 60.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 150
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 150
+
+[node name="VBox" type="VBoxContainer" parent="UIParent/XPBarContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="XPLabel" type="Label" parent="UIParent/XPBarContainer/VBox"]
+layout_mode = 2
+text = "Progreso del Curso"
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="UIParent/XPBarContainer/VBox"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_progress_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_progress_fill")
+value = 45.0
+show_percentage = false
+
+[node name="PanelTareas" type="PanelContainer" parent="UIParent"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 100.0
+offset_right = 330.0
+offset_bottom = -100.0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="Margen" type="MarginContainer" parent="UIParent/PanelTareas"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBox" type="VBoxContainer" parent="UIParent/PanelTareas/Margen"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Titulo" type="Label" parent="UIParent/PanelTareas/Margen/VBox"]
+layout_mode = 2
+text = "TAREAS PENDIENTES"
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="Separador" type="HSeparator" parent="UIParent/PanelTareas/Margen/VBox"]
+layout_mode = 2
+
+[node name="ListaTareas" type="VBoxContainer" parent="UIParent/PanelTareas/Margen/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="InfoTab" type="Label" parent="UIParent"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -40.0
+offset_right = -20.0
+offset_bottom = -15.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "Presiona [TAB] para ver tareas"
+theme_override_colors/font_color = Color(1, 1, 1, 0.4)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
