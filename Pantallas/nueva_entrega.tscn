@@ -16,110 +16,223 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.11, 0.12, 0.16, 1)
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.13, 0.18, 1)
 
 [node name="Layout" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 0
 
 [node name="Header" type="PanelContainer" parent="Layout"]
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
-custom_minimum_size = Vector2(0, 55)
 
 [node name="HBoxHeader" type="HBoxContainer" parent="Layout/Header"]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="MargenIzq" type="Control" parent="Layout/Header/HBoxHeader"]
+[node name="Sep" type="Control" parent="Layout/Header/HBoxHeader"]
+custom_minimum_size = Vector2(10, 0)
 layout_mode = 2
-custom_minimum_size = Vector2(15, 0)
 
 [node name="BtnVolver" type="Button" parent="Layout/Header/HBoxHeader"]
+custom_minimum_size = Vector2(100, 35)
 layout_mode = 2
-custom_minimum_size = Vector2(100, 0)
+size_flags_vertical = 4
 text = "< Volver"
 
 [node name="Titulo" type="Label" parent="Layout/Header/HBoxHeader"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Nueva Entrega"
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 22
+text = "Gestión de Entregas"
 vertical_alignment = 1
 
-[node name="Centro" type="CenterContainer" parent="Layout"]
+[node name="Centro" type="MarginContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 25
+
+[node name="PanelContenedor" type="PanelContainer" parent="Layout/Centro"]
+layout_mode = 2
+
+[node name="VBoxTabs" type="VBoxContainer" parent="Layout/Centro/PanelContenedor"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TabContainer" type="TabContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Panel" type="PanelContainer" parent="Layout/Centro"]
+[node name="Actividad" type="MarginContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(500, 420)
-
-[node name="Margen" type="MarginContainer" parent="Layout/Centro/Panel"]
-layout_mode = 2
-theme_override_constants/margin_left = 30
+theme_override_constants/margin_left = 25
 theme_override_constants/margin_top = 25
-theme_override_constants/margin_right = 30
+theme_override_constants/margin_right = 25
 theme_override_constants/margin_bottom = 25
 
-[node name="VBox" type="VBoxContainer" parent="Layout/Centro/Panel/Margen"]
+[node name="VBox" type="VBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 15
 
-[node name="TituloForm" type="Label" parent="Layout/Centro/Panel/Margen/VBox"]
+[node name="TituloSecc" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 layout_mode = 2
-text = "Configurar Nueva Entrega"
-horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
+text = "Datos de la Actividad"
 
-[node name="Sep1" type="HSeparator" parent="Layout/Centro/Panel/Margen/VBox"]
+[node name="L_Nombre" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 layout_mode = 2
+text = "Título:"
 
-[node name="NombreLabel" type="Label" parent="Layout/Centro/Panel/Margen/VBox"]
-layout_mode = 2
-text = "Nombre de la entrega:"
-
-[node name="NombreInput" type="LineEdit" parent="Layout/Centro/Panel/Margen/VBox"]
-layout_mode = 2
+[node name="NombreInput" type="LineEdit" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 custom_minimum_size = Vector2(0, 35)
-placeholder_text = "Ej: Examen Tema 3 - Matematicas"
-
-[node name="DescripcionLabel" type="Label" parent="Layout/Centro/Panel/Margen/VBox"]
 layout_mode = 2
-text = "Descripcion:"
+placeholder_text = "Ej: Ecuaciones de primer grado"
 
-[node name="DescripcionInput" type="TextEdit" parent="Layout/Centro/Panel/Margen/VBox"]
+[node name="L_Desc" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 100)
-placeholder_text = "Describe el contenido de la entrega..."
+text = "Descripción:"
 
-[node name="HBoxPuntuacion" type="HBoxContainer" parent="Layout/Centro/Panel/Margen/VBox"]
+[node name="DescripcionInput" type="TextEdit" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+placeholder_text = "Instrucciones para los alumnos..."
+
+[node name="HBoxAdjunto" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="BtnAdjunto" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto"]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+text = "Añadir Archivo (.zip, .pdf)"
+
+[node name="NombreAdjunto" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto"]
+layout_mode = 2
+text = "Sin adjunto"
+theme_override_colors/font_color = Color(1, 1, 1, 0.5)
+
+[node name="Formulario" type="MarginContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 25
+theme_override_constants/margin_bottom = 25
+
+[node name="Scroll" type="ScrollContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="TituloContrac" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Configuración del Examen"
+
+[node name="HBoxPlantillas" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="PuntuacionLabel" type="Label" parent="Layout/Centro/Panel/Margen/VBox/HBoxPuntuacion"]
+[node name="BtnDescargarPlantilla" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxPlantillas"]
+custom_minimum_size = Vector2(250, 40)
 layout_mode = 2
-size_flags_horizontal = 3
-text = "Puntuacion maxima:"
-vertical_alignment = 1
+text = "Descargar Plantilla Excel"
 
-[node name="PuntuacionInput" type="LineEdit" parent="Layout/Centro/Panel/Margen/VBox/HBoxPuntuacion"]
+[node name="BtnSubirPlantilla" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxPlantillas"]
+custom_minimum_size = Vector2(250, 40)
 layout_mode = 2
-custom_minimum_size = Vector2(100, 35)
-placeholder_text = "100"
+text = "Importar desde Excel"
 
-[node name="Sep2" type="HSeparator" parent="Layout/Centro/Panel/Margen/VBox"]
+[node name="Sep" type="HSeparator" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
 layout_mode = 2
 
-[node name="BtnGuardar" type="Button" parent="Layout/Centro/Panel/Margen/VBox"]
+[node name="GridFechas" type="GridContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
 layout_mode = 2
+columns = 4
+theme_override_constants/h_separation = 20
+
+[node name="LabelF" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/GridFechas"]
+layout_mode = 2
+text = "Fecha Entrega:"
+
+[node name="FechaInput" type="LineEdit" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/GridFechas"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+placeholder_text = "dd/mm/aaaa"
+
+[node name="LabelH" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/GridFechas"]
+layout_mode = 2
+text = "Hora Tope:"
+
+[node name="HoraInput" type="LineEdit" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/GridFechas"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+placeholder_text = "hh:mm"
+
+[node name="HBoxGlobalTime" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="LabelT" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxGlobalTime"]
+layout_mode = 2
+text = "Tiempo Máximo (minutos):"
+
+[node name="CheckSinTiempo" type="CheckBox" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxGlobalTime"]
+layout_mode = 2
+button_pressed = true
+text = "Ilimitado"
+
+[node name="TiempoGlobalSpin" type="SpinBox" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxGlobalTime"]
+layout_mode = 2
+editable = false
+value = 60.0
+
+[node name="ListaPreguntas" type="VBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnAddPregunta" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
 custom_minimum_size = Vector2(0, 45)
-text = "Guardar Entrega"
-
-[node name="Mensaje" type="Label" parent="Layout/Centro/Panel/Margen/VBox"]
 layout_mode = 2
-text = ""
+text = "+ Añadir Pregunta Manual"
+
+[node name="BtnPreview" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "Previsualizar Examen"
+
+[node name="Avanzado" type="MarginContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 25
+theme_override_constants/margin_bottom = 25
+
+[node name="Label" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado"]
+layout_mode = 2
+text = "Actividad Avanzada (Próximamente)"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 12
+
+[node name="HBoxFinal" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs"]
+layout_mode = 2
+size_flags_vertical = 8
+alignment = 1
+
+[node name="BtnGuardarGlobal" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/HBoxFinal"]
+custom_minimum_size = Vector2(300, 45)
+layout_mode = 2
+text = "Guardar Cambios"
