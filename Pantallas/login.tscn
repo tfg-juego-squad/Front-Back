@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://by23y1s6nu5ug"]
 
-[ext_resource type="Script" path="res://Pantallas/login.gd" id="1"]
+[ext_resource type="Script" uid="uid://cks4dn3ue0rpr" path="res://Pantallas/login.gd" id="1"]
 
-[node name="Login" type="Control"]
+[node name="Login" type="Control" unique_id=1211706817]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,79 +11,84 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 
-[node name="Fondo" type="ColorRect" parent="."]
+[node name="Fondo" type="ColorRect" parent="." unique_id=1229984333]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.12, 0.13, 0.18, 1)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=216569929]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="Panel" type="PanelContainer" parent="CenterContainer"]
-layout_mode = 2
+[node name="Panel" type="PanelContainer" parent="CenterContainer" unique_id=423213717]
 custom_minimum_size = Vector2(420, 380)
+layout_mode = 2
 
-[node name="Margen" type="MarginContainer" parent="CenterContainer/Panel"]
+[node name="Margen" type="MarginContainer" parent="CenterContainer/Panel" unique_id=661519858]
 layout_mode = 2
 theme_override_constants/margin_left = 30
 theme_override_constants/margin_top = 25
 theme_override_constants/margin_right = 30
 theme_override_constants/margin_bottom = 25
 
-[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/Margen"]
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/Margen" unique_id=166367630]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Titulo" type="Label" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="Titulo" type="Label" parent="CenterContainer/Panel/Margen/VBox" unique_id=1702925872]
 layout_mode = 2
+theme_override_font_sizes/font_size = 26
 text = "🎮 POKEDUCATION"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 26
 
-[node name="Subtitulo" type="Label" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="Subtitulo" type="Label" parent="CenterContainer/Panel/Margen/VBox" unique_id=821158149]
 layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "Iniciar Sesión"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
 
-[node name="Sep1" type="HSeparator" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="Sep1" type="HSeparator" parent="CenterContainer/Panel/Margen/VBox" unique_id=1552606631]
 layout_mode = 2
 
-[node name="UsuarioLabel" type="Label" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="UsuarioLabel" type="Label" parent="CenterContainer/Panel/Margen/VBox" unique_id=1788497017]
 layout_mode = 2
 text = "Usuario:"
 
-[node name="UsuarioInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="UsuarioInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox" unique_id=124385476]
+custom_minimum_size = Vector2(0, 35)
 layout_mode = 2
 placeholder_text = "Nombre de usuario"
-custom_minimum_size = Vector2(0, 35)
 
-[node name="ContrasenaLabel" type="Label" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="ContrasenaLabel" type="Label" parent="CenterContainer/Panel/Margen/VBox" unique_id=320808058]
 layout_mode = 2
 text = "Contraseña:"
 
-[node name="ContrasenaInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="ContrasenaInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox" unique_id=2053401619]
+custom_minimum_size = Vector2(0, 35)
 layout_mode = 2
 placeholder_text = "Contraseña"
 secret = true
-custom_minimum_size = Vector2(0, 35)
 
-[node name="Sep2" type="HSeparator" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="Sep2" type="HSeparator" parent="CenterContainer/Panel/Margen/VBox" unique_id=1257494220]
 layout_mode = 2
 
-[node name="LoginButton" type="Button" parent="CenterContainer/Panel/Margen/VBox"]
-layout_mode = 2
+[node name="LoginButton" type="Button" parent="CenterContainer/Panel/Margen/VBox" unique_id=1318534209]
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
 text = "Entrar"
 
-[node name="MensajeError" type="Label" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="MensajeError" type="Label" parent="CenterContainer/Panel/Margen/VBox" unique_id=2052364740]
 layout_mode = 2
-text = ""
-horizontal_alignment = 1
 theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
 theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=1229292457]

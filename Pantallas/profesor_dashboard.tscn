@@ -1,7 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://Pantallas/profesor_dashboard.gd" id="1"]
-
 [node name="ProfesorDashboard" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -59,6 +58,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 0
 
 [node name="PanelAlumnos" type="PanelContainer" parent="Layout/MainContent"]
+self_modulate = Color(1, 1, 1, 0.8)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.2
@@ -90,6 +90,7 @@ size_flags_vertical = 3
 layout_mode = 2
 
 [node name="PanelBotones" type="PanelContainer" parent="Layout/MainContent"]
+self_modulate = Color(1, 1, 1, 0.8)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.0
@@ -128,6 +129,7 @@ text = "Ajustes Alumnado"
 
 [node name="PanelFlotante" type="PanelContainer" parent="."]
 visible = false
+self_modulate = Color(1, 1, 1, 0.95)
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.2
@@ -152,7 +154,7 @@ layout_mode = 2
 [node name="TituloFlotante" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/HeaderFlotante"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Detalle"
+text = "Detalles:"
 theme_override_font_sizes/font_size = 16
 
 [node name="BtnCerrarFlotante" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/HeaderFlotante"]

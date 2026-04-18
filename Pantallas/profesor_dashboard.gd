@@ -55,6 +55,7 @@ func _generar_texto_entregas() -> String:
 
 # --- Boton: Ajustes Alumnado -> Panel flotante con opciones ---
 func _on_ajustes_alumnado():
+	Notificador.notificar("Accediendo a gestión de grupo", Color.GOLDENROD)
 	contenido_flotante.text = _generar_texto_ajustes()
 	panel_flotante.visible = true
 
