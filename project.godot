@@ -18,7 +18,8 @@ config/icon="res://icon.svg"
 [autoload]
 
 Notificador="*res://Global/Notificador.gd"
-GameManager="*uid://cl1cr8qicn42s"
+GameManager="*res://Global/GameManager.gd"
+ConexionManager="*res://Global/ConexionManager.gd"
 
 [input]
 
