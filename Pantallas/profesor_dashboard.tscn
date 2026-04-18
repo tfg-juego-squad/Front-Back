@@ -82,6 +82,22 @@ theme_override_font_sizes/font_size = 16
 [node name="SepAlumnos" type="HSeparator" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
 
+[node name="HBoxAula" type="HBoxContainer" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
+layout_mode = 2
+
+[node name="CmbAulas" type="OptionButton" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 1
+selected = 0
+popup/item_0/text = "Cargando aulas..."
+popup/item_0/id = 0
+
+[node name="BtnCrearAula" type="Button" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
+layout_mode = 2
+text = " + "
+tooltip_text = "Crear nueva aula"
+
 [node name="ListaAlumnos" type="ItemList" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -166,7 +182,53 @@ text = "X"
 layout_mode = 2
 
 [node name="ContenidoFlotante" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
-text = ""
 autowrap_mode = 2
+
+[node name="TreePuntuaciones" type="Tree" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+columns = 4
+column_titles_visible = true
+hide_root = true
+
+[node name="VBoxGeneracion" type="VBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="LabelAula" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+text = "Nombre del Aula:"
+
+[node name="EditNombreAula" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+placeholder_text = "Ej: 1ºA DAM"
+
+[node name="LabelCant" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+text = "Cantidad de Alumnos a generar:"
+
+[node name="SpinAlumnos" type="SpinBox" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+min_value = 1.0
+max_value = 50.0
+value = 15.0
+
+[node name="BtnConfirmarGenerar" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+text = "Generar Credenciales"
+
+[node name="LabelResultado" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+text = "Credenciales generadas (copia esto):"
+
+[node name="TextResultado" type="TextEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+size_flags_vertical = 3
+editable = false
+wrap_mode = 1

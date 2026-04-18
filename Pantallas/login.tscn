@@ -85,10 +85,17 @@ custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 text = "Entrar"
 
+[node name="BtnRegistrar" type="Button" parent="CenterContainer/Panel/Margen/VBox" unique_id=1318534210]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "O crear cuenta de profesor"
+flat = true
+
 [node name="MensajeError" type="Label" parent="CenterContainer/Panel/Margen/VBox" unique_id=2052364740]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
 theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
 
-[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=1229292457]
+
