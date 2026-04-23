@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping("/tfg/usuarios")
 public class UsuarioControl {
     @Autowired
@@ -23,7 +22,7 @@ public class UsuarioControl {
     private UsuarioService usuarioService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable("id") String id){
+    public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable String id){
         Optional<Usuario> usuario = usuarioDAO.findUsuarioById(id);
         if(usuario.isPresent()){
             return ResponseEntity.ok().body(usuario.get());
@@ -33,7 +32,7 @@ public class UsuarioControl {
     }
 
     @GetMapping("/nombre/{nombre}")
-    public ResponseEntity<List<Usuario>> buscarUsuariosPorNombre(@PathVariable("nombre") String nombre){
+    public ResponseEntity<List<Usuario>> buscarUsuariosPorNombre(@PathVariable String nombre){
         List<Usuario> listaUsuarios = usuarioDAO.findUsuarioByNombreUsuario(nombre);
         if(!listaUsuarios.isEmpty()){
             return ResponseEntity.ok().body(listaUsuarios);
@@ -66,7 +65,7 @@ public class UsuarioControl {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> borrarUsuario (@PathVariable("id") String id) {
+    public ResponseEntity<?> borrarUsuario (@PathVariable String id) {
         Optional<Usuario> usuario = usuarioDAO.findUsuarioById(id);
         if(usuario.isPresent()) {
             usuarioDAO.deleteById(id);

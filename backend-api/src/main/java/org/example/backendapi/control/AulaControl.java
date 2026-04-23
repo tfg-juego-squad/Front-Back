@@ -15,7 +15,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping("/tfg/aulas")
 public class AulaControl {
 
@@ -26,7 +25,7 @@ public class AulaControl {
     private AulaService aulaService;
 
     @GetMapping("/profesor/{profesorId}")
-    public ResponseEntity<List<Aula>> getAulasByProfesor(@PathVariable("profesorId") String profesorId) {
+    public ResponseEntity<List<Aula>> getAulasByProfesor(@PathVariable String profesorId) {
         List<Aula> aulas = aulaDAO.findAulasByProfesorId(profesorId);
         if (aulas.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -35,7 +34,7 @@ public class AulaControl {
     }
 
     @GetMapping("/{aulaId}/alumnos")
-    public ResponseEntity<List<Usuario>> getAlumnosByAula(@PathVariable("aulaId") String aulaId) {
+    public ResponseEntity<List<Usuario>> getAlumnosByAula(@PathVariable String aulaId) {
         Optional<Aula> aulaOpt = aulaDAO.findAulaById(aulaId);
 
         if (aulaOpt.isEmpty()) {
@@ -52,17 +51,20 @@ public class AulaControl {
     }
 
     @PostMapping("/crear")
-    public ResponseEntity<?> crearAula(@RequestParam("nombreAula") String nombreAula, @RequestParam("profesorId") String profesorId) {
+    public ResponseEntity<?> crearAula(@RequestBody Map<String, String> datos) {
         try {
-            return ResponseEntity.ok(aulaService.crearAula(nombreAula, profesorId));
+            String nombre = datos.get("nombreAula");
+            String profId = datos.get("profesorId");
+            return ResponseEntity.ok(aulaService.crearAula(nombre, profId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("/{aulaId}/generar-alumnos")
-    public ResponseEntity<?> generarAlumnos(@PathVariable("aulaId") String aulaId, @RequestParam("cantidad") int cantidad) {
+    public ResponseEntity<?> generarAlumnos(@PathVariable String aulaId, @RequestBody Map<String, Integer> payload) {
         try {
+            int cantidad = payload.get("cantidad");
             List<Map<String, String>> credenciales = aulaService.generarAlumnosParaAula(aulaId, cantidad);
             return ResponseEntity.ok(credenciales);
         } catch (Exception e) {

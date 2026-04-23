@@ -1,10 +1,9 @@
 package org.example.backendapi.model.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 
@@ -12,14 +11,11 @@ import java.time.Instant;
 @Entity
 @Table(name = "puntuaciones")
 public class Puntuaciones {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, length = 36)
     private String id;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "prueba_id", nullable = false)
-    private Prueba prueba;
 
     @Column(name = "puntos_obtenidos", nullable = false)
     private Integer puntosObtenidos;
@@ -27,4 +23,13 @@ public class Puntuaciones {
     @ColumnDefault("current_timestamp()")
     @Column(name = "fecha_completado")
     private Instant fechaCompletado;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "alumno_id", nullable = false)
+    private Usuario alumno;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "prueba_id", nullable = false)
+    private Prueba prueba;
 }

@@ -1,96 +1,65 @@
 package org.example.backendapi.control;
 
-import org.example.backendapi.model.dao.IPruebaDAO;
 import org.example.backendapi.model.entities.Prueba;
+import org.example.backendapi.model.entities.TipoPrueba;
+import org.example.backendapi.service.PruebaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping("/tfg/pruebas")
 public class PruebaControl {
+
     @Autowired
-    IPruebaDAO pruebaDAO;
+    private PruebaService pruebaService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Prueba> buscarPruebaPorId(@PathVariable("id") String id){
-        Optional<Prueba> prueba = pruebaDAO.findPruebaById(id);
-        if(prueba.isPresent()){
-            return ResponseEntity.ok().body(prueba.get());
-        }else{
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/nombre/{nombre}")
-    public ResponseEntity<List<Prueba>> buscarPruebaPorNombre(@PathVariable("nombre") String nombre){
-        List<Prueba> listaPruebas = pruebaDAO.findPruebaByNombre(nombre);
-        if(!listaPruebas.isEmpty()){
-            return ResponseEntity.ok().body(listaPruebas);
-        }else{
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/descripcion/{descripcion}")
-    public ResponseEntity<List<Prueba>> buscarPruebaPorDescripcion(@PathVariable("descripcion") String descripcion){
-        List<Prueba> listaPruebas = pruebaDAO.findPruebaByDescripcion(descripcion);
-        if(!listaPruebas.isEmpty()){
-            return ResponseEntity.ok().body(listaPruebas);
-        }else{
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/puntuacion/{puntuacion}")
-    public ResponseEntity<List<Prueba>> buscarPruebaPorPuntuacion(@PathVariable("puntuacion") String puntuacion){
+    @PostMapping("/crear")
+    public ResponseEntity<?> crearPrueba(@RequestBody Map<String, Object> payload) {
         try {
-            int puntuacionNumber = Integer.parseInt(puntuacion);
-            List<Prueba> listaPruebas = pruebaDAO.findPruebaByPuntuacionMaxima(puntuacionNumber);
-            if(!listaPruebas.isEmpty()){
-                return ResponseEntity.ok().body(listaPruebas);
-            }else {
-                return ResponseEntity.notFound().build();
-            }
+            String aulaId = (String) payload.get("aulaId");
+            String titulo = (String) payload.get("titulo");
+            TipoPrueba tipo = TipoPrueba.valueOf((String) payload.get("tipo"));
+            String contenido = (String) payload.get("contenido");
+            int puntuacionMaxima = (int) payload.get("puntuacionMaxima");
+
+            Prueba nueva = pruebaService.crearPrueba(aulaId, titulo, tipo, contenido, puntuacionMaxima);
+            return ResponseEntity.ok(nueva);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Error al crear la prueba: " + e.getMessage());
         }
     }
 
-    @Validated
-    @PostMapping("/alta")
-    public Prueba guardarPrueba(@Validated @RequestBody Prueba prueba){
-        return pruebaDAO.save(prueba);
+    @GetMapping("/aula/{aulaId}")
+    public ResponseEntity<List<Prueba>> listarPorAula(@PathVariable String aulaId) {
+        List<Prueba> pruebas = pruebaService.obtenerPruebasPorAula(aulaId);
+        return ResponseEntity.ok(pruebas);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarPrueba(@RequestBody Prueba nuevaPrueba,
-                                                    @PathVariable("id") String id) {
-        Optional<Prueba> prueba = pruebaDAO.findById(id);
-        if (prueba.isPresent()) {
-            prueba.get().setNombre(nuevaPrueba.getNombre());
-            prueba.get().setDescripcion(nuevaPrueba.getDescripcion());
-            prueba.get().setPuntuacionMaxima(nuevaPrueba.getPuntuacionMaxima());
-            pruebaDAO.save(prueba.get());
-            return ResponseEntity.ok().body("Actualizado");
-        } else {
-            return ResponseEntity.notFound().build();
+    @PutMapping("/{pruebaId}")
+    public ResponseEntity<?> actualizarPrueba(@PathVariable String pruebaId, @RequestBody Map<String, Object> payload) {
+        try {
+            String titulo = (String) payload.get("titulo");
+            String contenido = (String) payload.get("contenido");
+            int puntuacionMaxima = (int) payload.get("puntuacionMaxima");
+
+            Prueba actualizada = pruebaService.actualizarPrueba(pruebaId, titulo, contenido, puntuacionMaxima);
+            return ResponseEntity.ok(actualizada);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al actualizar: " + e.getMessage());
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> borrarPrueba(@PathVariable("id") String id) {
-        Optional<Prueba> prueba = pruebaDAO.findPruebaById(id);
-        if(prueba.isPresent()) {
-            pruebaDAO.deleteById(id);
-            return ResponseEntity.ok().body("Borrado");
-        } else {
-            return ResponseEntity.notFound().build();
+    @DeleteMapping("/{pruebaId}")
+    public ResponseEntity<?> eliminarPrueba(@PathVariable String pruebaId) {
+        try {
+            pruebaService.eliminarPrueba(pruebaId);
+            return ResponseEntity.ok().body("Prueba eliminada correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(e.getMessage());
         }
     }
 }
