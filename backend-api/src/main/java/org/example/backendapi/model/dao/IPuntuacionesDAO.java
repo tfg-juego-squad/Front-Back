@@ -12,7 +12,9 @@ public interface IPuntuacionesDAO extends CrudRepository<Puntuaciones, String> {
 
     List<Puntuaciones> findPuntuacionesByPrueba(Prueba prueba);
 
-    List<Puntuaciones> findPuntuacionesByPrueba_Nombre(String pruebaNombre);
+    List<Puntuaciones> findPuntuacionesByPrueba_Titulo(String pruebaNombre);
 
     List<Puntuaciones> findPuntuacionesByPuntosObtenidos(int puntosObtenidos);
+
+    List<Puntuaciones> findPuntuacionesByPrueba_Aula_Id(String pruebaAulaId);
 }

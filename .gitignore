@@ -13,3 +13,5 @@ obj/
 # System specific ignores
 .DS_Store
 Thumbs.db
+
+.idea
