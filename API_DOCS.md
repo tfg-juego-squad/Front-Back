@@ -48,7 +48,7 @@ Crea una nueva clase asignada a un profesor.
   ```
 
 ### 2.2 Listar Aulas de un Profesor
-Devuelve la lista de clases que imparte un profesor (ideal para el `OptionButton` del Dashboard).
+Devuelve la lista de clases que imparte un profesor.
 * **Método:** `GET`
 * **Ruta:** `/aulas/profesor/{profesorId}`
 * **Body:** Ninguno.
@@ -137,7 +137,7 @@ Registra la calificación obtenida por un alumno al terminar un minijuego/prueba
   ```
 
 ### 4.2 Ver Notas por Prueba
-Devuelve el listado de calificaciones de todos los alumnos que han realizado una prueba específica (ideal para la vista del profesor).
+Devuelve el listado de calificaciones de todos los alumnos que han realizado una prueba específica
 * **Método:** `GET`
 * **Ruta:** `/puntuaciones/prueba/{pruebaId}`
 * **Body:** Ninguno.
