@@ -6,6 +6,7 @@ import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+
 @Data
 @Entity
 @Table(name = "usuarios")
