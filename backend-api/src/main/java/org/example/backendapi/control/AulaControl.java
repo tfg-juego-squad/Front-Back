@@ -8,6 +8,7 @@ import org.example.backendapi.service.AulaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,26 @@ public class AulaControl {
             return ResponseEntity.ok(credenciales);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{aulaId}/importar-csv")
+    public ResponseEntity<?> importarAlumnosCSV(
+            @PathVariable String aulaId,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El archivo CSV está vacío.");
+            }
+
+            if (file.getOriginalFilename() != null && !file.getOriginalFilename().endsWith(".csv")) {
+                return ResponseEntity.badRequest().body("Error: El archivo debe tener extensión .csv");
+            }
+
+            List<Map<String, String>> credenciales = aulaService.importarAlumnosCSV(aulaId, file);
+            return ResponseEntity.ok(credenciales);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al procesar el CSV: " + e.getMessage());
         }
     }
 }
