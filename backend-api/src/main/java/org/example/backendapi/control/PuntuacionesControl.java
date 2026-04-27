@@ -1,14 +1,17 @@
 package org.example.backendapi.control;
 
+import org.example.backendapi.model.dao.IPruebaDAO;
 import org.example.backendapi.model.dao.IPuntuacionesDAO;
+import org.example.backendapi.model.dao.IUsuarioDAO;
 import org.example.backendapi.model.entities.Prueba;
 import org.example.backendapi.model.entities.Puntuaciones;
+import org.example.backendapi.model.entities.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -18,6 +21,12 @@ public class PuntuacionesControl {
 
     @Autowired
     IPuntuacionesDAO puntuacionesDAO;
+
+    @Autowired
+    IUsuarioDAO usuarioDAO; // AÑADE ESTO
+
+    @Autowired
+    IPruebaDAO pruebaDAO;
 
     @GetMapping("/{id}")
     public ResponseEntity<Puntuaciones> buscarPuntuacionPorId(@PathVariable String id){
@@ -70,10 +79,34 @@ public class PuntuacionesControl {
         }
     }
 
-    @Validated
     @PostMapping("/alta")
-    public Puntuaciones guardarPuntos(@Validated @RequestBody Puntuaciones puntuaciones){
-        return puntuacionesDAO.save(puntuaciones);
+    public ResponseEntity<?> guardarPuntos(@RequestBody Map<String, Object> payload) {
+        try {
+            int puntosObtenidos = (int) payload.get("puntosObtenidos");
+
+            Map<String, String> alumnoMap = (Map<String, String>) payload.get("alumno");
+            String alumnoId = alumnoMap.get("id");
+
+            Map<String, String> pruebaMap = (Map<String, String>) payload.get("prueba");
+            String pruebaId = pruebaMap.get("id");
+
+            Usuario alumno = usuarioDAO.findById(alumnoId)
+                    .orElseThrow(() -> new RuntimeException("Alumno no encontrado"));
+
+            Prueba prueba = pruebaDAO.findById(pruebaId)
+                    .orElseThrow(() -> new RuntimeException("Prueba no encontrada"));
+
+            Puntuaciones nuevaPuntuacion = new Puntuaciones();
+            nuevaPuntuacion.setPuntosObtenidos(puntosObtenidos);
+            nuevaPuntuacion.setAlumno(alumno);
+            nuevaPuntuacion.setPrueba(prueba);
+
+            Puntuaciones guardada = puntuacionesDAO.save(nuevaPuntuacion);
+            return ResponseEntity.ok(guardada);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al guardar la puntuación: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
