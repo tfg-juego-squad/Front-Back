@@ -70,16 +70,6 @@ Devuelve todos los usuarios con rol `ROL_ESTUDIANTE` que pertenecen a una clase.
 * **Ruta:** `/aulas/{aulaId}/alumnos`
 * **Body:** Ninguno.
 
-### 2.5 Importar Alumnos desde CSV
-Genera cuentas de estudiante masivamente leyendo un archivo CSV con sus nombres reales. El CSV no debe tener cabeceras, formato esperado: `Nombre,Apellido`.
-* **Método:** `POST`
-* **Ruta:** `/aulas/{aulaId}/importar-csv`
-* **Headers:** Automático (`multipart/form-data`)
-* **Body (Form-Data):**
-    * **Key:** `file` (Asegúrate de marcar el tipo como "File" y no como "Text").
-    * **Value:** Seleccionar el archivo `.csv`.
-* **Respuesta:** Devuelve un JSON con la lista de usuarios y contraseñas autogeneradas junto con su nombre real.
-
 ---
 
 ## 3. Gestión de Pruebas (Tareas/Misiones)
@@ -151,11 +141,3 @@ Devuelve el listado de calificaciones de todos los alumnos que han realizado una
 * **Método:** `GET`
 * **Ruta:** `/puntuaciones/prueba/{pruebaId}`
 * **Body:** Ninguno.
-
-### 4.3 Ver Notas del Aula Completa (Boletín)
-Devuelve todas las calificaciones de todos los alumnos y de todas las pruebas que pertenecen a una clase específica. Ideal para construir la tabla de notas del profesor.
-* **Método:** `GET`
-* **Ruta:** `/puntuaciones/aula/{aulaId}`
-* **Body:** Ninguno.
-* **Respuesta de éxito (200 OK):**
-  Devuelve un array JSON con todas las puntuaciones detalladas. Si el aula aún no tiene notas, devolverá un estado `204 No Content`.
