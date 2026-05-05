@@ -9,8 +9,8 @@ import org.example.backendapi.mapper.UsuarioMapper;
 import org.example.backendapi.model.dao.IUsuarioDAO;
 import org.example.backendapi.model.entities.TipoRol;
 import org.example.backendapi.model.entities.Usuario;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.example.backendapi.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
