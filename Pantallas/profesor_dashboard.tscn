@@ -82,6 +82,20 @@ theme_override_font_sizes/font_size = 16
 [node name="SepAlumnos" type="HSeparator" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
 
+[node name="HBoxAula" type="HBoxContainer" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CmbAulas" type="OptionButton" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 30)
+
+[node name="BtnCrearAula" type="Button" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 30)
+text = "+ Aula"
+
 [node name="ListaAlumnos" type="ItemList" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -170,3 +184,46 @@ layout_mode = 2
 size_flags_vertical = 3
 text = ""
 autowrap_mode = 2
+
+[node name="TreePuntuaciones" type="Tree" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+columns = 4
+column_titles_visible = true
+
+[node name="VBoxGeneracion" type="VBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LblNombreAula" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+text = "Nombre del aula:"
+
+[node name="EditNombreAula" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+placeholder_text = "Ej: 1A - Programación"
+custom_minimum_size = Vector2(0, 35)
+
+[node name="LblCantidad" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+text = "Cantidad de alumnos:"
+
+[node name="SpinAlumnos" type="SpinBox" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+min_value = 1
+max_value = 50
+value = 5
+
+[node name="BtnConfirmarGenerar" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+text = "Crear Aula y Generar Alumnos"
+
+[node name="TextResultado" type="TextEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 150)
+editable = false
+placeholder_text = "Las credenciales aparecerán aquí..."

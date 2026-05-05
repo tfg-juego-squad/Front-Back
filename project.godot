@@ -15,6 +15,12 @@ run/main_scene="res://Pantallas/login.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+Notificador="*res://Global/Notificador.gd"
+GameManager="*res://Global/GameManager.gd"
+ConexionManager="*res://Global/ConexionManager.gd"
+
 [input]
 
 ui_left={
@@ -59,7 +65,3 @@ ui_down={
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-
-[autoload]
-
-Notificador="*res://Global/Notificador.gd"
