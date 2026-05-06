@@ -58,7 +58,7 @@ public class UsuarioService {
         return usuarioMapper.toResponseDTO(usuario);
     }
 
-    public UsuarioResponseDTO buscarUsuarioPorId(String id) {
+    public UsuarioResponseDTO buscarUsuarioPorId(Integer id) {
         return usuarioDAO.findUsuarioById(id)
                 .map(usuarioMapper::toResponseDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró ningún usuario con el ID: " + id));
@@ -71,7 +71,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void borrarUsuario(String id) {
+    public void borrarUsuario(Integer id) {
         if (!usuarioDAO.existsById(id)) {
             throw new ResourceNotFoundException("No se puede borrar. El usuario con ID " + id + " no existe.");
         }

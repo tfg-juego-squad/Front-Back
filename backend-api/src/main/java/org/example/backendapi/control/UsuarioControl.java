@@ -20,7 +20,7 @@ public class UsuarioControl {
     private final UsuarioService usuarioService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(@PathVariable String id) {
+    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(@PathVariable Integer id) {
         UsuarioResponseDTO response = usuarioService.buscarUsuarioPorId(id);
         return ResponseEntity.ok(response);
     }
@@ -44,7 +44,7 @@ public class UsuarioControl {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> borrarUsuario (@PathVariable String id) {
+    public ResponseEntity<Void> borrarUsuario (@PathVariable Integer id) {
         usuarioService.borrarUsuario(id);
         return ResponseEntity.noContent().build();
     }

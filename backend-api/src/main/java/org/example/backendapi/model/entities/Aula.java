@@ -10,9 +10,9 @@ import java.util.List;
 public class Aula {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false, length = 36)
-    private String id;
+    private Integer id;
 
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
