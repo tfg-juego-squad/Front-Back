@@ -27,9 +27,13 @@ public class PruebaService {
     private final IUsuarioDAO usuarioDAO;
 
     @Transactional
-    public PruebaResponseDTO crearPrueba(PruebaRequestDTO request) {
-        Aula aula = aulaDAO.findAulaById(request.getAulaId())
+    public PruebaResponseDTO crearPrueba(PruebaRequestDTO request, Usuario usuarioLogueado) {
+        Aula aula = aulaDAO.findById(request.getAulaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada con ID: " + request.getAulaId()));
+
+        if (!aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes crear pruebas en un aula que no te pertenece.");
+        }
 
         Prueba nuevaPrueba = new Prueba();
         nuevaPrueba.setAula(aula);
@@ -42,7 +46,6 @@ public class PruebaService {
             throw new IllegalArgumentException("Tipo de prueba no válido. Debe ser TIPO_TEST o DESARROLLO.");
         }
 
-        nuevaPrueba.setContenido(request.getContenido());
         nuevaPrueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         nuevaPrueba.setFechaLimite(request.getFechaLimite());
         nuevaPrueba.setFechaCreacion(Instant.now());
@@ -51,15 +54,26 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(guardada);
     }
 
-    public List<PruebaResponseDTO> obtenerPruebasPorAula(Long aulaId) {
+    public List<PruebaResponseDTO> obtenerPruebasPorAula(Long aulaId, Usuario usuarioLogueado) {
+        Aula aula = aulaDAO.findById(aulaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada con ID: " + aulaId));
+
+        if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR && !aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes ver las pruebas de un aula que no te pertenece.");
+        }
+
         List<Prueba> pruebas = pruebaDAO.findByAula_Id(aulaId);
         return pruebaMapper.toResponseDTOList(pruebas);
     }
 
     @Transactional
-    public PruebaResponseDTO actualizarPrueba(Long pruebaId, PruebaRequestDTO request) {
+    public PruebaResponseDTO actualizarPrueba(Long pruebaId, PruebaRequestDTO request, Usuario usuarioLogueado) {
         Prueba prueba = pruebaDAO.findById(pruebaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prueba no encontrada con ID: " + pruebaId));
+
+        if (!prueba.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes modificar una prueba de un aula que no te pertenece.");
+        }
 
         prueba.setTitulo(request.getTitulo());
         try {
@@ -67,7 +81,7 @@ public class PruebaService {
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException("Tipo de prueba no válido.");
         }
-        prueba.setContenido(request.getContenido());
+
         prueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         prueba.setFechaLimite(request.getFechaLimite());
 
@@ -88,7 +102,7 @@ public class PruebaService {
                 throw new ForbiddenException("Acceso denegado: No puedes ver las pruebas de otros alumnos.");
             }
         }
-        
+
         else if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR) {
             Long idProfesorDelAlumno = alumno.getAula().getProfesor().getId();
 
@@ -103,10 +117,14 @@ public class PruebaService {
     }
 
     @Transactional
-    public void eliminarPrueba(Long pruebaId) {
-        if (!pruebaDAO.existsById(pruebaId)) {
-            throw new ResourceNotFoundException("No se puede borrar. Prueba no encontrada.");
+    public void eliminarPrueba(Long pruebaId, Usuario usuarioLogueado) {
+        Prueba prueba = pruebaDAO.findById(pruebaId)
+                .orElseThrow(() -> new ResourceNotFoundException("No se puede borrar. Prueba no encontrada."));
+
+        if (!prueba.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes borrar una prueba de un aula que no te pertenece.");
         }
-        pruebaDAO.deleteById(pruebaId);
+
+        pruebaDAO.delete(prueba);
     }
 }

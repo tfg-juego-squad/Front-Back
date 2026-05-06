@@ -3,8 +3,8 @@ package org.example.backendapi.model.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
-
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Entity
@@ -23,8 +23,8 @@ public class Prueba {
     @Column(name = "tipo", nullable = false)
     private TipoPrueba tipo;
 
-    @Column(name = "contenido", columnDefinition = "TEXT")
-    private String contenido;
+    @OneToMany(mappedBy = "prueba", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Pregunta> preguntas;
 
     @Column(name = "puntuacion_maxima", nullable = false)
     private Integer puntuacionMaxima;

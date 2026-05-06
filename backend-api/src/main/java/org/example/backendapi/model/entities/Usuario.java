@@ -26,6 +26,15 @@ public class Usuario implements UserDetails {
     @Column(name = "hash_contrasena", nullable = false)
     private String hashContrasena;
 
+    @Column(name = "nombre_real", nullable = false, length = 100)
+    private String nombreReal;
+
+    @Column(name = "apellidos", nullable = false, length = 150)
+    private String apellidos;
+
+    @Column(name = "email", nullable = false, length = 150)
+    private String email;
+
     @Column(nullable = false)
     private Integer nivel = 1;
 
