@@ -10,4 +10,6 @@ public class UsuarioResponseDTO {
     private String rol;
     private Instant fechaCreacion;
     private String aulaId;
+    private Integer nivelActual;
+    private Integer experienciaActual;
 }

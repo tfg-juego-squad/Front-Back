@@ -1,6 +1,5 @@
 package org.example.backendapi.model.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
@@ -21,7 +20,6 @@ public class Aula {
     @Column(name = "codigo_invitacion", unique = true, length = 10)
     private String codigoInvitacion;
 
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profesor_id", nullable = false)
     private Usuario profesor;
