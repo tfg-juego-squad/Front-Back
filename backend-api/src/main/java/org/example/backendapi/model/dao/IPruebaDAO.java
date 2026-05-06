@@ -5,6 +5,6 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface IPruebaDAO extends CrudRepository<Prueba, String>{
-    List<Prueba> findByAula_Id(String aulaId);
+public interface IPruebaDAO extends CrudRepository<Prueba, Integer>{
+    List<Prueba> findByAula_Id(Integer aulaId);
 }

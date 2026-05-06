@@ -5,11 +5,11 @@ import java.time.Instant;
 
 @Data
 public class UsuarioResponseDTO {
-    private String id;
+    private Integer id;
     private String nombreUsuario;
     private String rol;
     private Instant fechaCreacion;
-    private String aulaId;
+    private Integer aulaId;
     private Integer nivelActual;
     private Integer experienciaActual;
 }

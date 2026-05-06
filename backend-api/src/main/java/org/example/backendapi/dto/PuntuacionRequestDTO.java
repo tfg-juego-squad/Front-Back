@@ -10,8 +10,8 @@ public class PuntuacionRequestDTO {
     private Integer puntosObtenidos;
 
     @NotBlank(message = "El ID del alumno es obligatorio")
-    private String idAlumno;
+    private Integer idAlumno;
 
     @NotBlank(message = "El ID de la prueba es obligatorio")
-    private String idPrueba;
+    private Integer idPrueba;
 }
