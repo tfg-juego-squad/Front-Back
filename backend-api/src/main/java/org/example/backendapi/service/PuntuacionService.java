@@ -26,13 +26,13 @@ public class PuntuacionService {
     private final IPruebaDAO pruebaDAO;
     private final PuntuacionMapper puntuacionMapper;
 
-    public PuntuacionResponseDTO buscarPorId(Integer id) {
+    public PuntuacionResponseDTO buscarPorId(Long id) {
         return puntuacionDAO.findPuntuacionById(id)
                 .map(puntuacionMapper::toResponseDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("Puntuación no encontrada con ID: " + id));
     }
 
-    public List<PuntuacionResponseDTO> buscarPorAula(Integer aulaId) {
+    public List<PuntuacionResponseDTO> buscarPorAula(Long aulaId) {
         List<Puntuacion> puntuaciones = puntuacionDAO.findPuntuacionByPrueba_Aula_Id(aulaId);
         return puntuacionMapper.toResponseDTOList(puntuaciones);
     }
@@ -59,7 +59,7 @@ public class PuntuacionService {
     }
 
     @Transactional
-    public void borrarPuntuacion(Integer id) {
+    public void borrarPuntuacion(Long id) {
         if (!puntuacionDAO.existsById(id)) {
             throw new ResourceNotFoundException("No se puede borrar. Puntuación no encontrada.");
         }

@@ -12,9 +12,9 @@ import java.time.Instant;
 public class Prueba {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", nullable = false, length = 36)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
     @Column(name = "titulo", nullable = false, length = 100)
     private String titulo;

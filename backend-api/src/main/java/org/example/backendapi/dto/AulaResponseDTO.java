@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class AulaResponseDTO {
-    private Integer id;
+    private Long id;
     private String nombre;
     private String codigoInvitacion;
-    private Integer profesorId;
+    private Long profesorId;
 }

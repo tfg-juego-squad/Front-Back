@@ -25,19 +25,24 @@ public class PruebaControl {
     }
 
     @GetMapping("/aula/{aulaId}")
-    public ResponseEntity<List<PruebaResponseDTO>> listarPorAula(@PathVariable Integer aulaId) {
+    public ResponseEntity<List<PruebaResponseDTO>> listarPorAula(@PathVariable Long aulaId) {
         return ResponseEntity.ok(pruebaService.obtenerPruebasPorAula(aulaId));
+    }
+
+    @GetMapping("/pendientes/{alumnoId}")
+    public ResponseEntity<List<PruebaResponseDTO>> listarPruebasPendientes(@PathVariable Long alumnoId) {
+        return ResponseEntity.ok(pruebaService.obtenerPruebasPendientes(alumnoId));
     }
 
     @PutMapping("/{pruebaId}")
     public ResponseEntity<PruebaResponseDTO> actualizarPrueba(
-            @PathVariable Integer pruebaId,
+            @PathVariable Long pruebaId,
             @Valid @RequestBody PruebaRequestDTO request) {
         return ResponseEntity.ok(pruebaService.actualizarPrueba(pruebaId, request));
     }
 
     @DeleteMapping("/{pruebaId}")
-    public ResponseEntity<Void> eliminarPrueba(@PathVariable Integer pruebaId) {
+    public ResponseEntity<Void> eliminarPrueba(@PathVariable Long pruebaId) {
         pruebaService.eliminarPrueba(pruebaId);
         return ResponseEntity.noContent().build();
     }

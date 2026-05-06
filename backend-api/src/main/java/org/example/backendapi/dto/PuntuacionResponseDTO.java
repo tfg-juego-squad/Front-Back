@@ -6,7 +6,7 @@ import java.time.Instant;
 
 @Data
 public class PuntuacionResponseDTO {
-    private Integer id;
+    private Long id;
     private Instant fechaCompletado;
     private Integer puntosObtenidos;
     private String nombreUsuario;

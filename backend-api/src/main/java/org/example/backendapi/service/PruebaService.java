@@ -3,13 +3,16 @@ package org.example.backendapi.service;
 import lombok.RequiredArgsConstructor;
 import org.example.backendapi.dto.PruebaRequestDTO;
 import org.example.backendapi.dto.PruebaResponseDTO;
+import org.example.backendapi.exception.BadRequestException;
 import org.example.backendapi.exception.ResourceNotFoundException;
 import org.example.backendapi.mapper.PruebaMapper;
 import org.example.backendapi.model.dao.IAulaDAO;
 import org.example.backendapi.model.dao.IPruebaDAO;
+import org.example.backendapi.model.dao.IUsuarioDAO;
 import org.example.backendapi.model.entities.Aula;
 import org.example.backendapi.model.entities.Prueba;
 import org.example.backendapi.model.entities.TipoPrueba;
+import org.example.backendapi.model.entities.Usuario;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ public class PruebaService {
     private final IPruebaDAO pruebaDAO;
     private final IAulaDAO aulaDAO;
     private final PruebaMapper pruebaMapper;
+    private final IUsuarioDAO usuarioDAO;
 
     @Transactional
     public PruebaResponseDTO crearPrueba(PruebaRequestDTO request) {
@@ -49,13 +53,13 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(guardada);
     }
 
-    public List<PruebaResponseDTO> obtenerPruebasPorAula(Integer aulaId) {
+    public List<PruebaResponseDTO> obtenerPruebasPorAula(Long aulaId) {
         List<Prueba> pruebas = pruebaDAO.findByAula_Id(aulaId);
         return pruebaMapper.toResponseDTOList(pruebas);
     }
 
     @Transactional
-    public PruebaResponseDTO actualizarPrueba(Integer pruebaId, PruebaRequestDTO request) {
+    public PruebaResponseDTO actualizarPrueba(Long pruebaId, PruebaRequestDTO request) {
         Prueba prueba = pruebaDAO.findById(pruebaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prueba no encontrada con ID: " + pruebaId));
 
@@ -73,8 +77,21 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(actualizada);
     }
 
+    public List<PruebaResponseDTO> obtenerPruebasPendientes(Long alumnoId) {
+        Usuario alumno = usuarioDAO.findById(alumnoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado con ID: " + alumnoId));
+
+        if (alumno.getAula() == null) {
+            throw new BadRequestException("El alumno no está asignado a ninguna aula.");
+        }
+
+        List<Prueba> pendientes = pruebaDAO.findPruebasPendientes(alumno.getAula().getId(), alumnoId);
+
+        return pruebaMapper.toResponseDTOList(pendientes);
+    }
+
     @Transactional
-    public void eliminarPrueba(Integer pruebaId) {
+    public void eliminarPrueba(Long pruebaId) {
         if (!pruebaDAO.existsById(pruebaId)) {
             throw new ResourceNotFoundException("No se puede borrar. Prueba no encontrada.");
         }
