@@ -7,10 +7,10 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface IPruebaDAO extends CrudRepository<Prueba, Integer>{
-    List<Prueba> findByAula_Id(Integer aulaId);
+public interface IPruebaDAO extends CrudRepository<Prueba, Long>{
+    List<Prueba> findByAula_Id(Long aulaId);
 
     @Query("SELECT prueba FROM Prueba prueba WHERE prueba.aula.id = :aulaId AND prueba.id NOT IN" +
             " (SELECT puntuacion.prueba.id FROM Puntuacion puntuacion WHERE puntuacion.alumno.id = :alumnoId)")
-    List<Prueba> findPruebasPendientes(@Param("aulaId") Integer aulaId, @Param("alumnoId") Integer alumnoId);
+    List<Prueba> findPruebasPendientes(@Param("aulaId") Long aulaId, @Param("alumnoId") Long alumnoId);
 }

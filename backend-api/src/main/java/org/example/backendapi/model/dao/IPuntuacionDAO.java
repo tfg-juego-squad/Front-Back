@@ -6,8 +6,8 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface IPuntuacionDAO extends CrudRepository<Puntuacion, Integer> {
-    Optional<Puntuacion> findPuntuacionById(Integer id);
+public interface IPuntuacionDAO extends CrudRepository<Puntuacion, Long> {
+    Optional<Puntuacion> findPuntuacionById(Long id);
 
-    List<Puntuacion> findPuntuacionByPrueba_Aula_Id(Integer pruebaAulaId);
+    List<Puntuacion> findPuntuacionByPrueba_Aula_Id(Long pruebaAulaId);
 }
