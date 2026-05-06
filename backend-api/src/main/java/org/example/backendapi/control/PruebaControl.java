@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.backendapi.dto.PruebaRequestDTO;
 import org.example.backendapi.dto.PruebaResponseDTO;
+import org.example.backendapi.model.entities.Usuario;
 import org.example.backendapi.service.PruebaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,8 +32,10 @@ public class PruebaControl {
     }
 
     @GetMapping("/pendientes/{alumnoId}")
-    public ResponseEntity<List<PruebaResponseDTO>> listarPruebasPendientes(@PathVariable Long alumnoId) {
-        return ResponseEntity.ok(pruebaService.obtenerPruebasPendientes(alumnoId));
+    public ResponseEntity<List<PruebaResponseDTO>> listarPruebasPendientes(
+            @PathVariable Long alumnoId,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        return ResponseEntity.ok(pruebaService.obtenerPruebasPendientes(alumnoId, usuarioLogueado));
     }
 
     @PutMapping("/{pruebaId}")
