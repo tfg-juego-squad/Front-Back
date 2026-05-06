@@ -41,7 +41,7 @@ public class PruebaService {
 
         // Parseamos el String del DTO al Enum de la Entidad
         try {
-            nuevaPrueba.setTipo(TipoPrueba.valueOf(request.getTipo()));
+            nuevaPrueba.setTipo(TipoPregunta.valueOf(request.getTipo()));
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException("Tipo de prueba no válido. Debe ser TIPO_TEST o DESARROLLO.");
         }
@@ -77,7 +77,7 @@ public class PruebaService {
 
         prueba.setTitulo(request.getTitulo());
         try {
-            prueba.setTipo(TipoPrueba.valueOf(request.getTipo()));
+            prueba.setTipo(TipoPregunta.valueOf(request.getTipo()));
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException("Tipo de prueba no válido.");
         }
