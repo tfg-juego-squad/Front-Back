@@ -1,65 +1,44 @@
 package org.example.backendapi.control;
 
-import org.example.backendapi.model.entities.Prueba;
-import org.example.backendapi.model.entities.TipoPrueba;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.example.backendapi.dto.PruebaRequestDTO;
+import org.example.backendapi.dto.PruebaResponseDTO;
 import org.example.backendapi.service.PruebaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/tfg/pruebas")
+@RequiredArgsConstructor
 public class PruebaControl {
 
-    @Autowired
-    private PruebaService pruebaService;
+    private final PruebaService pruebaService;
 
     @PostMapping("/crear")
-    public ResponseEntity<?> crearPrueba(@RequestBody Map<String, Object> payload) {
-        try {
-            String aulaId = (String) payload.get("aulaId");
-            String titulo = (String) payload.get("titulo");
-            TipoPrueba tipo = TipoPrueba.valueOf((String) payload.get("tipo"));
-            String contenido = (String) payload.get("contenido");
-            int puntuacionMaxima = (int) payload.get("puntuacionMaxima");
-
-            Prueba nueva = pruebaService.crearPrueba(aulaId, titulo, tipo, contenido, puntuacionMaxima);
-            return ResponseEntity.ok(nueva);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al crear la prueba: " + e.getMessage());
-        }
+    public ResponseEntity<PruebaResponseDTO> crearPrueba(@Valid @RequestBody PruebaRequestDTO request) {
+        PruebaResponseDTO response = pruebaService.crearPrueba(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/aula/{aulaId}")
-    public ResponseEntity<List<Prueba>> listarPorAula(@PathVariable String aulaId) {
-        List<Prueba> pruebas = pruebaService.obtenerPruebasPorAula(aulaId);
-        return ResponseEntity.ok(pruebas);
+    public ResponseEntity<List<PruebaResponseDTO>> listarPorAula(@PathVariable String aulaId) {
+        return ResponseEntity.ok(pruebaService.obtenerPruebasPorAula(aulaId));
     }
 
     @PutMapping("/{pruebaId}")
-    public ResponseEntity<?> actualizarPrueba(@PathVariable String pruebaId, @RequestBody Map<String, Object> payload) {
-        try {
-            String titulo = (String) payload.get("titulo");
-            String contenido = (String) payload.get("contenido");
-            int puntuacionMaxima = (int) payload.get("puntuacionMaxima");
-
-            Prueba actualizada = pruebaService.actualizarPrueba(pruebaId, titulo, contenido, puntuacionMaxima);
-            return ResponseEntity.ok(actualizada);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al actualizar: " + e.getMessage());
-        }
+    public ResponseEntity<PruebaResponseDTO> actualizarPrueba(
+            @PathVariable String pruebaId,
+            @Valid @RequestBody PruebaRequestDTO request) {
+        return ResponseEntity.ok(pruebaService.actualizarPrueba(pruebaId, request));
     }
 
     @DeleteMapping("/{pruebaId}")
-    public ResponseEntity<?> eliminarPrueba(@PathVariable String pruebaId) {
-        try {
-            pruebaService.eliminarPrueba(pruebaId);
-            return ResponseEntity.ok().body("Prueba eliminada correctamente");
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
+    public ResponseEntity<Void> eliminarPrueba(@PathVariable String pruebaId) {
+        pruebaService.eliminarPrueba(pruebaId);
+        return ResponseEntity.noContent().build();
     }
 }

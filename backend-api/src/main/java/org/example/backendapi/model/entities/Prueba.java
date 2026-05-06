@@ -33,6 +33,9 @@ public class Prueba {
     @Column(name = "fecha_creacion")
     private Instant fechaCreacion;
 
+    @Column(name = "fecha_limite", nullable = false)
+    private Instant fechaLimite;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aula_id", nullable = false)
     private Aula aula;
