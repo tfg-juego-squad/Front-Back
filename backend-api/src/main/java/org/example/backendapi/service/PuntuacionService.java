@@ -50,8 +50,11 @@ public class PuntuacionService {
         nueva.setAlumno(alumno);
         nueva.setPrueba(prueba);
         nueva.setFechaCompletado(Instant.now());
+        alumno.ganarExperiencia(request.getPuntosObtenidos());
 
+        usuarioDAO.save(alumno);
         Puntuacion guardada = puntuacionDAO.save(nueva);
+
         return puntuacionMapper.toResponseDTO(guardada);
     }
 
