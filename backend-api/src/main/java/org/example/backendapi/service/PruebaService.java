@@ -53,13 +53,13 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(guardada);
     }
 
-    public List<PruebaResponseDTO> obtenerPruebasPorAula(Integer aulaId) {
+    public List<PruebaResponseDTO> obtenerPruebasPorAula(Long aulaId) {
         List<Prueba> pruebas = pruebaDAO.findByAula_Id(aulaId);
         return pruebaMapper.toResponseDTOList(pruebas);
     }
 
     @Transactional
-    public PruebaResponseDTO actualizarPrueba(Integer pruebaId, PruebaRequestDTO request) {
+    public PruebaResponseDTO actualizarPrueba(Long pruebaId, PruebaRequestDTO request) {
         Prueba prueba = pruebaDAO.findById(pruebaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prueba no encontrada con ID: " + pruebaId));
 
@@ -77,7 +77,7 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(actualizada);
     }
 
-    public List<PruebaResponseDTO> obtenerPruebasPendientes(Integer alumnoId) {
+    public List<PruebaResponseDTO> obtenerPruebasPendientes(Long alumnoId) {
         Usuario alumno = usuarioDAO.findById(alumnoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado con ID: " + alumnoId));
 
@@ -91,7 +91,7 @@ public class PruebaService {
     }
 
     @Transactional
-    public void eliminarPrueba(Integer pruebaId) {
+    public void eliminarPrueba(Long pruebaId) {
         if (!pruebaDAO.existsById(pruebaId)) {
             throw new ResourceNotFoundException("No se puede borrar. Prueba no encontrada.");
         }

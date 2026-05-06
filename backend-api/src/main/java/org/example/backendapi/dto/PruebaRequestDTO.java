@@ -11,7 +11,7 @@ import java.time.Instant;
 public class PruebaRequestDTO {
 
     @NotBlank(message = "El ID del aula es obligatorio")
-    private Integer aulaId;
+    private Long aulaId;
 
     @NotBlank(message = "El título de la prueba es obligatorio")
     private String titulo;

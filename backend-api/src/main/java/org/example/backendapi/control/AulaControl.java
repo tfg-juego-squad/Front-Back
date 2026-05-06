@@ -24,12 +24,12 @@ public class AulaControl {
     private final AulaService aulaService;
 
     @GetMapping("/profesor/{profesorId}")
-    public ResponseEntity<List<AulaResponseDTO>> getAulasByProfesor(@PathVariable Integer profesorId) {
+    public ResponseEntity<List<AulaResponseDTO>> getAulasByProfesor(@PathVariable Long profesorId) {
         return ResponseEntity.ok(aulaService.obtenerAulasPorProfesor(profesorId));
     }
 
     @GetMapping("/{aulaId}/alumnos")
-    public ResponseEntity<List<UsuarioResponseDTO>> getAlumnosByAula(@PathVariable Integer aulaId) {
+    public ResponseEntity<List<UsuarioResponseDTO>> getAlumnosByAula(@PathVariable Long aulaId) {
         return ResponseEntity.ok(aulaService.obtenerAlumnosPorAula(aulaId));
     }
 
@@ -41,14 +41,14 @@ public class AulaControl {
 
     @PostMapping("/{aulaId}/generar-alumnos")
     public ResponseEntity<List<CredencialesResponseDTO>> generarAlumnos(
-            @PathVariable Integer aulaId,
+            @PathVariable Long aulaId,
             @Valid @RequestBody GenerarAlumnosRequestDTO request) {
         return ResponseEntity.ok(aulaService.generarAlumnosParaAula(aulaId, request.getCantidad()));
     }
 
     @PostMapping("/{aulaId}/importar-csv")
     public ResponseEntity<List<CredencialesResponseDTO>> importarAlumnosCSV(
-            @PathVariable Integer aulaId,
+            @PathVariable Long aulaId,
             @RequestParam("file") MultipartFile file) {
 
         if (file.isEmpty() || file.getOriginalFilename() == null || !file.getOriginalFilename().endsWith(".csv")) {

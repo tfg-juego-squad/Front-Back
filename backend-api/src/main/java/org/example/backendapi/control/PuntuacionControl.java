@@ -19,12 +19,12 @@ public class PuntuacionControl {
     private final PuntuacionService puntuacionService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<PuntuacionResponseDTO> buscarPuntuacionPorId(@PathVariable Integer id) {
+    public ResponseEntity<PuntuacionResponseDTO> buscarPuntuacionPorId(@PathVariable Long id) {
         return ResponseEntity.ok(puntuacionService.buscarPorId(id));
     }
 
     @GetMapping("/aula/{aulaId}")
-    public ResponseEntity<List<PuntuacionResponseDTO>> buscarPuntuacionPorAula(@PathVariable Integer aulaId) {
+    public ResponseEntity<List<PuntuacionResponseDTO>> buscarPuntuacionPorAula(@PathVariable Long aulaId) {
         return ResponseEntity.ok(puntuacionService.buscarPorAula(aulaId));
     }
 
@@ -35,7 +35,7 @@ public class PuntuacionControl {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> borrarPuntuacion(@PathVariable Integer id) {
+    public ResponseEntity<Void> borrarPuntuacion(@PathVariable Long id) {
         puntuacionService.borrarPuntuacion(id);
         return ResponseEntity.noContent().build();
     }
