@@ -49,11 +49,10 @@ docker-compose up -d
 
 El código sigue una arquitectura de 3 capas (Controlador - Servicio - Repositorio) para asegurar la escalabilidad:
 
-* `src/main/java/.../control/` : Controladores REST que definen los Endpoints.
-* `src/main/java/.../model/entities/` : Modelos de datos mapeados a la base de datos.
-* `src/main/java/.../model/dao/` : Repositorios para la persistencia de datos (JPA).
+* `/control/` : Controladores REST que definen los Endpoints.
+* `/model/entities/` : Modelos de datos mapeados a la base de datos.
+* `/model/dao/` : Repositorios para la persistencia de datos (JPA).
 * `docker-compose.yaml` : Configuración de la infraestructura de base de datos.
-* `init.sql` : Script automático de creación de esquema relacional.
 
 ## Endpoints Principales
 
