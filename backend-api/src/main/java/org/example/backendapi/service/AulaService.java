@@ -25,7 +25,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,18 +36,17 @@ public class AulaService {
     private final AulaMapper aulaMapper;
     private final UsuarioMapper usuarioMapper;
 
-    public List<AulaResponseDTO> obtenerAulasPorProfesor(Integer profesorId) {
+    public List<AulaResponseDTO> obtenerAulasPorProfesor(Long profesorId) {
         List<Aula> aulas = aulaDAO.findAulasByProfesorId(profesorId);
         return aulaMapper.toResponseDTOList(aulas);
     }
 
-    public List<UsuarioResponseDTO> obtenerAlumnosPorAula(Integer aulaId) {
-        Aula aula = aulaDAO.findById(aulaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
+    public List<UsuarioResponseDTO> obtenerAlumnosPorAula(Long aulaId) {
+        if (!aulaDAO.existsById(aulaId)) {
+            throw new ResourceNotFoundException("Aula no encontrada con ID: " + aulaId);
+        }
 
-        List<Usuario> alumnos = aula.getAlumnos().stream()
-                .filter(usuario -> usuario.getRol() == TipoRol.ROL_ESTUDIANTE)
-                .collect(Collectors.toList());
+        List<Usuario> alumnos = usuarioDAO.findByAulaIdAndRol(aulaId, TipoRol.ROL_ESTUDIANTE);
 
         return usuarioMapper.toResponseDTOList(alumnos);
     }
@@ -68,7 +66,7 @@ public class AulaService {
     }
 
     @Transactional
-    public List<CredencialesResponseDTO> generarAlumnosParaAula(Integer aulaId, Integer cantidad) {
+    public List<CredencialesResponseDTO> generarAlumnosParaAula(Long aulaId, Integer cantidad) {
         Aula aula = aulaDAO.findById(aulaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
 
@@ -86,7 +84,7 @@ public class AulaService {
     }
 
     @Transactional
-    public List<CredencialesResponseDTO> importarAlumnosCSV(Integer aulaId, MultipartFile file) {
+    public List<CredencialesResponseDTO> importarAlumnosCSV(Long aulaId, MultipartFile file) {
         Aula aula = aulaDAO.findById(aulaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
 

@@ -9,5 +9,5 @@ public class AulaRequestDTO {
     private String nombre;
 
     @NotBlank(message = "El ID del profesor es obligatorio")
-    private Integer profesorId;
+    private Long profesorId;
 }

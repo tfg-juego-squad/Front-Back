@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface IAulaDAO extends CrudRepository<Aula, Integer> {
-    Optional<Aula> findAulaById(Integer id);
-    List<Aula> findAulasByProfesorId(Integer profesorId);
+public interface IAulaDAO extends CrudRepository<Aula, Long> {
+    Optional<Aula> findAulaById(Long id);
+    List<Aula> findAulasByProfesorId(Long profesorId);
 }
