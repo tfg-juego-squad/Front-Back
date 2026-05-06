@@ -1,0 +1,30 @@
+package org.example.backendapi.dto;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
+import java.time.Instant;
+
+@Data
+public class PruebaRequestDTO {
+
+    @NotBlank(message = "El ID del aula es obligatorio")
+    private String aulaId;
+
+    @NotBlank(message = "El título de la prueba es obligatorio")
+    private String titulo;
+
+    @NotBlank(message = "El tipo de prueba es obligatorio (TIPO_TEST o DESARROLLO)")
+    private String tipo;
+
+    private String contenido;
+
+    @NotNull(message = "La puntuación máxima es obligatoria")
+    @Min(value = 1, message = "La puntuación máxima debe ser mayor que 0")
+    private Integer puntuacionMaxima;
+
+    @NotNull(message = "La fecha límite es obligatoria")
+    private Instant fechaLimite;
+}
