@@ -38,21 +38,18 @@ public class PuntuacionService {
     }
 
     @Transactional
-    public PuntuacionResponseDTO crearPuntuacion(PuntuacionRequestDTO request) {
-        Usuario alumno = usuarioDAO.findById(request.getIdAlumno())
-                .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado"));
-
+    public PuntuacionResponseDTO crearPuntuacion(PuntuacionRequestDTO request, Usuario alumnoLogueado) {
         Prueba prueba = pruebaDAO.findById(request.getIdPrueba())
                 .orElseThrow(() -> new ResourceNotFoundException("Prueba no encontrada"));
 
         Puntuacion nueva = new Puntuacion();
         nueva.setPuntosObtenidos(request.getPuntosObtenidos());
-        nueva.setAlumno(alumno);
+        nueva.setAlumno(alumnoLogueado);
         nueva.setPrueba(prueba);
         nueva.setFechaCompletado(Instant.now());
-        alumno.ganarExperiencia(request.getPuntosObtenidos());
+        alumnoLogueado.ganarExperiencia(request.getPuntosObtenidos());
 
-        usuarioDAO.save(alumno);
+        usuarioDAO.save(alumnoLogueado);
         Puntuacion guardada = puntuacionDAO.save(nueva);
 
         return puntuacionMapper.toResponseDTO(guardada);

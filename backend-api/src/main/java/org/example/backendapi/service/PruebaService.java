@@ -4,15 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.example.backendapi.dto.PruebaRequestDTO;
 import org.example.backendapi.dto.PruebaResponseDTO;
 import org.example.backendapi.exception.BadRequestException;
+import org.example.backendapi.exception.ForbiddenException;
 import org.example.backendapi.exception.ResourceNotFoundException;
 import org.example.backendapi.mapper.PruebaMapper;
 import org.example.backendapi.model.dao.IAulaDAO;
 import org.example.backendapi.model.dao.IPruebaDAO;
 import org.example.backendapi.model.dao.IUsuarioDAO;
-import org.example.backendapi.model.entities.Aula;
-import org.example.backendapi.model.entities.Prueba;
-import org.example.backendapi.model.entities.TipoPrueba;
-import org.example.backendapi.model.entities.Usuario;
+import org.example.backendapi.model.entities.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,12 +75,26 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(actualizada);
     }
 
-    public List<PruebaResponseDTO> obtenerPruebasPendientes(Long alumnoId) {
+    public List<PruebaResponseDTO> obtenerPruebasPendientes(Long alumnoId, Usuario usuarioLogueado) {
         Usuario alumno = usuarioDAO.findById(alumnoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado con ID: " + alumnoId));
 
         if (alumno.getAula() == null) {
             throw new BadRequestException("El alumno no está asignado a ninguna aula.");
+        }
+
+        if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+            if (!usuarioLogueado.getId().equals(alumnoId)) {
+                throw new ForbiddenException("Acceso denegado: No puedes ver las pruebas de otros alumnos.");
+            }
+        }
+        
+        else if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR) {
+            Long idProfesorDelAlumno = alumno.getAula().getProfesor().getId();
+
+            if (!usuarioLogueado.getId().equals(idProfesorDelAlumno)) {
+                throw new ForbiddenException("Acceso denegado: Este alumno no pertenece a tu aula.");
+            }
         }
 
         List<Prueba> pendientes = pruebaDAO.findPruebasPendientes(alumno.getAula().getId(), alumnoId);

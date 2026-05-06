@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.backendapi.dto.PuntuacionRequestDTO;
 import org.example.backendapi.dto.PuntuacionResponseDTO;
+import org.example.backendapi.model.entities.Usuario;
 import org.example.backendapi.service.PuntuacionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +31,10 @@ public class PuntuacionControl {
     }
 
     @PostMapping("/alta")
-    public ResponseEntity<PuntuacionResponseDTO> guardarPuntos(@Valid @RequestBody PuntuacionRequestDTO request) {
-        PuntuacionResponseDTO response = puntuacionService.crearPuntuacion(request);
+    public ResponseEntity<PuntuacionResponseDTO> guardarPuntos(
+            @Valid @RequestBody PuntuacionRequestDTO request,
+            @AuthenticationPrincipal Usuario alumnoLogueado) {
+        PuntuacionResponseDTO response = puntuacionService.crearPuntuacion(request, alumnoLogueado);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
