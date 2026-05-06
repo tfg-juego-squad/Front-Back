@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://jbe2ahhcal1v" path="res://Assets/char/Moviment.png" id="5_yjesw"]
 [ext_resource type="Texture2D" uid="uid://rdjqx7go2phx" path="res://Assets/mision-char/Humane01.png" id="7_dpjde"]
 [ext_resource type="Texture2D" uid="uid://cjr5lnuxcjdyc" path="res://Assets/mision-char/pelo/ha01.png" id="8_puy14"]
+[ext_resource type="Script" path="res://Niveles/npc_base.gd" id="9_npc"]
 
 [sub_resource type="GDScript" id="GDScript_nivel"]
 script/source = "extends Node2D
@@ -811,6 +812,7 @@ position = Vector2(-1, -1)
 zoom = Vector2(2, 2)
 
 [node name="NPC-Base" type="CharacterBody2D" parent="." unique_id=1700646178]
+script = ExtResource("9_npc")
 position = Vector2(166, 88)
 
 [node name="AnimacionNPC-Base" type="AnimatedSprite2D" parent="NPC-Base" unique_id=369315592]
