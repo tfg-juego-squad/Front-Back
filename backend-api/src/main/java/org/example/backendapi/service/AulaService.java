@@ -25,7 +25,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,12 +42,11 @@ public class AulaService {
     }
 
     public List<UsuarioResponseDTO> obtenerAlumnosPorAula(Long aulaId) {
-        Aula aula = aulaDAO.findById(aulaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
+        if (!aulaDAO.existsById(aulaId)) {
+            throw new ResourceNotFoundException("Aula no encontrada con ID: " + aulaId);
+        }
 
-        List<Usuario> alumnos = aula.getAlumnos().stream()
-                .filter(usuario -> usuario.getRol() == TipoRol.ROL_ESTUDIANTE)
-                .collect(Collectors.toList());
+        List<Usuario> alumnos = usuarioDAO.findByAulaIdAndRol(aulaId, TipoRol.ROL_ESTUDIANTE);
 
         return usuarioMapper.toResponseDTOList(alumnos);
     }
