@@ -23,7 +23,7 @@ public class PuntuacionesControl {
     IPuntuacionesDAO puntuacionesDAO;
 
     @Autowired
-    IUsuarioDAO usuarioDAO; // AÑADE ESTO
+    IUsuarioDAO usuarioDAO;
 
     @Autowired
     IPruebaDAO pruebaDAO;
