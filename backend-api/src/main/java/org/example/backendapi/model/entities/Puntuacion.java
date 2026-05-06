@@ -12,9 +12,9 @@ import java.time.Instant;
 public class Puntuacion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false, length = 36)
-    private String id;
+    private Integer id;
 
     @Column(name = "puntos_obtenidos", nullable = false)
     private Integer puntosObtenidos;

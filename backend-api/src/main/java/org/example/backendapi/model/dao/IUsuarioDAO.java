@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface IUsuarioDAO extends CrudRepository<Usuario, String> {
-    Optional<Usuario> findUsuarioById(String id);
+public interface IUsuarioDAO extends CrudRepository<Usuario, Integer> {
+    Optional<Usuario> findUsuarioById(Integer id);
     List<Usuario> findUsuarioByNombreUsuario(String nombreUsuario);
 }

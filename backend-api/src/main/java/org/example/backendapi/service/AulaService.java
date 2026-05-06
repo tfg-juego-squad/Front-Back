@@ -1,96 +1,107 @@
 package org.example.backendapi.service;
 
-import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.example.backendapi.dto.AulaRequestDTO;
+import org.example.backendapi.dto.AulaResponseDTO;
+import org.example.backendapi.dto.CredencialesResponseDTO;
+import org.example.backendapi.dto.UsuarioResponseDTO;
+import org.example.backendapi.exception.BadRequestException;
+import org.example.backendapi.exception.ResourceNotFoundException;
+import org.example.backendapi.mapper.AulaMapper;
+import org.example.backendapi.mapper.UsuarioMapper;
 import org.example.backendapi.model.dao.IAulaDAO;
 import org.example.backendapi.model.dao.IUsuarioDAO;
 import org.example.backendapi.model.entities.Aula;
 import org.example.backendapi.model.entities.TipoRol;
 import org.example.backendapi.model.entities.Usuario;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AulaService {
 
-    @Autowired
-    private IAulaDAO aulaDAO;
+    private final IAulaDAO aulaDAO;
+    private final IUsuarioDAO usuarioDAO;
+    private final SecurityService securityService;
+    private final AulaMapper aulaMapper;
+    private final UsuarioMapper usuarioMapper;
 
-    @Autowired
-    private IUsuarioDAO usuarioDAO;
+    public List<AulaResponseDTO> obtenerAulasPorProfesor(Integer profesorId) {
+        List<Aula> aulas = aulaDAO.findAulasByProfesorId(profesorId);
+        return aulaMapper.toResponseDTOList(aulas);
+    }
 
-    @Autowired
-    private SecurityService securityService;
+    public List<UsuarioResponseDTO> obtenerAlumnosPorAula(Integer aulaId) {
+        Aula aula = aulaDAO.findById(aulaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
 
-    public Aula crearAula(String nombreAula, String profesorId) {
-        Usuario profesor = usuarioDAO.findUsuarioById(profesorId).orElseThrow(() -> new RuntimeException("Error: Profesor no encontrado"));
+        List<Usuario> alumnos = aula.getAlumnos().stream()
+                .filter(usuario -> usuario.getRol() == TipoRol.ROL_ESTUDIANTE)
+                .collect(Collectors.toList());
 
-        Aula aula = new Aula();
-        aula.setNombre(nombreAula);
-        aula.setProfesor(profesor);
-
-        aula.setCodigoInvitacion(UUID.randomUUID().toString().substring(0, 5).toUpperCase());
-
-        return aulaDAO.save(aula);
+        return usuarioMapper.toResponseDTOList(alumnos);
     }
 
     @Transactional
-    public List<Map<String, String>> generarAlumnosParaAula(String aulaId, int cantidad) {
-        Aula aula = aulaDAO.findAulaById(aulaId).orElseThrow(() -> new RuntimeException("Aula no encontrada"));
+    public AulaResponseDTO crearAula(AulaRequestDTO request) {
+        Usuario profesor = usuarioDAO.findById(request.getProfesorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Profesor no encontrado"));
 
-        List<Map<String, String>> credencialesGeneradas = new ArrayList<>();
+        Aula aula = new Aula();
+        aula.setNombre(request.getNombre());
+        aula.setProfesor(profesor);
+        aula.setCodigoInvitacion(UUID.randomUUID().toString().substring(0, 5).toUpperCase());
+
+        Aula guardada = aulaDAO.save(aula);
+        return aulaMapper.toResponseDTO(guardada);
+    }
+
+    @Transactional
+    public List<CredencialesResponseDTO> generarAlumnosParaAula(Integer aulaId, Integer cantidad) {
+        Aula aula = aulaDAO.findById(aulaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
+
+        List<CredencialesResponseDTO> credencialesGeneradas = new ArrayList<>();
 
         for (int i = 1; i <= cantidad; i++) {
-            Usuario alumno = new Usuario();
-
             String nombreUsuario = generarNombreUsuario(aula.getNombre(), i);
             String passwordPlana = securityService.generarPasswordAleatoria(6);
 
-            alumno.setNombreUsuario(nombreUsuario);
-            alumno.setHashContrasena(securityService.hashPassword(passwordPlana));
-            alumno.setFechaCreacion(Instant.now());
-            alumno.setAula(aula);
-            alumno.setRol(TipoRol.ROL_ESTUDIANTE);
-
-            usuarioDAO.save(alumno);
-
-            Map<String, String> credenciales = new HashMap<>();
-            credenciales.put("usuario", nombreUsuario);
-            credenciales.put("password", passwordPlana);
-            credencialesGeneradas.add(credenciales);
+            crearYGuardarAlumno(nombreUsuario, passwordPlana, aula);
+            credencialesGeneradas.add(new CredencialesResponseDTO(null, nombreUsuario, passwordPlana));
         }
 
         return credencialesGeneradas;
     }
 
-    private String generarNombreUsuario(String nombreAula, int numero) {
-        String base = nombreAula.replaceAll("\\s+", "").toLowerCase();
-        String sufijoUnico = UUID.randomUUID().toString().substring(0, 5);
-        return base + "_alumno" + numero + "_" + sufijoUnico;
-    }
+    @Transactional
+    public List<CredencialesResponseDTO> importarAlumnosCSV(Integer aulaId, MultipartFile file) {
+        Aula aula = aulaDAO.findById(aulaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
 
-    public List<Map<String, String>> importarAlumnosCSV(String aulaId, MultipartFile file) throws Exception {
-        Aula aula = aulaDAO.findAulaById(aulaId)
-                .orElseThrow(() -> new RuntimeException("Aula no encontrada"));
-
-        List<Map<String, String>> credencialesGeneradas = new ArrayList<>();
+        List<CredencialesResponseDTO> credencialesGeneradas = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String linea;
             boolean primeraLinea = true;
 
             while ((linea = br.readLine()) != null) {
-                if (primeraLinea && linea.toLowerCase().contains("nombre")) {
-                    primeraLinea = false;
-                } else {
-                    primeraLinea = false;
+                boolean esCabecera = primeraLinea && linea.toLowerCase().contains("nombre");
 
+                primeraLinea = false;
+
+                if (!esCabecera) {
                     String[] datos = linea.split(",");
 
                     if (datos.length >= 2) {
@@ -100,32 +111,37 @@ public class AulaService {
                         String nombreUsuario = generarNombreUsuarioCSV(nombre, apellidos);
                         String passwordPlana = securityService.generarPasswordAleatoria(6);
 
-                        Usuario alumno = new Usuario();
-                        alumno.setNombreUsuario(nombreUsuario);
-                        alumno.setHashContrasena(securityService.hashPassword(passwordPlana));
-                        alumno.setFechaCreacion(Instant.now());
-                        alumno.setAula(aula);
-                        alumno.setRol(TipoRol.ROL_ESTUDIANTE);
-
-                        usuarioDAO.save(alumno);
-
-                        Map<String, String> credenciales = new HashMap<>();
-                        credenciales.put("alumnoReal", nombre + " " + apellidos);
-                        credenciales.put("usuario", nombreUsuario);
-                        credenciales.put("password", passwordPlana);
-                        credencialesGeneradas.add(credenciales);
+                        crearYGuardarAlumno(nombreUsuario, passwordPlana, aula);
+                        credencialesGeneradas.add(new CredencialesResponseDTO(nombre + " " + apellidos, nombreUsuario, passwordPlana));
                     }
                 }
             }
+        } catch (Exception e) {
+            throw new BadRequestException("Error procesando el archivo CSV: " + e.getMessage());
         }
+
         return credencialesGeneradas;
+    }
+
+    private void crearYGuardarAlumno(String nombreUsuario, String passwordPlana, Aula aula) {
+        Usuario alumno = new Usuario();
+        alumno.setNombreUsuario(nombreUsuario);
+        alumno.setHashContrasena(securityService.hashPassword(passwordPlana));
+        alumno.setFechaCreacion(Instant.now());
+        alumno.setAula(aula);
+        alumno.setRol(TipoRol.ROL_ESTUDIANTE);
+        usuarioDAO.save(alumno);
+    }
+
+    private String generarNombreUsuario(String nombreAula, int numero) {
+        String base = nombreAula.replaceAll("\\s+", "").toLowerCase();
+        String sufijoUnico = UUID.randomUUID().toString().substring(0, 5);
+        return base + "_alumno" + numero + "_" + sufijoUnico;
     }
 
     private String generarNombreUsuarioCSV(String nombre, String apellidos) {
         String base = (nombre + apellidos).replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-
         if (base.length() > 10) base = base.substring(0, 10);
-
         String sufijoUnico = UUID.randomUUID().toString().substring(0, 4);
         return base + "_" + sufijoUnico;
     }

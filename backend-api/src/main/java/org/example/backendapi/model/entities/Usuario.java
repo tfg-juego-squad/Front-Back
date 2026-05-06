@@ -11,9 +11,9 @@ import java.time.Instant;
 @Table(name = "usuarios")
 public class Usuario {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false, length = 36)
-    private String id;
+    private Integer id;
 
     @Column(name = "nombre_usuario", nullable = false, length = 50, unique = true)
     private String nombreUsuario;
