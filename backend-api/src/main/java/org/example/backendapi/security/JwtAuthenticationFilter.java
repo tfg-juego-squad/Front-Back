@@ -6,14 +6,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.example.backendapi.model.entities.TipoRol;
+import org.example.backendapi.model.entities.Usuario;
 import org.example.backendapi.service.JwtService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
@@ -50,16 +54,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Long id = jwtService.extractId(jwt);
 
                 // Crear un usuario dummy solo con los datos del token para @AuthenticationPrincipal
-                org.example.backendapi.model.entities.Usuario usuarioAuth = new org.example.backendapi.model.entities.Usuario();
+                Usuario usuarioAuth = new Usuario();
                 usuarioAuth.setId(id);
                 usuarioAuth.setNombreUsuario(nombreUsuario);
-                usuarioAuth.setRol(org.example.backendapi.model.entities.TipoRol.valueOf(rol));
+                usuarioAuth.setRol(TipoRol.valueOf(rol));
 
                 // Creamos el token de Spring Security con la información del JWT
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         usuarioAuth,
                         null,
-                        java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority(rol))
+                        Collections.singletonList(new SimpleGrantedAuthority(rol))
                 );
 
                 // Le añadimos detalles de la petición HTTP

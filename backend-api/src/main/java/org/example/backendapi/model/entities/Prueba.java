@@ -21,7 +21,7 @@ public class Prueba {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false)
-    private TipoPrueba tipo;
+    private TipoPregunta tipo;
 
     @OneToMany(mappedBy = "prueba", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pregunta> preguntas;
