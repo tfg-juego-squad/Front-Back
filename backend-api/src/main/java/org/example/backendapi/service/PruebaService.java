@@ -3,13 +3,16 @@ package org.example.backendapi.service;
 import lombok.RequiredArgsConstructor;
 import org.example.backendapi.dto.PruebaRequestDTO;
 import org.example.backendapi.dto.PruebaResponseDTO;
+import org.example.backendapi.exception.BadRequestException;
 import org.example.backendapi.exception.ResourceNotFoundException;
 import org.example.backendapi.mapper.PruebaMapper;
 import org.example.backendapi.model.dao.IAulaDAO;
 import org.example.backendapi.model.dao.IPruebaDAO;
+import org.example.backendapi.model.dao.IUsuarioDAO;
 import org.example.backendapi.model.entities.Aula;
 import org.example.backendapi.model.entities.Prueba;
 import org.example.backendapi.model.entities.TipoPrueba;
+import org.example.backendapi.model.entities.Usuario;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ public class PruebaService {
     private final IPruebaDAO pruebaDAO;
     private final IAulaDAO aulaDAO;
     private final PruebaMapper pruebaMapper;
+    private final IUsuarioDAO usuarioDAO;
 
     @Transactional
     public PruebaResponseDTO crearPrueba(PruebaRequestDTO request) {
@@ -71,6 +75,19 @@ public class PruebaService {
 
         Prueba actualizada = pruebaDAO.save(prueba);
         return pruebaMapper.toResponseDTO(actualizada);
+    }
+
+    public List<PruebaResponseDTO> obtenerPruebasPendientes(Integer alumnoId) {
+        Usuario alumno = usuarioDAO.findById(alumnoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado con ID: " + alumnoId));
+
+        if (alumno.getAula() == null) {
+            throw new BadRequestException("El alumno no está asignado a ninguna aula.");
+        }
+
+        List<Prueba> pendientes = pruebaDAO.findPruebasPendientes(alumno.getAula().getId(), alumnoId);
+
+        return pruebaMapper.toResponseDTOList(pendientes);
     }
 
     @Transactional

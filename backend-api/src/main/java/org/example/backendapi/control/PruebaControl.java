@@ -29,6 +29,11 @@ public class PruebaControl {
         return ResponseEntity.ok(pruebaService.obtenerPruebasPorAula(aulaId));
     }
 
+    @GetMapping("/pendientes/{alumnoId}")
+    public ResponseEntity<List<PruebaResponseDTO>> listarPruebasPendientes(@PathVariable Integer alumnoId) {
+        return ResponseEntity.ok(pruebaService.obtenerPruebasPendientes(alumnoId));
+    }
+
     @PutMapping("/{pruebaId}")
     public ResponseEntity<PruebaResponseDTO> actualizarPrueba(
             @PathVariable Integer pruebaId,
