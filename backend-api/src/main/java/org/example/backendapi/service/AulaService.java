@@ -6,6 +6,7 @@ import org.example.backendapi.dto.AulaResponseDTO;
 import org.example.backendapi.dto.CredencialesResponseDTO;
 import org.example.backendapi.dto.UsuarioResponseDTO;
 import org.example.backendapi.exception.BadRequestException;
+import org.example.backendapi.exception.ForbiddenException;
 import org.example.backendapi.exception.ResourceNotFoundException;
 import org.example.backendapi.mapper.AulaMapper;
 import org.example.backendapi.mapper.UsuarioMapper;
@@ -36,14 +37,20 @@ public class AulaService {
     private final AulaMapper aulaMapper;
     private final UsuarioMapper usuarioMapper;
 
-    public List<AulaResponseDTO> obtenerAulasPorProfesor(Long profesorId) {
+    public List<AulaResponseDTO> obtenerAulasPorProfesor(Long profesorId, Usuario usuarioLogueado) {
+        if (!usuarioLogueado.getId().equals(profesorId)) {
+            throw new ForbiddenException("No puedes ver las aulas de otro profesor.");
+        }
         List<Aula> aulas = aulaDAO.findAulasByProfesorId(profesorId);
         return aulaMapper.toResponseDTOList(aulas);
     }
 
-    public List<UsuarioResponseDTO> obtenerAlumnosPorAula(Long aulaId) {
-        if (!aulaDAO.existsById(aulaId)) {
-            throw new ResourceNotFoundException("Aula no encontrada con ID: " + aulaId);
+    public List<UsuarioResponseDTO> obtenerAlumnosPorAula(Long aulaId, Usuario usuarioLogueado) {
+        Aula aula = aulaDAO.findById(aulaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada con ID: " + aulaId));
+
+        if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR && !aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes ver los alumnos de un aula que no es tuya.");
         }
 
         List<Usuario> alumnos = usuarioDAO.findByAulaIdAndRol(aulaId, TipoRol.ROL_ESTUDIANTE);
@@ -52,7 +59,11 @@ public class AulaService {
     }
 
     @Transactional
-    public AulaResponseDTO crearAula(AulaRequestDTO request) {
+    public AulaResponseDTO crearAula(AulaRequestDTO request, Usuario usuarioLogueado) {
+        if (!request.getProfesorId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes crear un aula a nombre de otro profesor.");
+        }
+
         Usuario profesor = usuarioDAO.findById(request.getProfesorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Profesor no encontrado"));
 
@@ -66,9 +77,13 @@ public class AulaService {
     }
 
     @Transactional
-    public List<CredencialesResponseDTO> generarAlumnosParaAula(Long aulaId, Integer cantidad) {
+    public List<CredencialesResponseDTO> generarAlumnosParaAula(Long aulaId, Integer cantidad, Usuario usuarioLogueado) {
         Aula aula = aulaDAO.findById(aulaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
+
+        if (!aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes generar alumnos en un aula que no te pertenece.");
+        }
 
         List<CredencialesResponseDTO> credencialesGeneradas = new ArrayList<>();
 
@@ -76,7 +91,11 @@ public class AulaService {
             String nombreUsuario = generarNombreUsuario(aula.getNombre(), i);
             String passwordPlana = securityService.generarPasswordAleatoria(6);
 
-            crearYGuardarAlumno(nombreUsuario, passwordPlana, aula);
+            String nombreReal = "Estudiante " + i;
+            String apellidos = "Del Aula " + aula.getNombre();
+            String email = nombreUsuario + "@ieszaidinvergeles.org";
+
+            crearYGuardarAlumno(nombreUsuario, passwordPlana, aula, nombreReal, apellidos, email);
             credencialesGeneradas.add(new CredencialesResponseDTO(null, nombreUsuario, passwordPlana));
         }
 
@@ -84,9 +103,13 @@ public class AulaService {
     }
 
     @Transactional
-    public List<CredencialesResponseDTO> importarAlumnosCSV(Long aulaId, MultipartFile file) {
+    public List<CredencialesResponseDTO> importarAlumnosCSV(Long aulaId, MultipartFile file, Usuario usuarioLogueado) {
         Aula aula = aulaDAO.findById(aulaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
+
+        if (!aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes importar alumnos en un aula que no te pertenece.");
+        }
 
         List<CredencialesResponseDTO> credencialesGeneradas = new ArrayList<>();
 
@@ -108,8 +131,9 @@ public class AulaService {
 
                         String nombreUsuario = generarNombreUsuarioCSV(nombre, apellidos);
                         String passwordPlana = securityService.generarPasswordAleatoria(6);
+                        String email = nombreUsuario + "@ieszaidinvergeles.org";
 
-                        crearYGuardarAlumno(nombreUsuario, passwordPlana, aula);
+                        crearYGuardarAlumno(nombreUsuario, passwordPlana, aula, nombre, apellidos, email);
                         credencialesGeneradas.add(new CredencialesResponseDTO(nombre + " " + apellidos, nombreUsuario, passwordPlana));
                     }
                 }
@@ -121,9 +145,12 @@ public class AulaService {
         return credencialesGeneradas;
     }
 
-    private void crearYGuardarAlumno(String nombreUsuario, String passwordPlana, Aula aula) {
+    private void crearYGuardarAlumno(String nombreUsuario, String passwordPlana, Aula aula, String nombreReal, String apellidos, String email) {
         Usuario alumno = new Usuario();
         alumno.setNombreUsuario(nombreUsuario);
+        alumno.setNombreReal(nombreReal);
+        alumno.setApellidos(apellidos);
+        alumno.setEmail(email);
         alumno.setHashContrasena(securityService.hashPassword(passwordPlana));
         alumno.setFechaCreacion(Instant.now());
         alumno.setAula(aula);

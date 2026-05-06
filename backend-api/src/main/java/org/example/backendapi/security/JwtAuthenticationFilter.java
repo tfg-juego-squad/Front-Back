@@ -4,13 +4,11 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.example.backendapi.service.JwtService;
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -22,7 +20,6 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService; // Interfaz de Spring para buscar usuarios
 
     @Override
     protected void doFilterInternal(
@@ -44,21 +41,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Extraemos el token limpio (cortamos los primeros 7 caracteres: "Bearer ")
         jwt = authHeader.substring(7);
 
-        nombreUsuario = jwtService.extractUsername(jwt);
+        try {
+            nombreUsuario = jwtService.extractUsername(jwt);
 
-        if (nombreUsuario != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (nombreUsuario != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Obtenemos el rol directamente del token, sin ir a la BD
+                String rol = jwtService.extractRol(jwt);
+                Long id = jwtService.extractId(jwt);
 
-            // Buscamos al usuario en la base de datos
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(nombreUsuario);
+                // Crear un usuario dummy solo con los datos del token para @AuthenticationPrincipal
+                org.example.backendapi.model.entities.Usuario usuarioAuth = new org.example.backendapi.model.entities.Usuario();
+                usuarioAuth.setId(id);
+                usuarioAuth.setNombreUsuario(nombreUsuario);
+                usuarioAuth.setRol(org.example.backendapi.model.entities.TipoRol.valueOf(rol));
 
-            // Verificamos que el token es válido y no ha caducado
-            if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
-
-                // Creamos el token de Spring Security
+                // Creamos el token de Spring Security con la información del JWT
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
+                        usuarioAuth,
                         null,
-                        userDetails.getAuthorities() // Aquí inyectamos los roles que configuramos antes
+                        java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority(rol))
                 );
 
                 // Le añadimos detalles de la petición HTTP
@@ -66,6 +67,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
+        } catch (Exception e) {
+            // Si el token expira o es inválido, limpia el contexto
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
