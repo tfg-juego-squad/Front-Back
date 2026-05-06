@@ -88,8 +88,6 @@ public class UsuarioService {
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE && !usuarioLogueado.getId().equals(id)) {
             throw new ForbiddenException("No puedes borrar la cuenta de otro usuario.");
         }
-        
-        // TODO: Si es profesor, verificar si el alumno le pertenece (opcional)
 
         usuarioDAO.deleteById(id);
     }
