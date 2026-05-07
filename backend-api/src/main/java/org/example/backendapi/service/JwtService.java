@@ -33,6 +33,10 @@ public class JwtService {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("id", usuario.getId());
         extraClaims.put("rol", usuario.getRol().name()); // Guardamos ROL_PROFESOR o ROL_ESTUDIANTE
+        
+        if (usuario.getAula() != null) {
+            extraClaims.put("aulaId", usuario.getAula().getId());
+        }
 
         return Jwts.builder()
                 .claims(extraClaims)

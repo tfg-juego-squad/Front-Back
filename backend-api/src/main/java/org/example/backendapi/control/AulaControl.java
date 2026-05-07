@@ -35,6 +35,7 @@ public class AulaControl {
     }
 
     @GetMapping("/{aulaId}/alumnos")
+    @PreAuthorize("hasAuthority('ROL_PROFESOR')")
     public ResponseEntity<List<UsuarioResponseDTO>> getAlumnosByAula(
             @PathVariable Long aulaId,
             @AuthenticationPrincipal Usuario usuarioLogueado) {
