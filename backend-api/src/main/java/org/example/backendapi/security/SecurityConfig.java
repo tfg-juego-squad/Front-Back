@@ -30,7 +30,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 // Habilitamos CORS usando nuestra configuración personalizada (necesario para que Godot se pueda conectar)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
