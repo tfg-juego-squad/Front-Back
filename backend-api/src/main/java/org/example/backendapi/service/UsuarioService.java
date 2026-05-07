@@ -148,9 +148,20 @@ public class UsuarioService {
             throw new ResourceNotFoundException("No se puede borrar. El usuario con ID " + id + " no existe.");
         }
 
-        // Seguridad: Evitar que un estudiante borre la cuenta de otra persona
+        // Seguridad: Evitar que un estudiante borre la cuenta de otra persona o un profesor borre a un alumno que no es de su aula
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE && !usuarioLogueado.getId().equals(id)) {
             throw new ForbiddenException("No puedes borrar la cuenta de otro usuario.");
+        } else if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR) {
+            Usuario usuarioABorrar = usuarioDAO.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+            if (usuarioABorrar.getRol() == TipoRol.ROL_PROFESOR) {
+                throw new ForbiddenException("No tienes permisos para borrar a otros profesores.");
+            }
+
+            if (usuarioABorrar.getAula() == null || !usuarioABorrar.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
+                throw new ForbiddenException("No puedes borrar a un alumno que no pertenece a tu aula.");
+            }
         }
 
         usuarioDAO.deleteById(id);
