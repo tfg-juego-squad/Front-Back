@@ -17,6 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Servicio encargado de la lógica de negocio de las Pruebas (Exámenes).
+ * Gestiona la creación, modificación, borrado y consulta de los exámenes
+ * asignados a un aula, controlando los permisos de acceso.
+ */
 @Service
 @RequiredArgsConstructor
 public class PruebaService {
@@ -26,6 +31,10 @@ public class PruebaService {
     private final PruebaMapper pruebaMapper;
     private final IUsuarioDAO usuarioDAO;
 
+    /**
+     * Crea un nuevo examen (Prueba) dentro de un aula específica.
+     * Seguridad: Solo el profesor dueño del aula puede crear exámenes en ella.
+     */
     @Transactional
     public PruebaResponseDTO crearPrueba(PruebaRequestDTO request, Usuario usuarioLogueado) {
         Aula aula = aulaDAO.findById(request.getAulaId())
@@ -39,7 +48,6 @@ public class PruebaService {
         nuevaPrueba.setAula(aula);
         nuevaPrueba.setTitulo(request.getTitulo());
 
-
         nuevaPrueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         nuevaPrueba.setFechaLimite(request.getFechaLimite());
         nuevaPrueba.setFechaCreacion(Instant.now());
@@ -48,14 +56,20 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(guardada);
     }
 
+    /**
+     * Lista todos los exámenes asociados a un aula.
+     * Seguridad: Profesores y alumnos solo pueden ver las pruebas de sus propias aulas.
+     */
     public List<PruebaResponseDTO> obtenerPruebasPorAula(Long aulaId, Usuario usuarioLogueado) {
         Aula aula = aulaDAO.findById(aulaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada con ID: " + aulaId));
 
+        // Seguridad Profesor
         if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR && !aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
             throw new ForbiddenException("No puedes ver las pruebas de un aula que no te pertenece.");
         }
 
+        // Seguridad Estudiante
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
             if (usuarioLogueado.getAula() == null || !usuarioLogueado.getAula().getId().equals(aulaId)) {
                 throw new ForbiddenException("No puedes ver las pruebas de un aula a la que no perteneces.");
@@ -66,6 +80,10 @@ public class PruebaService {
         return pruebaMapper.toResponseDTOList(pruebas);
     }
 
+    /**
+     * Actualiza los datos de un examen existente.
+     * Seguridad: Solo el profesor creador del examen puede modificarlo.
+     */
     @Transactional
     public PruebaResponseDTO actualizarPrueba(Long pruebaId, PruebaRequestDTO request, Usuario usuarioLogueado) {
         Prueba prueba = pruebaDAO.findById(pruebaId)
@@ -76,7 +94,6 @@ public class PruebaService {
         }
 
         prueba.setTitulo(request.getTitulo());
-
         prueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         prueba.setFechaLimite(request.getFechaLimite());
 
@@ -84,6 +101,11 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(actualizada);
     }
 
+    /**
+     * Obtiene una lista de exámenes que un alumno específico aún no ha realizado.
+     * Seguridad: Un alumno solo puede ver sus propios exámenes pendientes. Un profesor
+     * solo puede consultar los exámenes pendientes de sus propios alumnos.
+     */
     public List<PruebaResponseDTO> obtenerPruebasPendientes(Long alumnoId, Usuario usuarioLogueado) {
         Usuario alumno = usuarioDAO.findById(alumnoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado con ID: " + alumnoId));
@@ -92,15 +114,15 @@ public class PruebaService {
             throw new BadRequestException("El alumno no está asignado a ninguna aula.");
         }
 
+        // Seguridad Estudiante
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
             if (!usuarioLogueado.getId().equals(alumnoId)) {
                 throw new ForbiddenException("Acceso denegado: No puedes ver las pruebas de otros alumnos.");
             }
         }
-
+        // Seguridad Profesor
         else if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR) {
             Long idProfesorDelAlumno = alumno.getAula().getProfesor().getId();
-
             if (!usuarioLogueado.getId().equals(idProfesorDelAlumno)) {
                 throw new ForbiddenException("Acceso denegado: Este alumno no pertenece a tu aula.");
             }
@@ -111,6 +133,12 @@ public class PruebaService {
         return pruebaMapper.toResponseDTOList(pendientes);
     }
 
+    /**
+     * Elimina un examen del sistema.
+     * Si el examen ya tiene respuestas de alumnos asociadas, la base de datos lanzará
+     * una DataIntegrityViolationException (controlada por GlobalExceptionHandler)
+     * para evitar borrar datos históricos accidentalmente.
+     */
     @Transactional
     public void eliminarPrueba(Long pruebaId, Usuario usuarioLogueado) {
         Prueba prueba = pruebaDAO.findById(pruebaId)
