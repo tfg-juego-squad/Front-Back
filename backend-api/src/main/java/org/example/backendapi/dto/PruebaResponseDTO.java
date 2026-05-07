@@ -7,8 +7,6 @@ import java.time.Instant;
 public class PruebaResponseDTO {
     private Long id;
     private String titulo;
-    private String tipo;
-    private String contenido;
     private Integer puntuacionMaxima;
     private Instant fechaCreacion;
     private Instant fechaLimite;

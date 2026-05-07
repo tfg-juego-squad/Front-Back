@@ -8,7 +8,9 @@ import org.example.backendapi.dto.UsuarioResponseDTO;
 import org.example.backendapi.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.example.backendapi.model.entities.Usuario;
 
 import java.util.List;
 
@@ -20,14 +22,18 @@ public class UsuarioControl {
     private final UsuarioService usuarioService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(@PathVariable Long id) {
-        UsuarioResponseDTO response = usuarioService.buscarUsuarioPorId(id);
+    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        UsuarioResponseDTO response = usuarioService.buscarUsuarioPorId(id, usuarioLogueado);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/nombre/{nombre}")
-    public ResponseEntity<List<UsuarioResponseDTO>> buscarUsuariosPorNombre(@PathVariable String nombre) {
-        List<UsuarioResponseDTO> response = usuarioService.buscarUsuariosPorNombre(nombre);
+    public ResponseEntity<List<UsuarioResponseDTO>> buscarUsuariosPorNombre(
+            @PathVariable String nombre,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        List<UsuarioResponseDTO> response = usuarioService.buscarUsuariosPorNombre(nombre, usuarioLogueado);
         return ResponseEntity.ok(response);
     }
 
@@ -44,8 +50,8 @@ public class UsuarioControl {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> borrarUsuario (@PathVariable Long id) {
-        usuarioService.borrarUsuario(id);
+    public ResponseEntity<Void> borrarUsuario (@PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogueado) {
+        usuarioService.borrarUsuario(id, usuarioLogueado);
         return ResponseEntity.noContent().build();
     }
 }

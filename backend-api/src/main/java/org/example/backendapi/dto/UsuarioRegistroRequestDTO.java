@@ -14,4 +14,13 @@ public class UsuarioRegistroRequestDTO {
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String passwordPlana;
+
+    @NotBlank(message = "El nombre real es obligatorio")
+    private String nombreReal;
+
+    @NotBlank(message = "Los apellidos son obligatorios")
+    private String apellidos;
+
+    @NotBlank(message = "El email es obligatorio")
+    private String email;
 }

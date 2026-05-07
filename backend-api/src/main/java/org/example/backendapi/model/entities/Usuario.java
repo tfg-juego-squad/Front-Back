@@ -3,13 +3,18 @@ package org.example.backendapi.model.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "usuarios")
-public class Usuario {
+public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -20,6 +25,15 @@ public class Usuario {
 
     @Column(name = "hash_contrasena", nullable = false)
     private String hashContrasena;
+
+    @Column(name = "nombre_real", nullable = false, length = 100)
+    private String nombreReal;
+
+    @Column(name = "apellidos", nullable = false, length = 150)
+    private String apellidos;
+
+    @Column(name = "email", nullable = false, length = 150)
+    private String email;
 
     @Column(nullable = false)
     private Integer nivel = 1;
@@ -57,4 +71,33 @@ public class Usuario {
             this.experiencia = this.experiencia % xpRequeridaPorNivel;
         }
     }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Transformamos el enum TipoRol (ROL_PROFESOR o ROL_ESTUDIANTE)
+        // en un objeto de autoridad que Spring Security entienda.
+        return List.of(new SimpleGrantedAuthority(this.rol.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return this.hashContrasena;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.nombreUsuario;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return true; }
 }
