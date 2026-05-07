@@ -59,17 +59,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 usuarioAuth.setNombreUsuario(nombreUsuario);
                 usuarioAuth.setRol(TipoRol.valueOf(rol));
 
-                // Creamos el token de Spring Security con la información del JWT
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        usuarioAuth,
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority(rol))
-                );
+                if (jwtService.isTokenValid(jwt, usuarioAuth.getNombreUsuario())) {
 
-                // Le añadimos detalles de la petición HTTP
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // Creamos el token de Spring Security
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            usuarioAuth,
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority(rol))
+                    );
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    // Detalles de la petición HTTP
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
         } catch (Exception e) {
             // Si el token expira o es inválido, limpia el contexto

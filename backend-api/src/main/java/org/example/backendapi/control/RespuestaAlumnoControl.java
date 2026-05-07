@@ -2,6 +2,7 @@ package org.example.backendapi.control;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.backendapi.dto.CorregirRespuestaRequestDTO;
 import org.example.backendapi.dto.RespuestaAlumnoRequestDTO;
 import org.example.backendapi.dto.RespuestaAlumnoResponseDTO;
 import org.example.backendapi.model.entities.Usuario;
@@ -34,5 +35,19 @@ public class RespuestaAlumnoControl {
             @PathVariable Long alumnoId,
             @AuthenticationPrincipal Usuario usuarioLogueado) {
         return ResponseEntity.ok(respuestaAlumnoService.obtenerRespuestasPorPruebaYAlumno(pruebaId, alumnoId, usuarioLogueado));
+    }
+
+    @GetMapping("/pendientes-correccion")
+    public ResponseEntity<List<RespuestaAlumnoResponseDTO>> listarPendientes(
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        return ResponseEntity.ok(respuestaAlumnoService.obtenerPendientesCorreccion(usuarioLogueado));
+    }
+
+    @PostMapping("/{respuestaId}/corregir")
+    public ResponseEntity<RespuestaAlumnoResponseDTO> corregir(
+            @PathVariable Long respuestaId,
+            @Valid @RequestBody CorregirRespuestaRequestDTO request,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        return ResponseEntity.ok(respuestaAlumnoService.corregirRespuestaDesarrollo(respuestaId, request.getPuntos(), usuarioLogueado));
     }
 }

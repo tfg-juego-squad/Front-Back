@@ -19,10 +19,6 @@ public class Prueba {
     @Column(name = "titulo", nullable = false, length = 100)
     private String titulo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false)
-    private TipoPregunta tipo;
-
     @OneToMany(mappedBy = "prueba", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pregunta> preguntas;
 

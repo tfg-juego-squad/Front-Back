@@ -28,6 +28,7 @@ public class RespuestaAlumnoService {
     private final IRespuestaPosibleDAO respuestaPosibleDAO;
     private final IUsuarioDAO usuarioDAO;
     private final RespuestaAlumnoMapper respuestaAlumnoMapper;
+    private final PuntuacionService puntuacionService;
 
     @Transactional
     public RespuestaAlumnoResponseDTO responderPregunta(RespuestaAlumnoRequestDTO request, Usuario alumnoLogueadoToken) {
@@ -62,6 +63,16 @@ public class RespuestaAlumnoService {
                     throw new BadRequestException("La opción de respuesta elegida no pertenece a esta pregunta.");
                 }
                 respuesta.setRespuestaElegida(opcion);
+
+                // CÁLCULO AUTOMÁTICO DE PUNTOS PARA TEST
+                if (opcion.getEsCorrecta()) {
+                    int totalPreguntas = (int) pregunta.getPrueba().getPreguntas().size();
+                    int puntosPorPregunta = pregunta.getPrueba().getPuntuacionMaxima() / (totalPreguntas > 0 ? totalPreguntas : 1);
+                    respuesta.setPuntosAsignados(puntosPorPregunta);
+                } else {
+                    respuesta.setPuntosAsignados(0);
+                }
+
             } else {
                 throw new BadRequestException("Para preguntas tipo TEST, debes proporcionar un respuestaElegidaId.");
             }
@@ -70,6 +81,7 @@ public class RespuestaAlumnoService {
                 throw new BadRequestException("Para preguntas de DESARROLLO, debes enviar el texto de la respuesta.");
             }
             respuesta.setTextoRespuesta(request.getTextoRespuesta());
+            respuesta.setPuntosAsignados(null); // Pendiente de corrección por el profesor
         }
 
         RespuestaAlumno guardada = respuestaAlumnoDAO.save(respuesta);
@@ -91,5 +103,36 @@ public class RespuestaAlumnoService {
 
         List<RespuestaAlumno> respuestas = respuestaAlumnoDAO.findByPregunta_Prueba_IdAndAlumno_Id(pruebaId, alumnoId);
         return respuestaAlumnoMapper.toResponseDTOList(respuestas);
+    }
+
+    public List<RespuestaAlumnoResponseDTO> obtenerPendientesCorreccion(Usuario profesorLogueado) {
+        if (profesorLogueado.getRol() != TipoRol.ROL_PROFESOR) {
+            throw new ForbiddenException("Solo los profesores pueden ver respuestas pendientes de corrección.");
+        }
+        List<RespuestaAlumno> pendientes = respuestaAlumnoDAO.findByPregunta_Prueba_Aula_Profesor_IdAndPuntosAsignadosIsNull(profesorLogueado.getId());
+        return respuestaAlumnoMapper.toResponseDTOList(pendientes);
+    }
+
+
+    @Transactional
+    public RespuestaAlumnoResponseDTO corregirRespuestaDesarrollo(Long respuestaId, Integer puntos, Usuario profesorLogueado) {
+        RespuestaAlumno respuesta = respuestaAlumnoDAO.findById(respuestaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Respuesta no encontrada"));
+
+        if (!respuesta.getPregunta().getPrueba().getAula().getProfesor().getId().equals(profesorLogueado.getId())) {
+            throw new ForbiddenException("No puedes corregir respuestas de alumnos que no pertenecen a tus aulas.");
+        }
+
+        if (respuesta.getPregunta().getTipo() != TipoPregunta.DESARROLLO) {
+            throw new BadRequestException("Solo se pueden corregir manualmente las preguntas de DESARROLLO.");
+        }
+
+        respuesta.setPuntosAsignados(puntos);
+        RespuestaAlumno guardada = respuestaAlumnoDAO.save(respuesta);
+        
+        // Actualizamos la puntuación total del alumno para este examen
+        puntuacionService.actualizarPuntuacionTotal(respuesta.getAlumno().getId(), respuesta.getPregunta().getPrueba().getId());
+        
+        return respuestaAlumnoMapper.toResponseDTO(guardada);
     }
 }

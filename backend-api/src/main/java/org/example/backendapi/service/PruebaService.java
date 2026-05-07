@@ -39,12 +39,6 @@ public class PruebaService {
         nuevaPrueba.setAula(aula);
         nuevaPrueba.setTitulo(request.getTitulo());
 
-        // Parseamos el String del DTO al Enum de la Entidad
-        try {
-            nuevaPrueba.setTipo(TipoPregunta.valueOf(request.getTipo()));
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Tipo de prueba no válido. Debe ser TIPO_TEST o DESARROLLO.");
-        }
 
         nuevaPrueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         nuevaPrueba.setFechaLimite(request.getFechaLimite());
@@ -76,11 +70,6 @@ public class PruebaService {
         }
 
         prueba.setTitulo(request.getTitulo());
-        try {
-            prueba.setTipo(TipoPregunta.valueOf(request.getTipo()));
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Tipo de prueba no válido.");
-        }
 
         prueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         prueba.setFechaLimite(request.getFechaLimite());

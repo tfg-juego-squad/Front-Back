@@ -37,4 +37,7 @@ public class RespuestaAlumno {
     @ColumnDefault("current_timestamp()")
     @Column(name = "fecha_respuesta")
     private Instant fechaRespuesta;
+    
+    @Column(name = "puntos_asignados")
+    private Integer puntosAsignados; // Null hasta que se corrija (si es desarrollo) o calculado (si es test)
 }

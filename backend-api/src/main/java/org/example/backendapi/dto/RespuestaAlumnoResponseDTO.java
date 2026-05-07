@@ -13,4 +13,5 @@ public class RespuestaAlumnoResponseDTO {
     private String textoRespuesta;
     private Integer tiempoRespuestaSegundos;
     private Instant fechaRespuesta;
+    private Integer puntosAsignados;
 }

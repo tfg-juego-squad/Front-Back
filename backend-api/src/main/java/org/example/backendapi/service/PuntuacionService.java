@@ -6,15 +6,8 @@ import org.example.backendapi.dto.PuntuacionResponseDTO;
 import org.example.backendapi.exception.ResourceNotFoundException;
 import org.example.backendapi.exception.ForbiddenException;
 import org.example.backendapi.mapper.PuntuacionMapper;
-import org.example.backendapi.model.dao.IAulaDAO;
-import org.example.backendapi.model.dao.IPruebaDAO;
-import org.example.backendapi.model.dao.IPuntuacionDAO;
-import org.example.backendapi.model.dao.IUsuarioDAO;
-import org.example.backendapi.model.entities.Aula;
-import org.example.backendapi.model.entities.Prueba;
-import org.example.backendapi.model.entities.Puntuacion;
-import org.example.backendapi.model.entities.Usuario;
-import org.example.backendapi.model.entities.TipoRol;
+import org.example.backendapi.model.dao.*;
+import org.example.backendapi.model.entities.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +22,7 @@ public class PuntuacionService {
     private final IUsuarioDAO usuarioDAO;
     private final IPruebaDAO pruebaDAO;
     private final IAulaDAO aulaDAO;
+    private final IRespuestaAlumnoDAO respuestaAlumnoDAO;
     private final PuntuacionMapper puntuacionMapper;
 
     public PuntuacionResponseDTO buscarPorId(Long id, Usuario usuarioLogueado) {
@@ -72,12 +66,21 @@ public class PuntuacionService {
             throw new ForbiddenException("No puedes enviar puntuaciones a una prueba de un aula a la que no perteneces.");
         }
 
+        List<RespuestaAlumno> respuestas = 
+                respuestaAlumnoDAO.findByPregunta_Prueba_IdAndAlumno_Id(prueba.getId(), alumnoCompleto.getId());
+
+        // Sumamos los puntos asignados a cada respuesta (los de TEST son automáticos, los de DESARROLLO los pone el profesor)
+        int puntosCalculados = respuestas.stream()
+                .mapToInt(respuesta -> respuesta.getPuntosAsignados() != null ? respuesta.getPuntosAsignados() : 0)
+                .sum();
+
         Puntuacion nueva = new Puntuacion();
-        nueva.setPuntosObtenidos(request.getPuntosObtenidos());
+        nueva.setPuntosObtenidos(puntosCalculados);
         nueva.setAlumno(alumnoCompleto);
         nueva.setPrueba(prueba);
         nueva.setFechaCompletado(Instant.now());
-        alumnoCompleto.ganarExperiencia(request.getPuntosObtenidos());
+        
+        alumnoCompleto.ganarExperiencia(puntosCalculados);
 
         usuarioDAO.save(alumnoCompleto);
         Puntuacion guardada = puntuacionDAO.save(nueva);
@@ -95,5 +98,27 @@ public class PuntuacionService {
         }
 
         puntuacionDAO.delete(puntuacion);
+    }
+
+    @Transactional
+    public void actualizarPuntuacionTotal(Long alumnoId, Long pruebaId) {
+        // Buscamos la puntuación existente para esa prueba y alumno
+        puntuacionDAO.findPuntuacionByPrueba_IdAndAlumno_Id(pruebaId, alumnoId).ifPresent(puntuacion -> {
+            List<RespuestaAlumno> respuestas = respuestaAlumnoDAO.findByPregunta_Prueba_IdAndAlumno_Id(pruebaId, alumnoId);
+            
+            int nuevaPuntuacion = respuestas.stream()
+                    .mapToInt(respuesta -> respuesta.getPuntosAsignados() != null ? respuesta.getPuntosAsignados() : 0)
+                    .sum();
+            
+            // Si la puntuación ha cambiado, la actualizamos y ajustamos la experiencia del alumno
+            if (puntuacion.getPuntosObtenidos() != nuevaPuntuacion) {
+                int diferencia = nuevaPuntuacion - puntuacion.getPuntosObtenidos();
+                puntuacion.setPuntosObtenidos(nuevaPuntuacion);
+                puntuacion.getAlumno().ganarExperiencia(diferencia);
+                
+                puntuacionDAO.save(puntuacion);
+                usuarioDAO.save(puntuacion.getAlumno());
+            }
+        });
     }
 }
