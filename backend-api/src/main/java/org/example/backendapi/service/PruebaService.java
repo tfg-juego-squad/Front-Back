@@ -4,21 +4,24 @@ import lombok.RequiredArgsConstructor;
 import org.example.backendapi.dto.PruebaRequestDTO;
 import org.example.backendapi.dto.PruebaResponseDTO;
 import org.example.backendapi.exception.BadRequestException;
+import org.example.backendapi.exception.ForbiddenException;
 import org.example.backendapi.exception.ResourceNotFoundException;
 import org.example.backendapi.mapper.PruebaMapper;
 import org.example.backendapi.model.dao.IAulaDAO;
 import org.example.backendapi.model.dao.IPruebaDAO;
 import org.example.backendapi.model.dao.IUsuarioDAO;
-import org.example.backendapi.model.entities.Aula;
-import org.example.backendapi.model.entities.Prueba;
-import org.example.backendapi.model.entities.TipoPrueba;
-import org.example.backendapi.model.entities.Usuario;
+import org.example.backendapi.model.entities.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Servicio encargado de la lógica de negocio de las Pruebas (Exámenes).
+ * Gestiona la creación, modificación, borrado y consulta de los exámenes
+ * asignados a un aula, controlando los permisos de acceso.
+ */
 @Service
 @RequiredArgsConstructor
 public class PruebaService {
@@ -28,23 +31,23 @@ public class PruebaService {
     private final PruebaMapper pruebaMapper;
     private final IUsuarioDAO usuarioDAO;
 
+    /**
+     * Crea un nuevo examen (Prueba) dentro de un aula específica.
+     * Seguridad: Solo el profesor dueño del aula puede crear exámenes en ella.
+     */
     @Transactional
-    public PruebaResponseDTO crearPrueba(PruebaRequestDTO request) {
-        Aula aula = aulaDAO.findAulaById(request.getAulaId())
+    public PruebaResponseDTO crearPrueba(PruebaRequestDTO request, Usuario usuarioLogueado) {
+        Aula aula = aulaDAO.findById(request.getAulaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada con ID: " + request.getAulaId()));
+
+        if (!aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes crear pruebas en un aula que no te pertenece.");
+        }
 
         Prueba nuevaPrueba = new Prueba();
         nuevaPrueba.setAula(aula);
         nuevaPrueba.setTitulo(request.getTitulo());
 
-        // Parseamos el String del DTO al Enum de la Entidad
-        try {
-            nuevaPrueba.setTipo(TipoPrueba.valueOf(request.getTipo()));
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Tipo de prueba no válido. Debe ser TIPO_TEST o DESARROLLO.");
-        }
-
-        nuevaPrueba.setContenido(request.getContenido());
         nuevaPrueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         nuevaPrueba.setFechaLimite(request.getFechaLimite());
         nuevaPrueba.setFechaCreacion(Instant.now());
@@ -53,23 +56,44 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(guardada);
     }
 
-    public List<PruebaResponseDTO> obtenerPruebasPorAula(Long aulaId) {
+    /**
+     * Lista todos los exámenes asociados a un aula.
+     * Seguridad: Profesores y alumnos solo pueden ver las pruebas de sus propias aulas.
+     */
+    public List<PruebaResponseDTO> obtenerPruebasPorAula(Long aulaId, Usuario usuarioLogueado) {
+        Aula aula = aulaDAO.findById(aulaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada con ID: " + aulaId));
+
+        // Seguridad Profesor
+        if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR && !aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes ver las pruebas de un aula que no te pertenece.");
+        }
+
+        // Seguridad Estudiante
+        if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+            if (usuarioLogueado.getAula() == null || !usuarioLogueado.getAula().getId().equals(aulaId)) {
+                throw new ForbiddenException("No puedes ver las pruebas de un aula a la que no perteneces.");
+            }
+        }
+
         List<Prueba> pruebas = pruebaDAO.findByAula_Id(aulaId);
         return pruebaMapper.toResponseDTOList(pruebas);
     }
 
+    /**
+     * Actualiza los datos de un examen existente.
+     * Seguridad: Solo el profesor creador del examen puede modificarlo.
+     */
     @Transactional
-    public PruebaResponseDTO actualizarPrueba(Long pruebaId, PruebaRequestDTO request) {
+    public PruebaResponseDTO actualizarPrueba(Long pruebaId, PruebaRequestDTO request, Usuario usuarioLogueado) {
         Prueba prueba = pruebaDAO.findById(pruebaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prueba no encontrada con ID: " + pruebaId));
 
-        prueba.setTitulo(request.getTitulo());
-        try {
-            prueba.setTipo(TipoPrueba.valueOf(request.getTipo()));
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Tipo de prueba no válido.");
+        if (!prueba.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes modificar una prueba de un aula que no te pertenece.");
         }
-        prueba.setContenido(request.getContenido());
+
+        prueba.setTitulo(request.getTitulo());
         prueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         prueba.setFechaLimite(request.getFechaLimite());
 
@@ -77,7 +101,12 @@ public class PruebaService {
         return pruebaMapper.toResponseDTO(actualizada);
     }
 
-    public List<PruebaResponseDTO> obtenerPruebasPendientes(Long alumnoId) {
+    /**
+     * Obtiene una lista de exámenes que un alumno específico aún no ha realizado.
+     * Seguridad: Un alumno solo puede ver sus propios exámenes pendientes. Un profesor
+     * solo puede consultar los exámenes pendientes de sus propios alumnos.
+     */
+    public List<PruebaResponseDTO> obtenerPruebasPendientes(Long alumnoId, Usuario usuarioLogueado) {
         Usuario alumno = usuarioDAO.findById(alumnoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado con ID: " + alumnoId));
 
@@ -85,16 +114,40 @@ public class PruebaService {
             throw new BadRequestException("El alumno no está asignado a ninguna aula.");
         }
 
+        // Seguridad Estudiante
+        if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+            if (!usuarioLogueado.getId().equals(alumnoId)) {
+                throw new ForbiddenException("Acceso denegado: No puedes ver las pruebas de otros alumnos.");
+            }
+        }
+        // Seguridad Profesor
+        else if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR) {
+            Long idProfesorDelAlumno = alumno.getAula().getProfesor().getId();
+            if (!usuarioLogueado.getId().equals(idProfesorDelAlumno)) {
+                throw new ForbiddenException("Acceso denegado: Este alumno no pertenece a tu aula.");
+            }
+        }
+
         List<Prueba> pendientes = pruebaDAO.findPruebasPendientes(alumno.getAula().getId(), alumnoId);
 
         return pruebaMapper.toResponseDTOList(pendientes);
     }
 
+    /**
+     * Elimina un examen del sistema.
+     * Si el examen ya tiene respuestas de alumnos asociadas, la base de datos lanzará
+     * una DataIntegrityViolationException (controlada por GlobalExceptionHandler)
+     * para evitar borrar datos históricos accidentalmente.
+     */
     @Transactional
-    public void eliminarPrueba(Long pruebaId) {
-        if (!pruebaDAO.existsById(pruebaId)) {
-            throw new ResourceNotFoundException("No se puede borrar. Prueba no encontrada.");
+    public void eliminarPrueba(Long pruebaId, Usuario usuarioLogueado) {
+        Prueba prueba = pruebaDAO.findById(pruebaId)
+                .orElseThrow(() -> new ResourceNotFoundException("No se puede borrar. Prueba no encontrada."));
+
+        if (!prueba.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("No puedes borrar una prueba de un aula que no te pertenece.");
         }
-        pruebaDAO.deleteById(pruebaId);
+
+        pruebaDAO.delete(prueba);
     }
 }

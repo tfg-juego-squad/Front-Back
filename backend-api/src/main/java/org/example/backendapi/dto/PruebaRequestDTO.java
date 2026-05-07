@@ -10,16 +10,11 @@ import java.time.Instant;
 @Data
 public class PruebaRequestDTO {
 
-    @NotBlank(message = "El ID del aula es obligatorio")
+    @NotNull(message = "El ID del aula es obligatorio")
     private Long aulaId;
 
     @NotBlank(message = "El título de la prueba es obligatorio")
     private String titulo;
-
-    @NotBlank(message = "El tipo de prueba es obligatorio (TIPO_TEST o DESARROLLO)")
-    private String tipo;
-
-    private String contenido;
 
     @NotNull(message = "La puntuación máxima es obligatoria")
     @Min(value = 1, message = "La puntuación máxima debe ser mayor que 0")
