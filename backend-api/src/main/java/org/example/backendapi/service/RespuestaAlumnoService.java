@@ -79,7 +79,7 @@ public class RespuestaAlumnoService {
 
                 // MOTOR DE AUTO-CORRECCIÓN Y ASIGNACIÓN DE PUNTOS
                 if (opcion.getEsCorrecta()) {
-                    int totalPreguntas = (int) pregunta.getPrueba().getPreguntas().size();
+                    int totalPreguntas = pregunta.getPrueba().getPreguntas().size();
                     // Dividimos los puntos totales del examen entre el número de preguntas equitativamente
                     int puntosPorPregunta = pregunta.getPrueba().getPuntuacionMaxima() / (totalPreguntas > 0 ? totalPreguntas : 1);
                     respuesta.setPuntosAsignados(puntosPorPregunta);

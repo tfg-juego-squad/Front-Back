@@ -8,7 +8,15 @@ import java.time.Instant;
 
 @Data
 @Entity
-@Table(name = "respuestas_alumno")
+@Table(
+        name = "respuestas_alumno",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_alumno_pregunta",
+                        columnNames = {"alumno_id", "pregunta_id"}
+                )
+        }
+)
 public class RespuestaAlumno {
 
     @Id
