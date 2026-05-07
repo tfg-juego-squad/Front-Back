@@ -16,6 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Servicio encargado de gestionar las Preguntas de los exámenes (Pruebas).
+ * Maneja tanto la creación de preguntas tipo TEST (con sus posibles respuestas)
+ * como de tipo DESARROLLO, y se asegura de no revelar las respuestas correctas a los estudiantes.
+ */
 @Service
 @RequiredArgsConstructor
 public class PreguntaService {
@@ -24,11 +29,16 @@ public class PreguntaService {
     private final IPruebaDAO pruebaDAO;
     private final PreguntaMapper preguntaMapper;
 
+    /**
+     * Crea una nueva pregunta y la asocia a un examen existente.
+     * Si la pregunta es tipo TEST, también guarda sus posibles respuestas.
+     */
     @Transactional
     public PreguntaResponseDTO crearPregunta(PreguntaRequestDTO request, Usuario usuarioLogueado) {
         Prueba prueba = pruebaDAO.findById(request.getPruebaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Prueba no encontrada con ID: " + request.getPruebaId()));
 
+        // Seguridad: El profesor que crea la pregunta debe ser el dueño del examen
         if (!prueba.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
             throw new ForbiddenException("No puedes añadir preguntas a un examen de un aula que no te pertenece.");
         }
@@ -38,18 +48,20 @@ public class PreguntaService {
         pregunta.setTiempoLimiteSegundos(request.getTiempoLimiteSegundos());
         pregunta.setPrueba(prueba);
 
+        // Validamos que el tipo enviado sea correcto (TEST o DESARROLLO)
         try {
             pregunta.setTipo(TipoPregunta.valueOf(request.getTipo()));
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Tipo de pregunta inválido. Use TEST o DESARROLLO.");
         }
 
+        // Si es tipo TEST, procesamos y enlazamos sus opciones de respuesta
         List<RespuestaPosible> respuestas = new ArrayList<>();
         if (pregunta.getTipo() == TipoPregunta.TEST && request.getRespuestasPosibles() != null) {
             for (RespuestaPosibleRequestDTO resDTO : request.getRespuestasPosibles()) {
                 RespuestaPosible respuesta = new RespuestaPosible();
                 respuesta.setTexto(resDTO.getTexto());
-                respuesta.setEsCorrecta(resDTO.getEsCorrecta());
+                respuesta.setEsCorrecta(resDTO.getEsCorrecta()); // Marca cuál es la buena para la auto-corrección
                 respuesta.setPregunta(pregunta);
                 respuestas.add(respuesta);
             }
@@ -60,15 +72,21 @@ public class PreguntaService {
         return preguntaMapper.toResponseDTO(guardada);
     }
 
+    /**
+     * Obtiene todas las preguntas de un examen.
+     * ATENCIÓN: Si el que lo pide es un Estudiante, el campo "esCorrecta" de las respuestas
+     * tipo TEST se oculta (se pone a null) para que no puedan ver la solución haciendo trampas.
+     */
     public List<PreguntaResponseDTO> obtenerPreguntasPorPrueba(Long pruebaId, Usuario usuarioLogueado) {
         Prueba prueba = pruebaDAO.findById(pruebaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prueba no encontrada"));
 
-        // Validar acceso
+        // Validar acceso para el Profesor
         if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR && !prueba.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
             throw new ForbiddenException("No puedes ver las preguntas de un examen que no te pertenece.");
         }
         
+        // Validar acceso para el Estudiante (IDOR protection)
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
             if (usuarioLogueado.getAula() == null || !usuarioLogueado.getAula().getId().equals(prueba.getAula().getId())) {
                 throw new ForbiddenException("No puedes ver las preguntas de un examen de un aula a la que no perteneces.");
@@ -90,6 +108,9 @@ public class PreguntaService {
         return responseDTOs;
     }
     
+    /**
+     * Elimina una pregunta. Sus posibles respuestas se borrarán automáticamente (por Cascade en la DB).
+     */
     @Transactional
     public void eliminarPregunta(Long preguntaId, Usuario usuarioLogueado) {
         Pregunta pregunta = preguntaDAO.findById(preguntaId)
