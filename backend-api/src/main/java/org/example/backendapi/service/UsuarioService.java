@@ -67,16 +67,47 @@ public class UsuarioService {
         return responseDTO;
     }
 
-    public UsuarioResponseDTO buscarUsuarioPorId(Long id) {
-        return usuarioDAO.findUsuarioById(id)
-                .map(usuarioMapper::toResponseDTO)
+    public UsuarioResponseDTO buscarUsuarioPorId(Long id, Usuario usuarioLogueado) {
+        Usuario usuarioEncontrado = usuarioDAO.findUsuarioById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró ningún usuario con el ID: " + id));
+
+        // Seguridad: Prevención de IDOR
+        if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+            if (!usuarioLogueado.getId().equals(usuarioEncontrado.getId())) {
+                throw new ForbiddenException("No tienes permiso para ver el perfil de otro alumno.");
+            }
+        } else if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR) {
+            if (!usuarioLogueado.getId().equals(usuarioEncontrado.getId())) {
+                if (usuarioEncontrado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+                    if (usuarioEncontrado.getAula() == null || !usuarioEncontrado.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
+                        throw new ForbiddenException("No puedes ver a un alumno que no pertenece a ninguna de tus aulas.");
+                    }
+                } else {
+                    throw new ForbiddenException("No puedes ver el perfil de otro profesor.");
+                }
+            }
+        }
+
+        return usuarioMapper.toResponseDTO(usuarioEncontrado);
     }
 
-    public List<UsuarioResponseDTO> buscarUsuariosPorNombre(String nombre) {
+    public List<UsuarioResponseDTO> buscarUsuariosPorNombre(String nombre, Usuario usuarioLogueado) {
+        if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+            throw new ForbiddenException("Los alumnos no tienen permiso para buscar usuarios.");
+        }
+
         List<Usuario> usuarios = usuarioDAO.findUsuarioByNombreUsuario(nombre);
 
-        return usuarioMapper.toResponseDTOList(usuarios);
+        // El profesor solo debería poder ver a sus propios alumnos o a sí mismo en los resultados de búsqueda
+        List<Usuario> usuariosFiltrados = usuarios.stream().filter(u -> {
+            if (u.getId().equals(usuarioLogueado.getId())) return true;
+            if (u.getRol() == TipoRol.ROL_ESTUDIANTE && u.getAula() != null) {
+                return u.getAula().getProfesor().getId().equals(usuarioLogueado.getId());
+            }
+            return false;
+        }).toList();
+
+        return usuarioMapper.toResponseDTOList(usuariosFiltrados);
     }
 
     @Transactional

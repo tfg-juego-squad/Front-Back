@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.example.backendapi.model.entities.Aula;
 import org.example.backendapi.model.entities.TipoRol;
 import org.example.backendapi.model.entities.Usuario;
 import org.example.backendapi.service.JwtService;
@@ -52,12 +53,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Obtenemos el rol directamente del token, sin ir a la BD
                 String rol = jwtService.extractRol(jwt);
                 Long id = jwtService.extractId(jwt);
+                
+                // Extraemos el aulaId (si es null no pasa nada)
+                Long aulaId = null;
+                try {
+                    Object aulaIdObj = jwtService.extractClaim(jwt, claims -> claims.get("aulaId"));
+                    if (aulaIdObj != null) {
+                        aulaId = Long.valueOf(aulaIdObj.toString());
+                    }
+                } catch (Exception ignored) { }
 
                 // Crear un usuario dummy solo con los datos del token para @AuthenticationPrincipal
                 Usuario usuarioAuth = new Usuario();
                 usuarioAuth.setId(id);
                 usuarioAuth.setNombreUsuario(nombreUsuario);
                 usuarioAuth.setRol(TipoRol.valueOf(rol));
+                
+                if (aulaId != null) {
+                    Aula aulaDummy = new Aula();
+                    aulaDummy.setId(aulaId);
+                    usuarioAuth.setAula(aulaDummy);
+                }
 
                 if (jwtService.isTokenValid(jwt, usuarioAuth.getNombreUsuario())) {
 

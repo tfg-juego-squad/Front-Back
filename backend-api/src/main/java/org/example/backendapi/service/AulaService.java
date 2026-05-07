@@ -52,6 +52,12 @@ public class AulaService {
         if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR && !aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
             throw new ForbiddenException("No puedes ver los alumnos de un aula que no es tuya.");
         }
+        
+        if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+            if (usuarioLogueado.getAula() == null || !usuarioLogueado.getAula().getId().equals(aulaId)) {
+                throw new ForbiddenException("No puedes ver los alumnos de un aula a la que no perteneces.");
+            }
+        }
 
         List<Usuario> alumnos = usuarioDAO.findByAulaIdAndRol(aulaId, TipoRol.ROL_ESTUDIANTE);
 

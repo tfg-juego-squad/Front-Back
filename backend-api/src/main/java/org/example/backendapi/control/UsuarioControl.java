@@ -22,14 +22,18 @@ public class UsuarioControl {
     private final UsuarioService usuarioService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(@PathVariable Long id) {
-        UsuarioResponseDTO response = usuarioService.buscarUsuarioPorId(id);
+    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        UsuarioResponseDTO response = usuarioService.buscarUsuarioPorId(id, usuarioLogueado);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/nombre/{nombre}")
-    public ResponseEntity<List<UsuarioResponseDTO>> buscarUsuariosPorNombre(@PathVariable String nombre) {
-        List<UsuarioResponseDTO> response = usuarioService.buscarUsuariosPorNombre(nombre);
+    public ResponseEntity<List<UsuarioResponseDTO>> buscarUsuariosPorNombre(
+            @PathVariable String nombre,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        List<UsuarioResponseDTO> response = usuarioService.buscarUsuariosPorNombre(nombre, usuarioLogueado);
         return ResponseEntity.ok(response);
     }
 

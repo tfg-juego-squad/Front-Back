@@ -68,6 +68,12 @@ public class PreguntaService {
         if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR && !prueba.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
             throw new ForbiddenException("No puedes ver las preguntas de un examen que no te pertenece.");
         }
+        
+        if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+            if (usuarioLogueado.getAula() == null || !usuarioLogueado.getAula().getId().equals(prueba.getAula().getId())) {
+                throw new ForbiddenException("No puedes ver las preguntas de un examen de un aula a la que no perteneces.");
+            }
+        }
 
         List<Pregunta> preguntas = preguntaDAO.findByPrueba_Id(pruebaId);
         List<PreguntaResponseDTO> responseDTOs = preguntaMapper.toResponseDTOList(preguntas);

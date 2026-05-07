@@ -56,6 +56,12 @@ public class PruebaService {
             throw new ForbiddenException("No puedes ver las pruebas de un aula que no te pertenece.");
         }
 
+        if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+            if (usuarioLogueado.getAula() == null || !usuarioLogueado.getAula().getId().equals(aulaId)) {
+                throw new ForbiddenException("No puedes ver las pruebas de un aula a la que no perteneces.");
+            }
+        }
+
         List<Prueba> pruebas = pruebaDAO.findByAula_Id(aulaId);
         return pruebaMapper.toResponseDTOList(pruebas);
     }
