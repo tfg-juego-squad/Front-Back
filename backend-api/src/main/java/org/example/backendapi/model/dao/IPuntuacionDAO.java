@@ -10,4 +10,6 @@ public interface IPuntuacionDAO extends CrudRepository<Puntuacion, Long> {
     Optional<Puntuacion> findPuntuacionById(Long id);
 
     List<Puntuacion> findPuntuacionByPrueba_Aula_Id(Long pruebaAulaId);
+    
+    Optional<Puntuacion> findPuntuacionByPrueba_IdAndAlumno_Id(Long pruebaId, Long alumnoId);
 }

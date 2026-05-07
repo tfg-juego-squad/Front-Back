@@ -6,9 +6,6 @@ import lombok.Data;
 
 @Data
 public class PuntuacionRequestDTO {
-    @NotNull(message = "Los puntos obtenidos son obligatorios")
-    private Integer puntosObtenidos;
-
-    @NotBlank(message = "El ID de la prueba es obligatorio")
+    @NotNull(message = "El ID de la prueba es obligatorio")
     private Long idPrueba;
 }

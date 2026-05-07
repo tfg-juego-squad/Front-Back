@@ -13,6 +13,7 @@ public interface RespuestaAlumnoMapper {
     @Mapping(source = "alumno.id", target = "alumnoId")
     @Mapping(source = "pregunta.id", target = "preguntaId")
     @Mapping(source = "respuestaElegida.id", target = "respuestaElegidaId")
+    @Mapping(source = "puntosAsignados", target = "puntosAsignados")
     RespuestaAlumnoResponseDTO toResponseDTO(RespuestaAlumno respuesta);
 
     List<RespuestaAlumnoResponseDTO> toResponseDTOList(List<RespuestaAlumno> respuestas);
