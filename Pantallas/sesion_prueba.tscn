@@ -25,7 +25,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Panel" type="PanelContainer" parent="Centro"]
-custom_minimum_size = Vector2(640, 480)
+custom_minimum_size = Vector2(680, 520)
 layout_mode = 2
 
 [node name="Margen" type="MarginContainer" parent="Centro/Panel"]
@@ -37,24 +37,40 @@ theme_override_constants/margin_bottom = 25
 
 [node name="VBox" type="VBoxContainer" parent="Centro/Panel/Margen"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="Titulo" type="Label" parent="Centro/Panel/Margen/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Sesión de Prueba"
 
-[node name="Progreso" type="Label" parent="Centro/Panel/Margen/VBox"]
+[node name="HBoxInfo" type="HBoxContainer" parent="Centro/Panel/Margen/VBox"]
 layout_mode = 2
+
+[node name="Progreso" type="Label" parent="Centro/Panel/Margen/VBox/HBoxInfo"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
 text = "Pregunta 0 / 0"
+
+[node name="TiempoLabel" type="Label" parent="Centro/Panel/Margen/VBox/HBoxInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+text = "—"
+
+[node name="TimerBar" type="ProgressBar" parent="Centro/Panel/Margen/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+show_percentage = false
+max_value = 100.0
+value = 100.0
 
 [node name="Sep" type="HSeparator" parent="Centro/Panel/Margen/VBox"]
 layout_mode = 2
 
 [node name="Enunciado" type="Label" parent="Centro/Panel/Margen/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 17
 autowrap_mode = 2
 text = "Cargando preguntas..."
 
@@ -69,6 +85,13 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 120)
 placeholder_text = "Escribe tu respuesta aquí..."
 
+[node name="FeedbackBadge" type="Label" parent="Centro/Panel/Margen/VBox"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
 [node name="HBoxBotones" type="HBoxContainer" parent="Centro/Panel/Margen/VBox"]
 layout_mode = 2
 alignment = 2
@@ -80,5 +103,37 @@ text = "Abandonar"
 
 [node name="BtnEnviar" type="Button" parent="Centro/Panel/Margen/VBox/HBoxBotones"]
 layout_mode = 2
-custom_minimum_size = Vector2(140, 0)
+custom_minimum_size = Vector2(160, 0)
 text = "Enviar respuesta"
+
+[node name="OverlayLevelUp" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.7)
+mouse_filter = 2
+
+[node name="CenterLU" type="CenterContainer" parent="OverlayLevelUp"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxLU" type="VBoxContainer" parent="OverlayLevelUp/CenterLU"]
+theme_override_constants/separation = 16
+
+[node name="LblLevelUp" type="Label" parent="OverlayLevelUp/CenterLU/VBoxLU"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 56
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+text = "¡SUBISTE DE NIVEL!"
+horizontal_alignment = 1
+
+[node name="LblNivelNuevo" type="Label" parent="OverlayLevelUp/CenterLU/VBoxLU"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color.WHITE
+text = "Nivel 2"
+horizontal_alignment = 1
