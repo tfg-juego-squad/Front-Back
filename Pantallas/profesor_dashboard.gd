@@ -58,7 +58,7 @@ func _on_aulas_recibidas(data, code):
 		cmb_aulas.clear()
 		cmb_aulas.add_item("Sin aulas creadas")
 	else:
-		Notificador.notificar("No hay aulas disponibles", Color.ORANGE)
+		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.ORANGE)
 
 func _on_aula_seleccionada(index):
 	if aulas_data.is_empty(): return
@@ -108,7 +108,7 @@ func _on_aula_creada(data, code):
 			_on_generacion_completada
 		)
 	else:
-		Notificador.notificar("Fallo al crear el aula (Error %d)" % code, Color.RED)
+		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 
 func _on_generacion_completada(data, code):
 	if code == 200 and data is Array:
@@ -118,7 +118,7 @@ func _on_generacion_completada(data, code):
 		Notificador.notificar("Proceso completado", Color.GREEN)
 		_cargar_aulas()
 	else:
-		Notificador.notificar("Error al generar alumnos: %d" % code, Color.RED)
+		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 
 func _on_revisar_puntuaciones():
 	if aulas_data.is_empty() or cmb_aulas.selected < 0:
@@ -159,4 +159,4 @@ func _on_nueva_entrega():
 	get_tree().change_scene_to_file("res://Pantallas/nueva_entrega.tscn")
 
 func _on_cerrar_sesion():
-	get_tree().change_scene_to_file("res://Pantallas/login.tscn")
+	GameManager.cerrar_sesion()

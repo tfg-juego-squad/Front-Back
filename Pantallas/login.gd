@@ -18,7 +18,7 @@ func _on_login_pressed():
 		Notificador.notificar("Rellena todos los campos", Color.MAGENTA)
 		return
 
-	var payload = {"usuario": usuario, "password": contrasena}
+	var payload = {"nombreUsuario": usuario, "passwordPlana": contrasena}
 	Notificador.notificar("Autenticando...", Color.CYAN)
 	ConexionManager.peticion_post("/usuarios/login", payload, _on_login_response)
 
@@ -29,20 +29,33 @@ func _on_registrar_pressed():
 	if usuario.length() < 3:
 		Notificador.notificar("El usuario es muy corto", Color.ORANGE)
 		return
+	if contrasena.length() < 6:
+		Notificador.notificar("La contraseña debe tener al menos 6 caracteres", Color.ORANGE)
+		return
 
-	var payload = {"nombreUsuario": usuario, "hashContrasena": contrasena}
+	# Nota: el backend requiere nombreReal/apellidos/email; faltan campos en la UI
+	var payload = {
+		"nombreUsuario": usuario,
+		"passwordPlana": contrasena,
+		"nombreReal": usuario,
+		"apellidos": "(pendiente)",
+		"email": "%s@pendiente.local" % usuario
+	}
 	Notificador.notificar("Registrando profesor...", Color.GOLD)
 	ConexionManager.peticion_post("/usuarios/profesor/alta", payload, _on_registro_response)
 
-func _on_registro_response(_data, code):
-	if code == 200:
+func _on_registro_response(data, code):
+	if code == 200 or code == 201:
 		Notificador.notificar("Profesor registrado, ya puedes entrar", Color.GREEN)
 	else:
-		Notificador.notificar("Error al registrar: " + str(code), Color.RED)
+		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 
 func _on_login_response(data, code):
 	if code == 200 and data != null:
 		GameManager.guardar_sesion(data)
+		if GameManager.token.is_empty():
+			Notificador.notificar("Sesión sin token, revisa el backend", Color.ORANGE)
+			return
 		if GameManager.es_profesor:
 			get_tree().change_scene_to_file("res://Pantallas/profesor_dashboard.tscn")
 		else:
@@ -50,4 +63,4 @@ func _on_login_response(data, code):
 	elif code == 401:
 		Notificador.notificar("Usuario o clave incorrectos", Color.MAGENTA)
 	else:
-		Notificador.notificar("Error servidor: " + str(code), Color.ORANGE)
+		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.ORANGE)
