@@ -3,6 +3,10 @@ extends Control
 @onready var lista_alumnos = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/ListaAlumnos
 @onready var cmb_aulas = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula/CmbAulas
 @onready var btn_crear_aula = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula/BtnCrearAula
+@onready var btn_importar_csv = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula/BtnImportarCSV
+
+@onready var dialogo_csv = $DialogoCSV
+@onready var dialogo_exportar = $DialogoExportar
 
 @onready var btn_nueva_entrega = $Layout/MainContent/PanelBotones/VBoxBotones/BtnNuevaEntrega
 @onready var btn_revisar = $Layout/MainContent/PanelBotones/VBoxBotones/BtnRevisar
@@ -21,8 +25,10 @@ extends Control
 @onready var spin_alumnos = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/SpinAlumnos
 @onready var btn_confirmar_generar = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/BtnConfirmarGenerar
 @onready var text_resultado = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/TextResultado
+@onready var btn_exportar_csv = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/BtnExportarCSV
 
-var aulas_data = []
+var aulas_data: Array = []
+var credenciales_recientes: Array = []
 
 func _ready():
 	btn_nueva_entrega.pressed.connect(_on_nueva_entrega)
@@ -34,19 +40,24 @@ func _ready():
 	btn_crear_aula.pressed.connect(_on_abrir_generacion)
 	cmb_aulas.item_selected.connect(_on_aula_seleccionada)
 	btn_confirmar_generar.pressed.connect(_on_iniciar_proceso_generacion)
+	btn_importar_csv.pressed.connect(_on_pulsar_importar_csv)
+	btn_exportar_csv.pressed.connect(_on_pulsar_exportar_csv)
+	dialogo_csv.file_selected.connect(_on_csv_seleccionado)
+	dialogo_exportar.file_selected.connect(_on_destino_exportar_seleccionado)
 
 	panel_flotante.visible = false
+	btn_exportar_csv.visible = false
 
-	tree_puntuaciones.set_column_title(0, "Alumno")
-	tree_puntuaciones.set_column_title(1, "Prueba")
-	tree_puntuaciones.set_column_title(2, "Nota")
-	tree_puntuaciones.set_column_title(3, "Max")
+	tree_puntuaciones.set_column_title(0, "#")
+	tree_puntuaciones.set_column_title(1, "Alumno")
+	tree_puntuaciones.set_column_title(2, "Puntos")
+	tree_puntuaciones.set_column_title(3, "Nivel")
 
 	_cargar_aulas()
 
 func _cargar_aulas():
 	var prof_id = GameManager.usuario_actual.get("id", "")
-	ConexionManager.peticion_get("/aulas/profesor/%s" % prof_id, _on_aulas_recibidas)
+	ConexionManager.peticion_get("/aulas/profesor/%s" % str(prof_id), _on_aulas_recibidas)
 
 func _on_aulas_recibidas(data, code):
 	if code == 200 and data is Array:
@@ -68,17 +79,19 @@ func _on_aula_seleccionada(index):
 	GameManager.aula_seleccionada_id = str(aula_id)
 	lista_alumnos.clear()
 	lista_alumnos.add_item("Cargando alumnos...")
-	ConexionManager.peticion_get("/aulas/%s/alumnos" % aula_id, _on_alumnos_recibidos)
+	ConexionManager.peticion_get("/aulas/%s/alumnos" % str(aula_id), _on_alumnos_recibidos)
 
 func _on_alumnos_recibidos(data, code):
 	lista_alumnos.clear()
 	if code == 200 and data is Array:
 		if data.size() == 0:
-			lista_alumnos.add_item("(Aula vacia)")
+			lista_alumnos.add_item("(Aula vacía)")
 		else:
 			for alu in data:
-				var nombre = alu.get("nombreUsuario", alu.get("usuario", "Anonimo"))
-				lista_alumnos.add_item(nombre)
+				var nombre = alu.get("nombreUsuario", alu.get("usuario", "Anónimo"))
+				var nivel = alu.get("nivelActual", null)
+				var sufijo = "  ·  Nv %s" % str(nivel) if nivel != null else ""
+				lista_alumnos.add_item("%s%s" % [nombre, sufijo])
 	else:
 		lista_alumnos.add_item("Sin alumnos")
 
@@ -88,6 +101,8 @@ func _on_abrir_generacion():
 	vbox_generacion.visible = true
 	panel_flotante.visible = true
 	text_resultado.text = ""
+	btn_exportar_csv.visible = false
+	credenciales_recientes.clear()
 
 func _on_iniciar_proceso_generacion():
 	var nombre = edit_nombre_aula.text.strip_edges()
@@ -105,7 +120,7 @@ func _on_aula_creada(data, code):
 		var cant = int(spin_alumnos.value)
 		Notificador.notificar("2/2: Generando credenciales...", Color.GOLD)
 		ConexionManager.peticion_post(
-			"/aulas/%s/generar-alumnos" % data.get("id", ""),
+			"/aulas/%s/generar-alumnos" % str(data.get("id", "")),
 			{"cantidad": cant},
 			_on_generacion_completada
 		)
@@ -114,13 +129,71 @@ func _on_aula_creada(data, code):
 
 func _on_generacion_completada(data, code):
 	if code == 200 and data is Array:
-		text_resultado.text = "CREDENCIALES:\n==============================\n\n"
+		credenciales_recientes = data.duplicate(true)
+		text_resultado.text = "CREDENCIALES (¡guárdalas, no se volverán a mostrar!):\n"
+		text_resultado.text += "==========================================\n\n"
 		for item in data:
 			text_resultado.text += "USER: %-15s | PASS: %s\n" % [item.get("usuario"), item.get("password")]
+		btn_exportar_csv.visible = data.size() > 0
 		Notificador.notificar("Proceso completado", Color.GREEN)
 		_cargar_aulas()
 	else:
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
+
+# ------- Importar CSV -------
+
+func _on_pulsar_importar_csv():
+	if GameManager.aula_seleccionada_id.is_empty():
+		Notificador.notificar("Selecciona un aula primero", Color.ORANGE)
+		return
+	dialogo_csv.popup_centered_ratio(0.6)
+
+func _on_csv_seleccionado(path: String):
+	Notificador.notificar("Subiendo CSV...", Color.CYAN)
+	ConexionManager.peticion_multipart(
+		"/aulas/%s/importar-csv" % GameManager.aula_seleccionada_id,
+		"file",
+		path,
+		_on_import_csv_completado
+	)
+
+func _on_import_csv_completado(data, code):
+	if code == 200 and data is Array:
+		credenciales_recientes = data.duplicate(true)
+		_limpiar_paneles_flotantes()
+		titulo_flotante.text = "ALUMNOS IMPORTADOS DEL CSV"
+		vbox_generacion.visible = true
+		panel_flotante.visible = true
+		text_resultado.text = "CREDENCIALES IMPORTADAS (¡guárdalas!):\n"
+		text_resultado.text += "==========================================\n\n"
+		for item in data:
+			text_resultado.text += "USER: %-15s | PASS: %s\n" % [item.get("usuario"), item.get("password")]
+		btn_exportar_csv.visible = data.size() > 0
+		Notificador.notificar("CSV importado: %d alumnos" % data.size(), Color.GREEN)
+		_cargar_aulas()
+	else:
+		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
+
+# ------- Exportar credenciales -------
+
+func _on_pulsar_exportar_csv():
+	if credenciales_recientes.is_empty():
+		Notificador.notificar("No hay credenciales que exportar", Color.ORANGE)
+		return
+	dialogo_exportar.popup_centered_ratio(0.6)
+
+func _on_destino_exportar_seleccionado(path: String):
+	var file = FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		Notificador.notificar("No se pudo escribir el archivo", Color.RED)
+		return
+	file.store_line("usuario,password")
+	for item in credenciales_recientes:
+		file.store_line("%s,%s" % [str(item.get("usuario", "")), str(item.get("password", ""))])
+	file.close()
+	Notificador.notificar("Credenciales guardadas en %s" % path.get_file(), Color.GREEN)
+
+# ------- Ranking del aula -------
 
 func _on_revisar_puntuaciones():
 	if aulas_data.is_empty() or cmb_aulas.selected < 0:
@@ -128,31 +201,54 @@ func _on_revisar_puntuaciones():
 		return
 
 	_limpiar_paneles_flotantes()
-	titulo_flotante.text = "REVISION DE PUNTUACIONES"
+	titulo_flotante.text = "RANKING DEL AULA"
 	tree_puntuaciones.visible = true
 	panel_flotante.visible = true
 
 	var aula_id = aulas_data[cmb_aulas.selected].get("id", "")
-	ConexionManager.peticion_get("/puntuaciones/aula/%s" % aula_id, _on_puntuaciones_recibidas)
+	ConexionManager.peticion_get("/puntuacion/aula/%s" % str(aula_id), _on_puntuaciones_recibidas)
 
 func _on_puntuaciones_recibidas(data, code):
 	tree_puntuaciones.clear()
 	var root = tree_puntuaciones.create_item()
 
-	if code == 200 and data is Array:
-		for p in data:
-			var item = tree_puntuaciones.create_item(root)
-			item.set_text(0, str(p.get("estudianteNombre", "Alumno")))
-			item.set_text(1, str(p.get("pruebaNombre", "Tarea")))
-			item.set_text(2, str(p.get("puntos", 0)))
-			item.set_text(3, str(p.get("maxPuntos", 10)))
-	else:
-		tree_puntuaciones.create_item(root).set_text(0, "Sin datos de puntuaciones")
+	if code != 200 or not (data is Array) or data.is_empty():
+		var vacio = tree_puntuaciones.create_item(root)
+		vacio.set_text(0, "")
+		vacio.set_text(1, "Sin datos de puntuaciones")
+		return
+
+	var agregados: Dictionary = {}
+	for p in data:
+		var nombre = str(p.get("nombreUsuario", "Alumno"))
+		if not agregados.has(nombre):
+			agregados[nombre] = {"puntos": 0, "nivel": int(p.get("nivelActual", 0))}
+		agregados[nombre]["puntos"] += int(p.get("puntosObtenidos", 0))
+		agregados[nombre]["nivel"] = int(p.get("nivelActual", agregados[nombre]["nivel"]))
+
+	var ordenados: Array = agregados.keys()
+	ordenados.sort_custom(func(a, b): return agregados[a]["puntos"] > agregados[b]["puntos"])
+
+	var pos = 1
+	for nombre in ordenados:
+		var item = tree_puntuaciones.create_item(root)
+		item.set_text(0, str(pos))
+		item.set_text(1, nombre)
+		item.set_text(2, str(agregados[nombre]["puntos"]))
+		item.set_text(3, str(agregados[nombre]["nivel"]))
+		if pos == 1:
+			item.set_custom_color(1, Color(1, 0.85, 0.2))
+		elif pos == 2:
+			item.set_custom_color(1, Color(0.85, 0.85, 0.85))
+		elif pos == 3:
+			item.set_custom_color(1, Color(0.85, 0.6, 0.4))
+		pos += 1
 
 func _limpiar_paneles_flotantes():
 	contenido_texto.visible = false
 	tree_puntuaciones.visible = false
 	vbox_generacion.visible = false
+	btn_exportar_csv.visible = false
 
 func _cerrar_panel_flotante():
 	panel_flotante.visible = false

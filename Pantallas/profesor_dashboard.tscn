@@ -97,9 +97,32 @@ popup/item_0/id = 0
 
 [node name="BtnCrearAula" type="Button" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
 layout_mode = 2
-custom_minimum_size = Vector2(100, 30)
+custom_minimum_size = Vector2(60, 30)
 text = " + "
 tooltip_text = "Crear nueva aula"
+
+[node name="BtnImportarCSV" type="Button" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
+layout_mode = 2
+custom_minimum_size = Vector2(110, 30)
+text = "Importar CSV"
+tooltip_text = "Importa una lista de alumnos desde un archivo CSV"
+
+[node name="DialogoCSV" type="FileDialog" parent="."]
+title = "Selecciona el CSV de alumnos"
+initial_position = 2
+size = Vector2i(700, 500)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.csv ; Archivos CSV")
+
+[node name="DialogoExportar" type="FileDialog" parent="."]
+title = "Guardar credenciales como"
+initial_position = 2
+size = Vector2i(700, 500)
+file_mode = 4
+access = 2
+filters = PackedStringArray("*.csv ; Archivos CSV")
+current_file = "credenciales.csv"
 
 [node name="ListaAlumnos" type="ItemList" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
@@ -244,3 +267,9 @@ custom_minimum_size = Vector2(0, 150)
 editable = false
 wrap_mode = 1
 placeholder_text = "Las credenciales aparecerán aquí..."
+
+[node name="BtnExportarCSV" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(0, 35)
+text = "Exportar credenciales a CSV"

@@ -29,7 +29,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="CenterContainer" unique_id=423213717]
-custom_minimum_size = Vector2(420, 380)
+custom_minimum_size = Vector2(420, 500)
 layout_mode = 2
 
 [node name="Margen" type="MarginContainer" parent="CenterContainer/Panel" unique_id=661519858]
@@ -77,6 +77,38 @@ layout_mode = 2
 placeholder_text = "Contraseña"
 secret = true
 
+[node name="PanelRegistro" type="VBoxContainer" parent="CenterContainer/Panel/Margen/VBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LblNombreReal" type="Label" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
+layout_mode = 2
+text = "Nombre real:"
+
+[node name="NombreRealInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+placeholder_text = "Tu nombre"
+
+[node name="LblApellidos" type="Label" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
+layout_mode = 2
+text = "Apellidos:"
+
+[node name="ApellidosInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+placeholder_text = "Tus apellidos"
+
+[node name="LblEmail" type="Label" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
+layout_mode = 2
+text = "Email:"
+
+[node name="EmailInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+placeholder_text = "tu@email.com"
+
 [node name="Sep2" type="HSeparator" parent="CenterContainer/Panel/Margen/VBox" unique_id=1257494220]
 layout_mode = 2
 
@@ -90,6 +122,14 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
 text = "O crear cuenta de profesor"
+flat = true
+
+[node name="BtnCancelarRegistro" type="Button" parent="CenterContainer/Panel/Margen/VBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Cancelar registro"
 flat = true
 
 [node name="MensajeError" type="Label" parent="CenterContainer/Panel/Margen/VBox" unique_id=2052364740]

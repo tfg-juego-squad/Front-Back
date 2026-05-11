@@ -5,10 +5,13 @@ var es_profesor: bool = false
 var aula_seleccionada_id: String = ""
 var token: String = ""
 
+var _cerrando_sesion: bool = false
+
 func guardar_sesion(datos: Dictionary):
 	usuario_actual = datos
 	es_profesor = false
 	token = datos.get("token", "")
+	_cerrando_sesion = false
 
 	# Opción 1: El backend envía un campo "rol" (String) - Caso actual del backend Java
 	if datos.get("rol") == "ROL_PROFESOR":
@@ -27,6 +30,9 @@ func guardar_sesion(datos: Dictionary):
 				break
 
 func cerrar_sesion(motivo: String = ""):
+	if _cerrando_sesion:
+		return
+	_cerrando_sesion = true
 	usuario_actual = {}
 	es_profesor = false
 	aula_seleccionada_id = ""
@@ -36,3 +42,15 @@ func cerrar_sesion(motivo: String = ""):
 	var tree = Engine.get_main_loop() as SceneTree
 	if tree:
 		tree.change_scene_to_file("res://Pantallas/login.tscn")
+
+# Aplica los datos devueltos por /puntuacion/alta sobre el usuario_actual
+# y devuelve true si el alumno ha subido de nivel.
+func aplicar_recompensa(data) -> bool:
+	if typeof(data) != TYPE_DICTIONARY:
+		return false
+	var nivel_anterior = int(usuario_actual.get("nivelActual", 0))
+	if data.has("nivelActual"):
+		usuario_actual["nivelActual"] = int(data["nivelActual"])
+	if data.has("experienciaActual"):
+		usuario_actual["experienciaActual"] = int(data["experienciaActual"])
+	return int(usuario_actual.get("nivelActual", nivel_anterior)) > nivel_anterior

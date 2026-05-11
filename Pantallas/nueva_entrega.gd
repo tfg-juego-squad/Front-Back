@@ -4,7 +4,6 @@ extends Control
 @onready var btn_guardar_global = $Layout/Centro/PanelContenedor/VBoxTabs/HBoxFinal/BtnGuardarGlobal
 
 @onready var nombre_input = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/NombreInput
-@onready var descripcion_input = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/DescripcionInput
 @onready var btn_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/BtnAdjunto
 @onready var nombre_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/NombreAdjunto
 
@@ -54,6 +53,7 @@ func _on_add_pregunta():
 	margin.add_child(vbox)
 
 	var header = HBoxContainer.new()
+	header.name = "HeaderPregunta"
 	header.add_theme_constant_override("separation", 10)
 	vbox.add_child(header)
 
@@ -199,8 +199,8 @@ func _recoger_preguntas() -> Array:
 		var vbox = margin.get_child(0)
 		var enunciado_node = vbox.get_node_or_null("Enunciado")
 		var bloque_test = vbox.get_node_or_null("BloqueTest")
-		var tipo_node = vbox.get_node("HBoxContainer") if vbox.has_node("HBoxContainer") else vbox.get_child(0)
-		var opt = tipo_node.get_node_or_null("TipoPregunta")
+		var tipo_node = vbox.get_node_or_null("HeaderPregunta")
+		var opt = tipo_node.get_node_or_null("TipoPregunta") if tipo_node else null
 		if enunciado_node == null or opt == null:
 			continue
 		var enunciado_text = enunciado_node.text.strip_edges()
