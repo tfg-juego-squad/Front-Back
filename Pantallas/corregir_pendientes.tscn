@@ -1,0 +1,69 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Pantallas/corregir_pendientes.gd" id="1"]
+
+[node name="CorregirPendientes" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.11, 0.12, 0.16, 1)
+
+[node name="Layout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="Layout"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 55)
+
+[node name="HBox" type="HBoxContainer" parent="Layout/Header"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="MargenIzq" type="Control" parent="Layout/Header/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(15, 0)
+
+[node name="Titulo" type="Label" parent="Layout/Header/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Correcciones Pendientes"
+vertical_alignment = 1
+
+[node name="BtnVolver" type="Button" parent="Layout/Header/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(130, 0)
+text = "Volver"
+
+[node name="MargenDer" type="Control" parent="Layout/Header/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(15, 0)
+
+[node name="Scroll" type="ScrollContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Lista" type="VBoxContainer" parent="Layout/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Vacio" type="Label" parent="Layout"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Cargando..."
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)

@@ -1,0 +1,84 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Pantallas/sesion_prueba.gd" id="1"]
+
+[node name="SesionPrueba" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.12, 0.13, 0.18, 1)
+
+[node name="Centro" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="Centro"]
+custom_minimum_size = Vector2(640, 480)
+layout_mode = 2
+
+[node name="Margen" type="MarginContainer" parent="Centro/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 25
+
+[node name="VBox" type="VBoxContainer" parent="Centro/Panel/Margen"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Titulo" type="Label" parent="Centro/Panel/Margen/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Sesión de Prueba"
+
+[node name="Progreso" type="Label" parent="Centro/Panel/Margen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "Pregunta 0 / 0"
+
+[node name="Sep" type="HSeparator" parent="Centro/Panel/Margen/VBox"]
+layout_mode = 2
+
+[node name="Enunciado" type="Label" parent="Centro/Panel/Margen/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 2
+text = "Cargando preguntas..."
+
+[node name="OpcionesTest" type="VBoxContainer" parent="Centro/Panel/Margen/VBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RespuestaDesarrollo" type="TextEdit" parent="Centro/Panel/Margen/VBox"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(0, 120)
+placeholder_text = "Escribe tu respuesta aquí..."
+
+[node name="HBoxBotones" type="HBoxContainer" parent="Centro/Panel/Margen/VBox"]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 12
+
+[node name="BtnAbandonar" type="Button" parent="Centro/Panel/Margen/VBox/HBoxBotones"]
+layout_mode = 2
+text = "Abandonar"
+
+[node name="BtnEnviar" type="Button" parent="Centro/Panel/Margen/VBox/HBoxBotones"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 0)
+text = "Enviar respuesta"
