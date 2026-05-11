@@ -1,6 +1,6 @@
 extends Node
 
-const BASE_URL = "http://localhost:8081/tfg"
+const BASE_URL = "http://localhost:8080/tfg"
 
 func _construir_headers(json: bool = false) -> PackedStringArray:
 	var headers: Array = []
