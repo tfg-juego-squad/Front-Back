@@ -21,8 +21,8 @@ extends Control
 const TIPO_TEST = "TEST"
 const TIPO_DESARROLLO = "DESARROLLO"
 
-var contador_preguntas = 0
-var _preguntas_pendientes: Array = []
+var contador_preguntas := 0
+var _preguntas_payload: Array = []
 var _prueba_id_actual: int = -1
 
 func _ready():
@@ -40,6 +40,8 @@ func _on_add_pregunta():
 	contador_preguntas += 1
 
 	var panel = PanelContainer.new()
+	panel.set_meta("es_pregunta", true)
+
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 15)
 	margin.add_theme_constant_override("margin_top", 10)
@@ -48,26 +50,92 @@ func _on_add_pregunta():
 	panel.add_child(margin)
 
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
+	vbox.add_theme_constant_override("separation", 8)
 	margin.add_child(vbox)
+
+	var header = HBoxContainer.new()
+	header.add_theme_constant_override("separation", 10)
+	vbox.add_child(header)
 
 	var lbl = Label.new()
 	lbl.text = "Pregunta #" + str(contador_preguntas)
 	lbl.add_theme_color_override("font_color", Color.AQUAMARINE)
-	vbox.add_child(lbl)
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(lbl)
 
-	var txt = TextEdit.new()
-	txt.name = "TextoPregunta"
-	txt.placeholder_text = "Escribe la pregunta..."
-	txt.custom_minimum_size = Vector2(0, 60)
-	vbox.add_child(txt)
+	var opt_tipo = OptionButton.new()
+	opt_tipo.name = "TipoPregunta"
+	opt_tipo.add_item(TIPO_DESARROLLO)
+	opt_tipo.add_item(TIPO_TEST)
+	opt_tipo.selected = 0
+	header.add_child(opt_tipo)
 
 	var btn_del = Button.new()
-	btn_del.text = "Eliminar"
+	btn_del.text = "X"
+	btn_del.custom_minimum_size = Vector2(36, 0)
 	btn_del.pressed.connect(func(): panel.queue_free())
-	vbox.add_child(btn_del)
+	header.add_child(btn_del)
+
+	var enunciado = TextEdit.new()
+	enunciado.name = "Enunciado"
+	enunciado.placeholder_text = "Escribe el enunciado..."
+	enunciado.custom_minimum_size = Vector2(0, 60)
+	vbox.add_child(enunciado)
+
+	var bloque_test = VBoxContainer.new()
+	bloque_test.name = "BloqueTest"
+	bloque_test.visible = false
+	bloque_test.add_theme_constant_override("separation", 6)
+	vbox.add_child(bloque_test)
+
+	var lbl_resp = Label.new()
+	lbl_resp.text = "Respuestas posibles (marca las correctas):"
+	lbl_resp.add_theme_color_override("font_color", Color(0.7, 0.85, 1, 1))
+	lbl_resp.add_theme_font_size_override("font_size", 12)
+	bloque_test.add_child(lbl_resp)
+
+	var lista_respuestas = VBoxContainer.new()
+	lista_respuestas.name = "ListaRespuestas"
+	lista_respuestas.add_theme_constant_override("separation", 4)
+	bloque_test.add_child(lista_respuestas)
+
+	var btn_add_resp = Button.new()
+	btn_add_resp.text = "+ Añadir respuesta"
+	btn_add_resp.pressed.connect(func(): _add_respuesta(lista_respuestas))
+	bloque_test.add_child(btn_add_resp)
+
+	opt_tipo.item_selected.connect(_on_tipo_pregunta_seleccionado.bind(opt_tipo, bloque_test, lista_respuestas))
 
 	lista_preguntas.add_child(panel)
+
+func _on_tipo_pregunta_seleccionado(opt: OptionButton, bloque_test: VBoxContainer, lista_respuestas: VBoxContainer, idx: int):
+	var es_test = opt.get_item_text(idx) == TIPO_TEST
+	bloque_test.visible = es_test
+	if es_test and lista_respuestas.get_child_count() == 0:
+		_add_respuesta(lista_respuestas)
+		_add_respuesta(lista_respuestas)
+
+func _add_respuesta(contenedor: VBoxContainer):
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 6)
+
+	var check = CheckBox.new()
+	check.name = "EsCorrecta"
+	hbox.add_child(check)
+
+	var input = LineEdit.new()
+	input.name = "TextoRespuesta"
+	input.placeholder_text = "Texto de la respuesta"
+	input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(input)
+
+	var btn_quitar = Button.new()
+	btn_quitar.text = "−"
+	btn_quitar.custom_minimum_size = Vector2(28, 0)
+	btn_quitar.pressed.connect(func(): hbox.queue_free())
+	hbox.add_child(btn_quitar)
+
+	contenedor.add_child(hbox)
 
 # TODO: Sin endpoint de subida de archivos en el backend
 func _on_btn_adjunto():
@@ -88,31 +156,76 @@ func _on_guardar():
 	if nombre_input.text.strip_edges().is_empty():
 		Notificador.notificar("El titulo es obligatorio", Color.MAGENTA)
 		return
-
 	if GameManager.aula_seleccionada_id.is_empty():
 		Notificador.notificar("No hay aula seleccionada, vuelve al Dashboard", Color.MAGENTA)
 		return
 
-	# Recoger preguntas de los nodos dinamicos
-	var preguntas: Array = []
-	for child in lista_preguntas.get_children():
-		var margin_node = child.get_child(0) if child.get_child_count() > 0 else null
-		var vbox_node = margin_node.get_child(0) if margin_node and margin_node.get_child_count() > 0 else null
-		if vbox_node:
-			var txt = vbox_node.get_node_or_null("TextoPregunta")
-			if txt and not txt.text.strip_edges().is_empty():
-				preguntas.append(txt.text.strip_edges())
+	_preguntas_payload = _recoger_preguntas()
+	if _preguntas_payload.is_empty():
+		Notificador.notificar("Añade al menos una pregunta", Color.ORANGE)
+		return
+
+	for i in range(_preguntas_payload.size()):
+		var pq = _preguntas_payload[i]
+		if pq["tipo"] == TIPO_TEST:
+			if pq["respuestasPosibles"].is_empty():
+				Notificador.notificar("Pregunta %d (TEST) sin respuestas" % (i + 1), Color.ORANGE)
+				return
+			var hay_correcta = false
+			for r in pq["respuestasPosibles"]:
+				if r["esCorrecta"]:
+					hay_correcta = true
+					break
+			if not hay_correcta:
+				Notificador.notificar("Pregunta %d (TEST) sin respuesta correcta" % (i + 1), Color.ORANGE)
+				return
 
 	var payload = {
 		"aulaId": int(GameManager.aula_seleccionada_id),
 		"titulo": nombre_input.text.strip_edges(),
 		"fechaLimite": _construir_fecha_limite(),
-		"puntuacionMaxima": max(preguntas.size(), 1)
+		"puntuacionMaxima": _preguntas_payload.size()
 	}
 
-	_preguntas_pendientes = preguntas
 	Notificador.notificar("Guardando prueba...", Color.CYAN)
 	ConexionManager.peticion_post("/pruebas/crear", payload, _on_prueba_guardada)
+
+func _recoger_preguntas() -> Array:
+	var out: Array = []
+	for panel in lista_preguntas.get_children():
+		if not panel.has_meta("es_pregunta"):
+			continue
+		var margin = panel.get_child(0)
+		var vbox = margin.get_child(0)
+		var enunciado_node = vbox.get_node_or_null("Enunciado")
+		var bloque_test = vbox.get_node_or_null("BloqueTest")
+		var tipo_node = vbox.get_node("HBoxContainer") if vbox.has_node("HBoxContainer") else vbox.get_child(0)
+		var opt = tipo_node.get_node_or_null("TipoPregunta")
+		if enunciado_node == null or opt == null:
+			continue
+		var enunciado_text = enunciado_node.text.strip_edges()
+		if enunciado_text.is_empty():
+			continue
+
+		var tipo = opt.get_item_text(opt.selected)
+		var respuestas: Array = []
+		if tipo == TIPO_TEST and bloque_test:
+			var lista_resp = bloque_test.get_node_or_null("ListaRespuestas")
+			if lista_resp:
+				for fila in lista_resp.get_children():
+					var input_texto = fila.get_node_or_null("TextoRespuesta")
+					var check = fila.get_node_or_null("EsCorrecta")
+					if input_texto and check:
+						var t = input_texto.text.strip_edges()
+						if not t.is_empty():
+							respuestas.append({"texto": t, "esCorrecta": check.button_pressed})
+
+		out.append({
+			"enunciado": enunciado_text,
+			"tipo": tipo,
+			"respuestasPosibles": respuestas
+		})
+	return out
 
 func _construir_fecha_limite() -> String:
 	var fecha = fecha_input.text.strip_edges()
@@ -136,30 +249,22 @@ func _on_prueba_guardada(data, code):
 		Notificador.notificar("Prueba creada pero sin id válido", Color.ORANGE)
 		return
 
-	if _preguntas_pendientes.is_empty():
-		Notificador.notificar("Prueba creada (sin preguntas)", Color.GREEN)
-		await get_tree().create_timer(1.2).timeout
-		get_tree().change_scene_to_file("res://Pantallas/profesor_dashboard.tscn")
-		return
-
 	Notificador.notificar("Subiendo preguntas...", Color.CYAN)
 	_enviar_siguiente_pregunta()
 
 func _enviar_siguiente_pregunta():
-	if _preguntas_pendientes.is_empty():
+	if _preguntas_payload.is_empty():
 		Notificador.notificar("Prueba y preguntas creadas", Color.GREEN)
 		await get_tree().create_timer(1.2).timeout
 		get_tree().change_scene_to_file("res://Pantallas/profesor_dashboard.tscn")
 		return
 
-	var enunciado = _preguntas_pendientes.pop_front()
-	# Por defecto DESARROLLO porque la UI todavía no recoge respuestas posibles.
-	# Cuando se añadan inputs de respuesta, cambiar a TIPO_TEST y rellenar el array.
+	var pq = _preguntas_payload.pop_front()
 	var payload = {
-		"enunciado": enunciado,
-		"tipo": TIPO_DESARROLLO,
+		"enunciado": pq["enunciado"],
+		"tipo": pq["tipo"],
 		"pruebaId": _prueba_id_actual,
-		"respuestasPosibles": []
+		"respuestasPosibles": pq["respuestasPosibles"]
 	}
 	ConexionManager.peticion_post("/preguntas/crear", payload, _on_pregunta_guardada)
 

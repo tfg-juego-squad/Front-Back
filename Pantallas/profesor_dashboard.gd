@@ -6,6 +6,7 @@ extends Control
 
 @onready var btn_nueva_entrega = $Layout/MainContent/PanelBotones/VBoxBotones/BtnNuevaEntrega
 @onready var btn_revisar = $Layout/MainContent/PanelBotones/VBoxBotones/BtnRevisar
+@onready var btn_corregir = $Layout/MainContent/PanelBotones/VBoxBotones/BtnCorregir
 @onready var btn_ajustes = $Layout/MainContent/PanelBotones/VBoxBotones/BtnAjustes
 @onready var btn_cerrar_sesion = $Layout/Header/HBoxHeader/BtnCerrarSesion
 
@@ -26,6 +27,7 @@ var aulas_data = []
 func _ready():
 	btn_nueva_entrega.pressed.connect(_on_nueva_entrega)
 	btn_revisar.pressed.connect(_on_revisar_puntuaciones)
+	btn_corregir.pressed.connect(_on_corregir_pendientes)
 	btn_ajustes.pressed.connect(_on_abrir_generacion)
 	btn_cerrar_sesion.pressed.connect(_on_cerrar_sesion)
 	btn_cerrar_flotante.pressed.connect(_cerrar_panel_flotante)
@@ -157,6 +159,9 @@ func _cerrar_panel_flotante():
 
 func _on_nueva_entrega():
 	get_tree().change_scene_to_file("res://Pantallas/nueva_entrega.tscn")
+
+func _on_corregir_pendientes():
+	get_tree().change_scene_to_file("res://Pantallas/corregir_pendientes.tscn")
 
 func _on_cerrar_sesion():
 	GameManager.cerrar_sesion()

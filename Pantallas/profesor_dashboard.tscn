@@ -138,6 +138,11 @@ layout_mode = 2
 custom_minimum_size = Vector2(200, 50)
 text = "Revisar Entregas"
 
+[node name="BtnCorregir" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 50)
+text = "Corregir Pendientes"
+
 [node name="Sep2" type="HSeparator" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
 layout_mode = 2
 
