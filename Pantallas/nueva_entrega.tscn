@@ -98,6 +98,23 @@ custom_minimum_size = Vector2(0, 35)
 layout_mode = 2
 placeholder_text = "Ej: Ecuaciones de primer grado"
 
+[node name="HBoxPuntuacion" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="L_Puntuacion" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxPuntuacion"]
+layout_mode = 2
+text = "Puntuación máxima objetivo:"
+theme_override_font_sizes/font_size = 14
+
+[node name="PuntuacionObjetivoSpin" type="SpinBox" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxPuntuacion"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 35)
+min_value = 1
+max_value = 1000
+value = 100
+tooltip_text = "Suma de puntos que tienen que repartir entre las preguntas"
+
 [node name="L_Desc" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 layout_mode = 2
 text = "Descripción:"
@@ -217,9 +234,9 @@ text = "Previsualizar Examen"
 [node name="LblTotalPuntos" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
 layout_mode = 2
 horizontal_alignment = 2
-theme_override_colors/font_color = Color(0.8, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 16
-text = "Puntuación máxima total: 0"
+theme_override_colors/font_color = Color(1, 0.6, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "Total: 0 / 100  (faltan 100)"
 
 [node name="Avanzado" type="MarginContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer"]
 visible = false
