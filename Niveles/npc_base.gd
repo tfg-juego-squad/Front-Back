@@ -1,5 +1,9 @@
 extends CharacterBody2D
 
+# id del NPC dentro del catálogo (NpcManager.NPCS). Cámbialo en el inspector
+# en cada NPC del nivel para que muestre solo las pruebas que le tocan.
+@export var npc_id: String = "npc_general"
+
 @onready var area_interaccion = $Area2D
 var en_zona: bool = false
 
@@ -10,7 +14,11 @@ func _ready():
 func _on_body_entered(body):
 	if body.name == "User-PJ":
 		en_zona = true
-		Notificador.notificar("Presiona [E] o [ENTER] para hablar", Color.CYAN)
+		var npc = NpcManager.buscar_npc(npc_id)
+		var saludo = "Presiona [E] o [ENTER] para hablar"
+		if not npc.is_empty():
+			saludo = "%s · Pulsa [E] para hablar" % npc.get("nombre", "NPC")
+		Notificador.notificar(saludo, Color.CYAN)
 
 func _on_body_exited(body):
 	if body.name == "User-PJ":
@@ -28,5 +36,6 @@ func _input(event):
 		Notificador.notificar("Los profesores gestionan las pruebas desde el dashboard", Color.ORANGE)
 		return
 
+	NpcManager.set_npc_activo(npc_id)
 	Notificador.notificar("Abriendo pruebas pendientes...", Color.GOLD)
 	get_tree().change_scene_to_file("res://Pantallas/pruebas_pendientes.tscn")
