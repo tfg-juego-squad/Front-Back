@@ -32,8 +32,7 @@ public class PruebaService {
     private final IUsuarioDAO usuarioDAO;
 
     /**
-     * Crea un nuevo examen (Prueba) dentro de un aula específica.
-     * Seguridad: Solo el profesor dueño del aula puede crear exámenes en ella.
+     * Crea un examen en un aula. Solo el profesor del aula puede hacerlo.
      */
     @Transactional
     public PruebaResponseDTO crearPrueba(PruebaRequestDTO request, Usuario usuarioLogueado) {
@@ -56,19 +55,18 @@ public class PruebaService {
     }
 
     /**
-     * Lista todos los exámenes asociados a un aula.
-     * Seguridad: Profesores y alumnos solo pueden ver las pruebas de sus propias aulas.
+     * Lista los exámenes de un aula validando los permisos del usuario.
      */
     public List<PruebaResponseDTO> obtenerPruebasPorAula(Long aulaId, Usuario usuarioLogueado) {
         Aula aula = aulaDAO.findById(aulaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada con ID: " + aulaId));
 
-        // Seguridad Profesor
+        // Permisos para Profesor
         if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR && !aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
             throw new ForbiddenException("No puedes ver las pruebas de un aula que no te pertenece.");
         }
 
-        // Seguridad Estudiante
+        // Permisos para Alumno
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
             if (usuarioLogueado.getAula() == null || !usuarioLogueado.getAula().getId().equals(aulaId)) {
                 throw new ForbiddenException("No puedes ver las pruebas de un aula a la que no perteneces.");
@@ -80,8 +78,7 @@ public class PruebaService {
     }
 
     /**
-     * Actualiza los datos de un examen existente.
-     * Seguridad: Solo el profesor creador del examen puede modificarlo.
+     * Modifica una prueba existente.
      */
     @Transactional
     public PruebaResponseDTO actualizarPrueba(Long pruebaId, PruebaRequestDTO request, Usuario usuarioLogueado) {
@@ -100,9 +97,7 @@ public class PruebaService {
     }
 
     /**
-     * Obtiene una lista de exámenes que un alumno específico aún no ha realizado.
-     * Seguridad: Un alumno solo puede ver sus propios exámenes pendientes. Un profesor
-     * solo puede consultar los exámenes pendientes de sus propios alumnos.
+     * Lista de exámenes que un alumno tiene pendientes de hacer.
      */
     public List<PruebaResponseDTO> obtenerPruebasPendientes(Long alumnoId, Usuario usuarioLogueado) {
         Usuario alumno = usuarioDAO.findById(alumnoId)
@@ -112,13 +107,12 @@ public class PruebaService {
             throw new BadRequestException("El alumno no está asignado a ninguna aula.");
         }
 
-        // Seguridad Estudiante
+        // Validar que el usuario logueado tiene permiso para ver esto
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
             if (!usuarioLogueado.getId().equals(alumnoId)) {
                 throw new ForbiddenException("Acceso denegado: No puedes ver las pruebas de otros alumnos.");
             }
         }
-        // Seguridad Profesor
         else if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR) {
             Long idProfesorDelAlumno = alumno.getAula().getProfesor().getId();
             if (!usuarioLogueado.getId().equals(idProfesorDelAlumno)) {

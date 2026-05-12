@@ -21,7 +21,7 @@ import java.util.Optional;
 
 /**
  * Servicio encargado de gestionar las Respuestas enviadas por los alumnos a las preguntas de un examen.
- * Incluye la lógica del motor de auto-corrección para preguntas tipo TEST,
+ * Incluye la lógica de auto-corrección para preguntas tipo TEST,
  * y el flujo de corrección manual para preguntas tipo DESARROLLO.
  */
 @Service
@@ -36,10 +36,8 @@ public class RespuestaAlumnoService {
     private final PuntuacionService puntuacionService;
 
     /**
-     * Procesa la respuesta de un alumno a una pregunta en concreto.
-     * Seguridad: Un alumno solo puede responder a exámenes de su aula. Se evita que responda 2 veces.
-     * Anti-trampas: Las preguntas tipo TEST se corrigen en el servidor automáticamente,
-     * asignando los puntos justos. El alumno no puede falsear la puntuación.
+     * Guarda la respuesta de un alumno a una pregunta.
+     * Valida que el alumno pertenezca al aula y que no haya respondido ya.
      */
     @Transactional
     public RespuestaAlumnoResponseDTO responderPregunta(RespuestaAlumnoRequestDTO request, Usuario alumnoLogueadoToken) {
@@ -49,12 +47,12 @@ public class RespuestaAlumnoService {
         Pregunta pregunta = preguntaDAO.findById(request.getPreguntaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pregunta no encontrada"));
 
-        // Seguridad: ¿El alumno pertenece al aula de este examen?
+        // Comprobar que el alumno es del aula del examen
         if (alumno.getAula() == null || !alumno.getAula().getId().equals(pregunta.getPrueba().getAula().getId())) {
             throw new ForbiddenException("No puedes responder preguntas de un examen que no pertenece a tu aula.");
         }
         
-        // Evitar doble respuesta: previene que un alumno pulse rápido varias veces (Race conditions) o intente re-hacerla
+        // Control para no responder dos veces la misma pregunta
         Optional<RespuestaAlumno> respuestaExistente = respuestaAlumnoDAO.findByPregunta_IdAndAlumno_Id(pregunta.getId(), alumno.getId());
         if (respuestaExistente.isPresent()) {
             throw new BadRequestException("Ya has respondido a esta pregunta.");
@@ -63,10 +61,10 @@ public class RespuestaAlumnoService {
         RespuestaAlumno respuesta = new RespuestaAlumno();
         respuesta.setAlumno(alumno);
         respuesta.setPregunta(pregunta);
-        respuesta.setTiempoRespuestaSegundos(request.getTiempoRespuestaSegundos()); // Para métricas del profesor
+        respuesta.setTiempoRespuestaSegundos(request.getTiempoRespuestaSegundos());
         respuesta.setFechaRespuesta(Instant.now());
 
-        // FLUJO TIPO TEST
+        // Lógica para preguntas tipo TEST
         if (pregunta.getTipo() == TipoPregunta.TEST) {
             if (request.getRespuestaElegidaId() != null) {
                 RespuestaPosible opcion = respuestaPosibleDAO.findById(request.getRespuestaElegidaId())
@@ -77,24 +75,23 @@ public class RespuestaAlumnoService {
                 }
                 respuesta.setRespuestaElegida(opcion);
 
-                // MOTOR DE AUTO-CORRECCIÓN Y ASIGNACIÓN DE PUNTOS
+                // Corrección automática según si es la correcta o no
                 if (opcion.getEsCorrecta()) {
-                    // Se asigna directamente el valor que el profesor le dio a esta pregunta
                     respuesta.setPuntosAsignados(pregunta.getValorPuntos());
                 } else {
-                    respuesta.setPuntosAsignados(0); // Respuesta fallada
+                    respuesta.setPuntosAsignados(0);
                 }
 
             } else {
                 throw new BadRequestException("Para preguntas tipo TEST, debes proporcionar un respuestaElegidaId.");
             }
-        // FLUJO TIPO DESARROLLO
+        // Lógica para preguntas tipo DESARROLLO
         } else if (pregunta.getTipo() == TipoPregunta.DESARROLLO) {
             if (request.getTextoRespuesta() == null || request.getTextoRespuesta().trim().isEmpty()) {
                 throw new BadRequestException("Para preguntas de DESARROLLO, debes enviar el texto de la respuesta.");
             }
             respuesta.setTextoRespuesta(request.getTextoRespuesta());
-            respuesta.setPuntosAsignados(null); // NULL indica: "Pendiente de corrección por el profesor"
+            respuesta.setPuntosAsignados(null); // Pendiente de que el profesor lo corrija
         }
 
         RespuestaAlumno guardada = respuestaAlumnoDAO.save(respuesta);
@@ -123,8 +120,7 @@ public class RespuestaAlumnoService {
     }
 
     /**
-     * Devuelve una bandeja de entrada al profesor con todas las respuestas tipo DESARROLLO
-     * de todos sus alumnos que todavía no tienen puntuación asignada (PuntosAsignados is NULL).
+     * Lista de respuestas de desarrollo que el profesor tiene que corregir.
      */
     public List<RespuestaAlumnoResponseDTO> obtenerPendientesCorreccion(Usuario profesorLogueado) {
         if (profesorLogueado.getRol() != TipoRol.ROL_PROFESOR) {
@@ -135,16 +131,15 @@ public class RespuestaAlumnoService {
     }
 
     /**
-     * Flujo en el que el profesor asigna una puntuación a una respuesta de DESARROLLO.
-     * Tras guardar la nota, se dispara una actualización global (PuntuacionService)
-     * para recalcular la nota final del examen de ese alumno y otorgarle Experiencia.
+     * El profesor pone la nota a una respuesta de desarrollo.
+     * Se actualiza el total de puntos y la experiencia del alumno.
      */
     @Transactional
     public RespuestaAlumnoResponseDTO corregirRespuestaDesarrollo(Long respuestaId, Integer puntos, Usuario profesorLogueado) {
         RespuestaAlumno respuesta = respuestaAlumnoDAO.findById(respuestaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Respuesta no encontrada"));
 
-        // Seguridad: El profesor solo puede corregir exámenes de sus propias aulas
+        // Validar que el profesor es el dueño del aula
         if (!respuesta.getPregunta().getPrueba().getAula().getProfesor().getId().equals(profesorLogueado.getId())) {
             throw new ForbiddenException("No puedes corregir respuestas de alumnos que no pertenecen a tus aulas.");
         }
@@ -156,8 +151,7 @@ public class RespuestaAlumnoService {
         respuesta.setPuntosAsignados(puntos);
         RespuestaAlumno guardada = respuestaAlumnoDAO.save(respuesta);
         
-        // Actualizamos la puntuación total del alumno para este examen
-        // Esto recalcula su nota y ajusta su experiencia ganada en el sistema.
+        // Recalcular la nota total del examen para este alumno
         puntuacionService.actualizarPuntuacionTotal(respuesta.getAlumno().getId(), respuesta.getPregunta().getPrueba().getId());
         
         return respuestaAlumnoMapper.toResponseDTO(guardada);
