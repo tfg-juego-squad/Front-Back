@@ -45,7 +45,7 @@ func _ready():
 	enunciado.text = ""
 	tiempo_label.text = "—"
 	btn_enviar.disabled = true
-	ConexionManager.peticion_get("/preguntas/prueba/%d" % prueba_id, _on_preguntas_recibidas)
+	ConexionManager.peticion_get("/preguntas/prueba/%s" % GameManager.id_str(prueba_id), _on_preguntas_recibidas)
 
 func _on_preguntas_recibidas(data, code):
 	if code != 200 or not (data is Array):
@@ -85,7 +85,7 @@ func _mostrar_pregunta_actual():
 			var btn = CheckBox.new()
 			btn.text = str(resp.get("texto", ""))
 			btn.button_group = grupo
-			var resp_id = int(resp.get("id", -1))
+			var resp_id = GameManager.id_int(resp.get("id"))
 			btn.toggled.connect(_on_opcion_test_toggled.bind(resp_id))
 			opciones_test.add_child(btn)
 	else:
@@ -133,7 +133,7 @@ func _on_enviar():
 
 	var p = preguntas[indice_actual]
 	var tipo = str(p.get("tipo", "")).to_upper()
-	var preg_id = int(p.get("id", -1))
+	var preg_id = GameManager.id_int(p.get("id"))
 	if preg_id < 0:
 		Notificador.notificar("Pregunta sin id válido", Color.RED)
 		return

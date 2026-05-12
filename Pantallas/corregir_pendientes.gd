@@ -72,7 +72,7 @@ func _crear_tarjeta(r: Dictionary):
 	var btn = Button.new()
 	btn.text = "Corregir"
 	btn.custom_minimum_size = Vector2(110, 30)
-	var resp_id = int(r.get("id", -1))
+	var resp_id = GameManager.id_int(r.get("id"))
 	btn.pressed.connect(func(): _corregir(resp_id, int(spin.value), panel))
 	hbox.add_child(btn)
 
@@ -83,7 +83,7 @@ func _corregir(resp_id: int, puntos: int, tarjeta: Node):
 		Notificador.notificar("Respuesta sin id válido", Color.RED)
 		return
 	ConexionManager.peticion_post(
-		"/respuestas/%d/corregir" % resp_id,
+		"/respuestas/%s/corregir" % GameManager.id_str(resp_id),
 		{"puntos": puntos},
 		_on_correccion_enviada.bind(puntos, tarjeta)
 	)

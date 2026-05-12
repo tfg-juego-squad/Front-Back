@@ -43,6 +43,27 @@ func cerrar_sesion(motivo: String = ""):
 	if tree:
 		tree.change_scene_to_file("res://Pantallas/login.tscn")
 
+# Convierte un valor numérico (float, int o string) a su representación entera
+# como String. Necesario porque el JSON de Godot parsea números como float
+# y "1.0" rompería los path params del backend.
+func id_str(valor) -> String:
+	if valor == null:
+		return ""
+	if typeof(valor) == TYPE_STRING:
+		if valor.is_empty():
+			return ""
+		return str(int(float(valor)))
+	return str(int(valor))
+
+func id_int(valor) -> int:
+	if valor == null:
+		return -1
+	if typeof(valor) == TYPE_STRING:
+		if valor.is_empty():
+			return -1
+		return int(float(valor))
+	return int(valor)
+
 # Aplica los datos devueltos por /puntuacion/alta sobre el usuario_actual
 # y devuelve true si el alumno ha subido de nivel.
 func aplicar_recompensa(data) -> bool:

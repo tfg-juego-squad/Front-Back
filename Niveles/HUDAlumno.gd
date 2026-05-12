@@ -56,10 +56,10 @@ func _cargar_pruebas_pendientes():
 	lbl_cargando.add_theme_color_override("font_color", Color(0.7, 0.7, 0.75, 1))
 	lista_vbox.add_child(lbl_cargando)
 
-	var alumno_id = GameManager.usuario_actual.get("id", -1)
-	if alumno_id == -1:
+	var alumno_id = GameManager.id_str(GameManager.usuario_actual.get("id"))
+	if alumno_id.is_empty():
 		return
-	ConexionManager.peticion_get("/pruebas/pendientes/%s" % str(alumno_id), _on_pendientes)
+	ConexionManager.peticion_get("/pruebas/pendientes/%s" % alumno_id, _on_pendientes)
 
 func _on_pendientes(data, code):
 	for hijo in lista_vbox.get_children():

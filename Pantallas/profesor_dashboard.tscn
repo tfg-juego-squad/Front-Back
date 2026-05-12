@@ -26,7 +26,7 @@ theme_override_constants/separation = 0
 
 [node name="Header" type="PanelContainer" parent="Layout"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 55)
+custom_minimum_size = Vector2(0, 80)
 
 [node name="HBoxHeader" type="HBoxContainer" parent="Layout/Header"]
 layout_mode = 2
@@ -40,12 +40,13 @@ custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Panel del Profesor - POKEDUCATION"
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 vertical_alignment = 1
 
 [node name="BtnCerrarSesion" type="Button" parent="Layout/Header/HBoxHeader"]
 layout_mode = 2
-custom_minimum_size = Vector2(130, 0)
+custom_minimum_size = Vector2(180, 50)
+theme_override_font_sizes/font_size = 16
 text = "Cerrar Sesion"
 
 [node name="MargenDer" type="Control" parent="Layout/Header/HBoxHeader"]
@@ -77,7 +78,7 @@ theme_override_constants/separation = 8
 [node name="TituloAlumnos" type="Label" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
 text = "Lista de Alumnos"
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 22
 
 [node name="SepAlumnos" type="HSeparator" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
@@ -89,7 +90,8 @@ theme_override_constants/separation = 8
 [node name="CmbAulas" type="OptionButton" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 42)
+theme_override_font_sizes/font_size = 15
 item_count = 1
 selected = 0
 popup/item_0/text = "Cargando aulas..."
@@ -97,13 +99,15 @@ popup/item_0/id = 0
 
 [node name="BtnCrearAula" type="Button" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
 layout_mode = 2
-custom_minimum_size = Vector2(60, 30)
+custom_minimum_size = Vector2(60, 42)
+theme_override_font_sizes/font_size = 18
 text = " + "
 tooltip_text = "Crear nueva aula"
 
 [node name="BtnImportarCSV" type="Button" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
 layout_mode = 2
-custom_minimum_size = Vector2(110, 30)
+custom_minimum_size = Vector2(150, 42)
+theme_override_font_sizes/font_size = 15
 text = "Importar CSV"
 tooltip_text = "Importa una lista de alumnos desde un archivo CSV"
 
@@ -127,6 +131,7 @@ current_file = "credenciales.csv"
 [node name="ListaAlumnos" type="ItemList" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 15
 
 [node name="SeparadorV" type="VSeparator" parent="Layout/MainContent"]
 layout_mode = 2
@@ -146,24 +151,27 @@ alignment = 1
 layout_mode = 2
 text = "Tareas"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 
 [node name="Sep" type="HSeparator" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
 layout_mode = 2
 
 [node name="BtnNuevaEntrega" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
 layout_mode = 2
-custom_minimum_size = Vector2(200, 50)
-text = "Anadir Nueva Entrega"
+custom_minimum_size = Vector2(280, 64)
+theme_override_font_sizes/font_size = 18
+text = "Añadir Nueva Entrega"
 
 [node name="BtnRevisar" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
 layout_mode = 2
-custom_minimum_size = Vector2(200, 50)
-text = "Revisar Entregas"
+custom_minimum_size = Vector2(280, 64)
+theme_override_font_sizes/font_size = 18
+text = "Ranking del Aula"
 
 [node name="BtnCorregir" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
 layout_mode = 2
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(280, 64)
+theme_override_font_sizes/font_size = 18
 text = "Corregir Pendientes"
 
 [node name="Sep2" type="HSeparator" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
@@ -171,7 +179,8 @@ layout_mode = 2
 
 [node name="BtnAjustes" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
 layout_mode = 2
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(280, 64)
+theme_override_font_sizes/font_size = 18
 text = "Ajustes Alumnado"
 
 [node name="PanelFlotante" type="PanelContainer" parent="."]
@@ -202,7 +211,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Detalles:"
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 22
 
 [node name="BtnCerrarFlotante" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/HeaderFlotante"]
 layout_mode = 2
@@ -225,6 +234,7 @@ size_flags_vertical = 3
 columns = 4
 column_titles_visible = true
 hide_root = true
+theme_override_font_sizes/font_size = 16
 
 [node name="VBoxGeneracion" type="VBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
 visible = false
