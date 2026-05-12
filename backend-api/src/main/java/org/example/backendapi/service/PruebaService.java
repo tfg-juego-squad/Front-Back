@@ -49,6 +49,7 @@ public class PruebaService {
 
         nuevaPrueba.setFechaLimite(request.getFechaLimite());
         nuevaPrueba.setFechaCreacion(Instant.now());
+        nuevaPrueba.setNpcId(request.getNpcId());
 
         Prueba guardada = pruebaDAO.save(nuevaPrueba);
         return pruebaMapper.toResponseDTO(guardada);
@@ -91,6 +92,7 @@ public class PruebaService {
 
         prueba.setTitulo(request.getTitulo());
         prueba.setFechaLimite(request.getFechaLimite());
+        prueba.setNpcId(request.getNpcId());
 
         Prueba actualizada = pruebaDAO.save(prueba);
         return pruebaMapper.toResponseDTO(actualizada);

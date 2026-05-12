@@ -29,6 +29,9 @@ public class Prueba {
     @Column(name = "fecha_limite", nullable = false)
     private Instant fechaLimite;
 
+    @Column(name = "npc_id", length = 50)
+    private String npcId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aula_id", nullable = false)
     private Aula aula;

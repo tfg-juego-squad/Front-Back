@@ -10,4 +10,5 @@ public class PruebaResponseDTO {
     private Instant fechaCreacion;
     private Instant fechaLimite;
     private Long aulaId;
+    private String npcId;
 }
