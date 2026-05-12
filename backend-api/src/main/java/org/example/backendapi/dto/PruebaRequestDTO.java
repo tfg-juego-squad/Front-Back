@@ -16,10 +16,6 @@ public class PruebaRequestDTO {
     @NotBlank(message = "El título de la prueba es obligatorio")
     private String titulo;
 
-    @NotNull(message = "La puntuación máxima es obligatoria")
-    @Min(value = 1, message = "La puntuación máxima debe ser mayor que 0")
-    private Integer puntuacionMaxima;
-
     @NotNull(message = "La fecha límite es obligatoria")
     private Instant fechaLimite;
 }

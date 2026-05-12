@@ -9,6 +9,7 @@ public class PreguntaResponseDTO {
     private String enunciado;
     private String tipo;
     private Integer tiempoLimiteSegundos;
+    private Integer valorPuntos;
     private Long pruebaId;
     private List<RespuestaPosibleResponseDTO> respuestasPosibles;
 }
