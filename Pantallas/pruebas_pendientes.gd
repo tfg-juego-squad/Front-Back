@@ -52,9 +52,8 @@ func _crear_tarjeta_prueba(p: Dictionary):
 	vbox.add_child(lbl_titulo)
 
 	var lbl_meta = Label.new()
-	var max_puntos = p.get("puntuacionMaxima", "-")
 	var fecha_limite = p.get("fechaLimite", "")
-	lbl_meta.text = "Máx: %s · Límite: %s" % [str(max_puntos), str(fecha_limite)]
+	lbl_meta.text = "Límite: %s" % str(fecha_limite)
 	lbl_meta.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9, 1))
 	lbl_meta.add_theme_font_size_override("font_size", 11)
 	vbox.add_child(lbl_meta)

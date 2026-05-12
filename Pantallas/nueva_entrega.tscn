@@ -214,6 +214,13 @@ custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 text = "Previsualizar Examen"
 
+[node name="LblTotalPuntos" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
+layout_mode = 2
+horizontal_alignment = 2
+theme_override_colors/font_color = Color(0.8, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Puntuación máxima total: 0"
+
 [node name="Avanzado" type="MarginContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer"]
 visible = false
 layout_mode = 2

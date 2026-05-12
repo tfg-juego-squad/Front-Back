@@ -74,6 +74,12 @@ theme_override_font_sizes/font_size = 17
 autowrap_mode = 2
 text = "Cargando preguntas..."
 
+[node name="ValorLabel" type="Label" parent="Centro/Panel/Margen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = ""
+
 [node name="OpcionesTest" type="VBoxContainer" parent="Centro/Panel/Margen/VBox"]
 visible = false
 layout_mode = 2
