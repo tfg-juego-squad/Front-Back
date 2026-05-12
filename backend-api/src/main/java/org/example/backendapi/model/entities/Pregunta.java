@@ -27,6 +27,10 @@ public class Pregunta {
     @ColumnDefault("30")
     private Integer tiempoLimiteSegundos = 30;
 
+    @Column(name = "valor_puntos", nullable = false)
+    @ColumnDefault("10")
+    private Integer valorPuntos = 10;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prueba_id", nullable = false)
     private Prueba prueba;

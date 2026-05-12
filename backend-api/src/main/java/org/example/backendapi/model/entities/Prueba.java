@@ -22,9 +22,6 @@ public class Prueba {
     @OneToMany(mappedBy = "prueba", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pregunta> preguntas;
 
-    @Column(name = "puntuacion_maxima", nullable = false)
-    private Integer puntuacionMaxima;
-
     @ColumnDefault("current_timestamp()")
     @Column(name = "fecha_creacion")
     private Instant fechaCreacion;

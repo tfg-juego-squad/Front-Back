@@ -48,7 +48,6 @@ public class PruebaService {
         nuevaPrueba.setAula(aula);
         nuevaPrueba.setTitulo(request.getTitulo());
 
-        nuevaPrueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         nuevaPrueba.setFechaLimite(request.getFechaLimite());
         nuevaPrueba.setFechaCreacion(Instant.now());
 
@@ -94,7 +93,6 @@ public class PruebaService {
         }
 
         prueba.setTitulo(request.getTitulo());
-        prueba.setPuntuacionMaxima(request.getPuntuacionMaxima());
         prueba.setFechaLimite(request.getFechaLimite());
 
         Prueba actualizada = pruebaDAO.save(prueba);

@@ -46,6 +46,7 @@ public class PreguntaService {
         Pregunta pregunta = new Pregunta();
         pregunta.setEnunciado(request.getEnunciado());
         pregunta.setTiempoLimiteSegundos(request.getTiempoLimiteSegundos());
+        pregunta.setValorPuntos(request.getValorPuntos());
         pregunta.setPrueba(prueba);
 
         // Validamos que el tipo enviado sea correcto (TEST o DESARROLLO)
