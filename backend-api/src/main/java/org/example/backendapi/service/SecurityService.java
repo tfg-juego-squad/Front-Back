@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
+/**
+ * Servicio para encriptar contraseñas y generar claves aleatorias.
+ */
 @Service
 public class SecurityService {
     public String hashPassword(String password) {

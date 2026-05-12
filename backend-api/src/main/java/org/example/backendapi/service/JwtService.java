@@ -14,10 +14,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Servicio para la gestión de tokens JWT.
+ */
 @Service
 public class JwtService {
 
-    // Inyectamos los valores de application.properties
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
@@ -25,14 +27,12 @@ public class JwtService {
     private long jwtExpiration;
 
     /**
-     * 1. GENERACIÓN DEL TOKEN
-     * Aquí fabricamos el token. Metemos datos extra (Claims) como el ID y el Rol
-     * para no tener que ir a la base de datos a buscarlos en cada petición.
+     * Crea un token para el usuario guardando su ID y Rol.
      */
     public String generateToken(Usuario usuario) {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("id", usuario.getId());
-        extraClaims.put("rol", usuario.getRol().name()); // Guardamos ROL_PROFESOR o ROL_ESTUDIANTE
+        extraClaims.put("rol", usuario.getRol().name());
         
         if (usuario.getAula() != null) {
             extraClaims.put("aulaId", usuario.getAula().getId());
@@ -43,13 +43,12 @@ public class JwtService {
                 .subject(usuario.getNombreUsuario())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getSignInKey()) // Firmamos con nuestra clave secreta
+                .signWith(getSignInKey())
                 .compact();
     }
 
     /**
-     * 2. EXTRACCIÓN DE DATOS (CLAIMS)
-     * Métodos para leer la información dentro del token recibido desde Godot.
+     * Métodos para extraer información del token.
      */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -60,8 +59,6 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    // Este método es el que verifica la firma criptográfica.
-    // Si alguien manipuló el token, esto lanzará una excepción (SignatureException).
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSignInKey())
@@ -71,8 +68,7 @@ public class JwtService {
     }
 
     /**
-     * 3. VALIDACIÓN DEL TOKEN
-     * Comprueba si el token pertenece al usuario y si no ha caducado.
+     * Valida si el token es correcto y no ha caducado.
      */
     public boolean isTokenValid(String token, String username) {
         final String tokenUsername = extractUsername(token);
@@ -96,8 +92,7 @@ public class JwtService {
     }
 
     /**
-     * 4. GENERACIÓN DE LA CLAVE DE FIRMA
-     * Transforma el String del properties en una clave criptográfica real (HMAC-SHA).
+     * Obtiene la clave de firma a partir del secreto.
      */
     private SecretKey getSignInKey() {
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
