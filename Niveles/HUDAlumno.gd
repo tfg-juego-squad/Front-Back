@@ -42,8 +42,12 @@ func _animar_aparicion():
 	create_tween().tween_property(ui_parent, "modulate:a", 1.0, 0.2)
 
 func _actualizar_xp():
-	var nivel = int(GameManager.usuario_actual.get("nivelActual", 1))
-	var xp = int(GameManager.usuario_actual.get("experienciaActual", 0))
+	# El backend devuelve null si el alumno aún no tiene nivel/XP iniciados.
+	# int(null) revienta, así que comprobamos antes.
+	var nivel_raw = GameManager.usuario_actual.get("nivelActual")
+	var xp_raw = GameManager.usuario_actual.get("experienciaActual")
+	var nivel = 1 if nivel_raw == null else int(nivel_raw)
+	var xp = 0 if xp_raw == null else int(xp_raw)
 	xp_label.text = "Nivel %d  ·  %d/100 XP" % [nivel, xp]
 	progress_bar.max_value = 100
 	progress_bar.value = clampi(xp, 0, 100)

@@ -6,9 +6,9 @@
 [ext_resource type="Texture2D" uid="uid://dhe304h7kv655" path="res://Assets/grasstileset.png" id="3_8unat"]
 [ext_resource type="Script" uid="uid://bxavbn8gy3xg5" path="res://Niveles/character.gd" id="4_8unat"]
 [ext_resource type="Texture2D" uid="uid://jbe2ahhcal1v" path="res://Assets/char/Moviment.png" id="5_yjesw"]
-[ext_resource type="Texture2D" uid="uid://rdjqx7go2phx" path="res://Assets/mision-char/Humane01.png" id="7_dpjde"]
-[ext_resource type="Texture2D" uid="uid://cjr5lnuxcjdyc" path="res://Assets/mision-char/pelo/ha01.png" id="8_puy14"]
-[ext_resource type="Script" path="res://Niveles/npc_base.gd" id="9_npc"]
+[ext_resource type="Texture2D" uid="uid://bxdvqee473j6g" path="res://Assets/mision-char/Humane01.png" id="7_dpjde"]
+[ext_resource type="Texture2D" uid="uid://dsb67t27gscsh" path="res://Assets/mision-char/pelo/ha01.png" id="8_puy14"]
+[ext_resource type="Script" uid="uid://dmagwti2301qx" path="res://Niveles/npc_base.gd" id="9_npc"]
 
 [sub_resource type="GDScript" id="GDScript_nivel"]
 script/source = "extends Node2D
@@ -812,8 +812,9 @@ position = Vector2(-1, -1)
 zoom = Vector2(2, 2)
 
 [node name="NPC-Base" type="CharacterBody2D" parent="." unique_id=1700646178]
-script = ExtResource("9_npc")
 position = Vector2(166, 88)
+script = ExtResource("9_npc")
+npc_id = "npc_actividades"
 
 [node name="AnimacionNPC-Base" type="AnimatedSprite2D" parent="NPC-Base" unique_id=369315592]
 texture_filter = 1
@@ -833,4 +834,32 @@ shape = SubResource("CircleShape2D_1w3ev")
 [node name="Area2D" type="Area2D" parent="NPC-Base" unique_id=1327957792]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="NPC-Base/Area2D" unique_id=88438686]
+shape = SubResource("CircleShape2D_r0xio")
+
+[node name="NPC - Examen" type="CharacterBody2D" parent="." unique_id=78054416]
+position = Vector2(328, 257)
+script = ExtResource("9_npc")
+npc_id = "npc_examen"
+
+[node name="AnimacionNPC-Base" type="AnimatedSprite2D" parent="NPC - Examen" unique_id=1957883648]
+texture_filter = 1
+scale = Vector2(0.90625, 0.703125)
+sprite_frames = SubResource("SpriteFrames_v673p")
+speed_scale = 0.4
+
+[node name="Hair" type="AnimatedSprite2D" parent="NPC - Examen" unique_id=131026438]
+texture_filter = 1
+scale = Vector2(0.90625, 0.703125)
+sprite_frames = SubResource("SpriteFrames_pknjg")
+speed_scale = 0.4
+
+[node name="ColissionNPC" type="CollisionShape2D" parent="NPC - Examen" unique_id=766694414]
+position = Vector2(0, -2)
+shape = SubResource("CircleShape2D_1w3ev")
+
+[node name="Area2D" type="Area2D" parent="NPC - Examen" unique_id=1264753754]
+position = Vector2(-2, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NPC - Examen/Area2D" unique_id=231690786]
+position = Vector2(2, -1)
 shape = SubResource("CircleShape2D_r0xio")
