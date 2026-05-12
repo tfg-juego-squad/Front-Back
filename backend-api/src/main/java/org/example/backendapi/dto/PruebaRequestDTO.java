@@ -18,4 +18,8 @@ public class PruebaRequestDTO {
 
     @NotNull(message = "La fecha límite es obligatoria")
     private Instant fechaLimite;
+
+    /** Identificador del NPC del mundo al que se asigna esta prueba.
+     *  Opcional: si es null, la prueba aparece en el NPC general. */
+    private String npcId;
 }
