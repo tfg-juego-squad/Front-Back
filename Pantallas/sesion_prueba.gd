@@ -5,6 +5,7 @@ extends Control
 @onready var tiempo_label = $Centro/Panel/Margen/VBox/HBoxInfo/TiempoLabel
 @onready var timer_bar = $Centro/Panel/Margen/VBox/TimerBar
 @onready var enunciado = $Centro/Panel/Margen/VBox/Enunciado
+@onready var valor_label = $Centro/Panel/Margen/VBox/ValorLabel
 @onready var opciones_test = $Centro/Panel/Margen/VBox/OpcionesTest
 @onready var respuesta_desarrollo = $Centro/Panel/Margen/VBox/RespuestaDesarrollo
 @onready var feedback_badge = $Centro/Panel/Margen/VBox/FeedbackBadge
@@ -70,6 +71,8 @@ func _mostrar_pregunta_actual():
 	var p = preguntas[indice_actual]
 	progreso.text = "Pregunta %d / %d" % [indice_actual + 1, preguntas.size()]
 	enunciado.text = str(p.get("enunciado", ""))
+	var valor = int(p.get("valorPuntos", 0))
+	valor_label.text = "Vale %d puntos" % valor if valor > 0 else ""
 	respuesta_elegida_id = -1
 	respuesta_desarrollo.text = ""
 

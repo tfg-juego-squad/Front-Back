@@ -70,6 +70,19 @@ func _on_add_pregunta():
 	opt_tipo.selected = 0
 	header.add_child(opt_tipo)
 
+	var lbl_puntos = Label.new()
+	lbl_puntos.text = "Puntuación máxima:"
+	header.add_child(lbl_puntos)
+
+	var spin_puntos = SpinBox.new()
+	spin_puntos.name = "ValorPuntos"
+	spin_puntos.min_value = 1
+	spin_puntos.max_value = 100
+	spin_puntos.value = 10
+	spin_puntos.custom_minimum_size = Vector2(80, 0)
+	spin_puntos.value_changed.connect(func(_v): _actualizar_total_puntos())
+	header.add_child(spin_puntos)
+
 	var btn_del = Button.new()
 	btn_del.text = "X"
 	btn_del.custom_minimum_size = Vector2(36, 0)
@@ -107,6 +120,22 @@ func _on_add_pregunta():
 	opt_tipo.item_selected.connect(_on_tipo_pregunta_seleccionado.bind(opt_tipo, bloque_test, lista_respuestas))
 
 	lista_preguntas.add_child(panel)
+	_actualizar_total_puntos()
+
+func _actualizar_total_puntos():
+	var total = 0
+	for panel in lista_preguntas.get_children():
+		if not panel.has_meta("es_pregunta"):
+			continue
+		var margin = panel.get_child(0)
+		var vbox = margin.get_child(0)
+		var header = vbox.get_node_or_null("HeaderPregunta")
+		var spin = header.get_node_or_null("ValorPuntos") if header else null
+		if spin:
+			total += int(spin.value)
+	var lbl = get_node_or_null("Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/LblTotalPuntos")
+	if lbl:
+		lbl.text = "Puntuación máxima total: %d" % total
 
 func _on_tipo_pregunta_seleccionado(opt: OptionButton, bloque_test: VBoxContainer, lista_respuestas: VBoxContainer, idx: int):
 	var es_test = opt.get_item_text(idx) == TIPO_TEST
@@ -183,8 +212,7 @@ func _on_guardar():
 	var payload = {
 		"aulaId": GameManager.id_int(GameManager.aula_seleccionada_id),
 		"titulo": nombre_input.text.strip_edges(),
-		"fechaLimite": _construir_fecha_limite(),
-		"puntuacionMaxima": _preguntas_payload.size()
+		"fechaLimite": _construir_fecha_limite()
 	}
 
 	Notificador.notificar("Guardando prueba...", Color.CYAN)
@@ -201,6 +229,7 @@ func _recoger_preguntas() -> Array:
 		var bloque_test = vbox.get_node_or_null("BloqueTest")
 		var tipo_node = vbox.get_node_or_null("HeaderPregunta")
 		var opt = tipo_node.get_node_or_null("TipoPregunta") if tipo_node else null
+		var spin = tipo_node.get_node_or_null("ValorPuntos") if tipo_node else null
 		if enunciado_node == null or opt == null:
 			continue
 		var enunciado_text = enunciado_node.text.strip_edges()
@@ -208,6 +237,7 @@ func _recoger_preguntas() -> Array:
 			continue
 
 		var tipo = opt.get_item_text(opt.selected)
+		var valor_puntos = int(spin.value) if spin else 1
 		var respuestas: Array = []
 		if tipo == TIPO_TEST and bloque_test:
 			var lista_resp = bloque_test.get_node_or_null("ListaRespuestas")
@@ -223,6 +253,7 @@ func _recoger_preguntas() -> Array:
 		out.append({
 			"enunciado": enunciado_text,
 			"tipo": tipo,
+			"valorPuntos": valor_puntos,
 			"respuestasPosibles": respuestas
 		})
 	return out
@@ -263,6 +294,7 @@ func _enviar_siguiente_pregunta():
 	var payload = {
 		"enunciado": pq["enunciado"],
 		"tipo": pq["tipo"],
+		"valorPuntos": pq["valorPuntos"],
 		"pruebaId": _prueba_id_actual,
 		"respuestasPosibles": pq["respuestasPosibles"]
 	}
