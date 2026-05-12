@@ -39,7 +39,7 @@ public class UsuarioService {
      */
     @Transactional
     public UsuarioResponseDTO registrarProfesor(UsuarioRegistroRequestDTO request) {
-        // 1. Verificamos que el nombre de usuario esté libre
+        // Comprobar si el nombre de usuario ya existe
         if (!usuarioDAO.findUsuarioByNombreUsuario(request.getNombreUsuario()).isEmpty()) {
             throw new BadRequestException("El nombre de usuario ya está en uso");
         }
@@ -50,7 +50,7 @@ public class UsuarioService {
         profesor.setApellidos(request.getApellidos());
         profesor.setEmail(request.getEmail());
 
-        // 2. Encriptamos la contraseña por seguridad antes de guardarla en BD
+        // Encriptar la contraseña antes de guardar
         profesor.setHashContrasena(securityService.hashPassword(request.getPasswordPlana()));
         profesor.setFechaCreacion(Instant.now());
         profesor.setRol(TipoRol.ROL_PROFESOR);
@@ -66,19 +66,18 @@ public class UsuarioService {
      * @return DTO del usuario incluyendo el Token JWT generado para futuras peticiones.
      */
     public UsuarioResponseDTO hacerLogin(UsuarioLoginRequestDTO request) {
-        // 1. Buscar usuario por nombre
         List<Usuario> usuarios = usuarioDAO.findUsuarioByNombreUsuario(request.getNombreUsuario());
         if (usuarios.isEmpty()) {
             throw new ResourceNotFoundException("Usuario no encontrado");
         }
         Usuario usuario = usuarios.get(0);
 
-        // 2. Comprobar que la contraseña plana coincida con el hash almacenado
+        // Validar contraseña
         if (!securityService.checkPassword(request.getPasswordPlana(), usuario.getHashContrasena())) {
             throw new BadRequestException("Contraseña incorrecta");
         }
 
-        // 3. Generar el Token JWT que el cliente usará para autenticarse
+        // Generar JWT
         String token = jwtService.generateToken(usuario);
         UsuarioResponseDTO responseDTO = usuarioMapper.toResponseDTO(usuario);
         responseDTO.setToken(token);
@@ -94,7 +93,7 @@ public class UsuarioService {
         Usuario usuarioEncontrado = usuarioDAO.findUsuarioById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró ningún usuario con el ID: " + id));
 
-        // Seguridad: Prevención de IDOR (Insecure Direct Object Reference)
+        // Validaciones de seguridad para evitar que vean perfiles ajenos
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
             // Un estudiante NO puede ver los perfiles de otros estudiantes o profesores
             if (!usuarioLogueado.getId().equals(usuarioEncontrado.getId())) {
@@ -117,8 +116,7 @@ public class UsuarioService {
     }
 
     /**
-     * Busca usuarios por nombre de usuario.
-     * Uso exclusivo para profesores (para buscar a sus propios alumnos).
+     * Busca usuarios por nombre (solo para profesores).
      */
     public List<UsuarioResponseDTO> buscarUsuariosPorNombre(String nombre, Usuario usuarioLogueado) {
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
@@ -127,7 +125,7 @@ public class UsuarioService {
 
         List<Usuario> usuarios = usuarioDAO.findUsuarioByNombreUsuario(nombre);
 
-        // Seguridad: El profesor solo debería poder ver a sus propios alumnos o a sí mismo en los resultados de búsqueda
+        // El profesor solo debería poder ver a sus propios alumnos o a sí mismo en los resultados de búsqueda
         List<Usuario> usuariosFiltrados = usuarios.stream().filter(u -> {
             if (u.getId().equals(usuarioLogueado.getId())) return true;
             if (u.getRol() == TipoRol.ROL_ESTUDIANTE && u.getAula() != null) {
@@ -140,7 +138,7 @@ public class UsuarioService {
     }
 
     /**
-     * Borra un usuario del sistema.
+     * Elimina un usuario comprobando permisos.
      */
     @Transactional
     public void borrarUsuario(Long id, Usuario usuarioLogueado) {
@@ -148,7 +146,7 @@ public class UsuarioService {
             throw new ResourceNotFoundException("No se puede borrar. El usuario con ID " + id + " no existe.");
         }
 
-        // Seguridad: Evitar que un estudiante borre la cuenta de otra persona o un profesor borre a un alumno que no es de su aula
+        // Evitar que un estudiante borre la cuenta de otra persona o un profesor borre a un alumno que no es de su aula
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE && !usuarioLogueado.getId().equals(id)) {
             throw new ForbiddenException("No puedes borrar la cuenta de otro usuario.");
         } else if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR) {

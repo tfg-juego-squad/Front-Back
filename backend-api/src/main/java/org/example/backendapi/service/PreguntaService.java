@@ -38,7 +38,7 @@ public class PreguntaService {
         Prueba prueba = pruebaDAO.findById(request.getPruebaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Prueba no encontrada con ID: " + request.getPruebaId()));
 
-        // Seguridad: El profesor que crea la pregunta debe ser el dueño del examen
+        // Solo el dueño del aula puede añadir preguntas
         if (!prueba.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
             throw new ForbiddenException("No puedes añadir preguntas a un examen de un aula que no te pertenece.");
         }
@@ -56,7 +56,7 @@ public class PreguntaService {
             throw new IllegalArgumentException("Tipo de pregunta inválido. Use TEST o DESARROLLO.");
         }
 
-        // Si es tipo TEST, procesamos y enlazamos sus opciones de respuesta
+        // Si es tipo TEST, guardamos las opciones
         List<RespuestaPosible> respuestas = new ArrayList<>();
         if (pregunta.getTipo() == TipoPregunta.TEST && request.getRespuestasPosibles() != null) {
             for (RespuestaPosibleRequestDTO resDTO : request.getRespuestasPosibles()) {
@@ -87,7 +87,6 @@ public class PreguntaService {
             throw new ForbiddenException("No puedes ver las preguntas de un examen que no te pertenece.");
         }
         
-        // Validar acceso para el Estudiante (IDOR protection)
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
             if (usuarioLogueado.getAula() == null || !usuarioLogueado.getAula().getId().equals(prueba.getAula().getId())) {
                 throw new ForbiddenException("No puedes ver las preguntas de un examen de un aula a la que no perteneces.");

@@ -44,10 +44,10 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, "Acceso denegado: No tienes los permisos necesarios para realizar esta acción.");
     }
 
-    // Manejo de excepciones de integridad de datos
+    // Errores de la base de datos (claves duplicadas, etc.)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        return buildResponse(HttpStatus.CONFLICT, "No se puede realizar la acción porque el recurso está relacionado con otros datos (ej. un examen que ya tiene respuestas).");
+        return buildResponse(HttpStatus.CONFLICT, "Error de integridad: el recurso ya existe o está relacionado con otros datos.");
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {

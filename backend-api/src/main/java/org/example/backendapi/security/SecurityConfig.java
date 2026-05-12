@@ -17,13 +17,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 /**
- * Configuración principal de Spring Security.
- * Define las reglas de acceso globales, integra el filtro JWT personalizado,
- * y habilita la seguridad a nivel de métodos (como @PreAuthorize).
+ * Configuración de seguridad con Spring Security.
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Permite usar @PreAuthorize("hasAuthority('ROL_PROFESOR')") en los Controladores
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -32,31 +30,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
-                // Habilitamos CORS usando nuestra configuración personalizada (necesario para que Godot se pueda conectar)
+                // Configurar CORS para permitir la conexión desde el cliente (Godot)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // Desactivamos CSRF porque nuestra API es Stateless (no usa cookies de sesión, usa tokens JWT)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Rutas públicas que no requieren token
+                        // Endpoints públicos
                         .requestMatchers("/tfg/usuarios/login", "/tfg/usuarios/profesor/alta").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        // Cualquier otra ruta exige que el usuario esté autenticado
+                        // El resto requiere estar logueado
                         .anyRequest().authenticated()
                 )
-                // Indicamos que no guarde sesiones en memoria
+                // Política Stateless
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // Colocamos nuestro filtro JWT ANTES del filtro estándar de usuario/contraseña
+                // Añadir el filtro de JWT
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     /**
-     * Configuración de CORS (Cross-Origin Resource Sharing).
-     * Permite que aplicaciones alojadas en otros dominios o puertos (ej. el juego en Godot o una web local)
-     * puedan hacer peticiones a esta API sin ser bloqueadas por el navegador.
+     * Configuración de CORS para permitir peticiones desde cualquier origen.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
