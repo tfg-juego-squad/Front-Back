@@ -115,6 +115,20 @@ max_value = 1000
 value = 100
 tooltip_text = "Suma de puntos que tienen que repartir entre las preguntas"
 
+[node name="HBoxNpc" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="L_Npc" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNpc"]
+layout_mode = 2
+text = "Asignar al NPC:"
+theme_override_font_sizes/font_size = 14
+
+[node name="NpcOption" type="OptionButton" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNpc"]
+layout_mode = 2
+custom_minimum_size = Vector2(300, 35)
+tooltip_text = "El alumno verá esta prueba al hablar con este NPC del mundo"
+
 [node name="L_Desc" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 layout_mode = 2
 text = "Descripción:"
@@ -166,12 +180,31 @@ theme_override_constants/separation = 10
 [node name="BtnDescargarPlantilla" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxPlantillas"]
 custom_minimum_size = Vector2(250, 40)
 layout_mode = 2
-text = "Descargar Plantilla Excel"
+text = "Descargar Plantilla CSV"
+tooltip_text = "Genera un CSV de ejemplo abrible con Excel para que rellenes las preguntas"
 
 [node name="BtnSubirPlantilla" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxPlantillas"]
 custom_minimum_size = Vector2(250, 40)
 layout_mode = 2
-text = "Importar desde Excel"
+text = "Importar desde CSV"
+tooltip_text = "Carga las preguntas desde un CSV con el formato de la plantilla"
+
+[node name="DialogoDescargar" type="FileDialog" parent="."]
+title = "Guardar plantilla CSV"
+initial_position = 2
+size = Vector2i(700, 500)
+file_mode = 4
+access = 2
+filters = PackedStringArray("*.csv ; Archivo CSV")
+current_file = "plantilla_preguntas.csv"
+
+[node name="DialogoSubir" type="FileDialog" parent="."]
+title = "Importar preguntas desde CSV"
+initial_position = 2
+size = Vector2i(700, 500)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.csv ; Archivo CSV")
 
 [node name="Sep" type="HSeparator" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
 layout_mode = 2

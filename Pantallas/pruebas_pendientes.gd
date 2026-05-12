@@ -2,10 +2,13 @@ extends Control
 
 @onready var lista = $Centro/Panel/Margen/VBox/Scroll/Lista
 @onready var vacio = $Centro/Panel/Margen/VBox/Vacio
+@onready var titulo = $Centro/Panel/Margen/VBox/Titulo
 @onready var btn_volver = $Centro/Panel/Margen/VBox/BtnVolver
 
 func _ready():
 	btn_volver.pressed.connect(_on_volver)
+	_actualizar_titulo_por_npc()
+
 	var alumno_id = GameManager.id_str(GameManager.usuario_actual.get("id"))
 	if alumno_id.is_empty():
 		Notificador.notificar("Sesión no iniciada", Color.MAGENTA)
@@ -13,6 +16,17 @@ func _ready():
 		return
 	vacio.text = "Cargando..."
 	ConexionManager.peticion_get("/pruebas/pendientes/%s" % alumno_id, _on_pruebas_recibidas)
+
+func _actualizar_titulo_por_npc():
+	var npc_id = NpcManager.get_npc_activo()
+	if npc_id.is_empty():
+		titulo.text = "Pruebas Pendientes"
+		return
+	var npc = NpcManager.buscar_npc(npc_id)
+	if npc.is_empty():
+		titulo.text = "Pruebas Pendientes"
+	else:
+		titulo.text = "%s · %s" % [npc.get("nombre", "NPC"), npc.get("materia", "")]
 
 func _on_pruebas_recibidas(data, code):
 	if code == 204 or (data is Array and data.is_empty()):
@@ -23,9 +37,34 @@ func _on_pruebas_recibidas(data, code):
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 		return
 
+	# Filtrado por NPC asignado
+	var filtradas = _filtrar_por_npc(data)
+	if filtradas.is_empty():
+		vacio.text = "Este NPC no tiene pruebas para ti ahora mismo"
+		return
+
 	vacio.visible = false
-	for p in data:
+	for p in filtradas:
 		_crear_tarjeta_prueba(p)
+
+func _filtrar_por_npc(pruebas: Array) -> Array:
+	var npc_activo = NpcManager.get_npc_activo()
+	if npc_activo.is_empty():
+		return pruebas
+	var out: Array = []
+	for p in pruebas:
+		var asignado_local = NpcManager.npc_de_prueba(p.get("id"))
+		var asignado_backend = str(p.get("npcId", ""))
+		# Asociación válida si: el backend la marca o el cliente la recuerda
+		# o si no hay asignación (fallback al NPC general).
+		var asignado = asignado_local if not asignado_local.is_empty() else asignado_backend
+		if asignado.is_empty():
+			# Sin asignar → solo el NPC general la muestra
+			if npc_activo == "npc_general":
+				out.append(p)
+		elif asignado == npc_activo:
+			out.append(p)
+	return out
 
 func _crear_tarjeta_prueba(p: Dictionary):
 	var panel = PanelContainer.new()
@@ -78,4 +117,5 @@ func _empezar_prueba(p_id: int, p_titulo: String):
 	tree.current_scene = instancia
 
 func _on_volver():
+	NpcManager.reset_npc_activo()
 	get_tree().change_scene_to_file("res://Niveles/nivel_01.tscn")
