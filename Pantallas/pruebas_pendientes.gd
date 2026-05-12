@@ -55,13 +55,13 @@ func _filtrar_por_npc(pruebas: Array) -> Array:
 	for p in pruebas:
 		var asignado_local = NpcManager.npc_de_prueba(p.get("id"))
 		var asignado_backend = str(p.get("npcId", ""))
-		# Asociación válida si: el backend la marca o el cliente la recuerda
-		# o si no hay asignación (fallback al NPC general).
+		# El backend manda null cuando no hay asignación
+		if asignado_backend == "<null>" or asignado_backend == "null":
+			asignado_backend = ""
 		var asignado = asignado_local if not asignado_local.is_empty() else asignado_backend
+		# Sin asignar -> aparece en cualquier NPC (legacy / catálogo abierto)
 		if asignado.is_empty():
-			# Sin asignar → solo el NPC general la muestra
-			if npc_activo == "npc_general":
-				out.append(p)
+			out.append(p)
 		elif asignado == npc_activo:
 			out.append(p)
 	return out

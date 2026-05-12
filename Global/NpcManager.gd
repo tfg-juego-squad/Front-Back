@@ -8,11 +8,8 @@ extends Node
 # el backend pueda guardarlo cuando lo soporte.
 
 const NPCS = [
-	{"id": "npc_general",    "nombre": "Tutor General",      "materia": "Polivalente",   "color": Color(0.6, 0.85, 1)},
-	{"id": "npc_matematicas","nombre": "Profe Mates",        "materia": "Matemáticas",   "color": Color(1, 0.7, 0.3)},
-	{"id": "npc_lengua",     "nombre": "Profe Lengua",       "materia": "Lengua",        "color": Color(0.9, 0.5, 0.9)},
-	{"id": "npc_ciencias",   "nombre": "Profe Ciencias",     "materia": "Ciencias",      "color": Color(0.4, 0.95, 0.6)},
-	{"id": "npc_historia",   "nombre": "Profe Historia",     "materia": "Historia",      "color": Color(0.95, 0.85, 0.3)},
+	{"id": "npc_actividades", "nombre": "NPC Actividades", "materia": "Actividades", "color": Color(0.4, 0.95, 0.6)},
+	{"id": "npc_examen",      "nombre": "NPC Examen",      "materia": "Exámenes",    "color": Color(1, 0.7, 0.3)},
 ]
 
 const RUTA_ASIGNACIONES := "user://npc_asignaciones.json"

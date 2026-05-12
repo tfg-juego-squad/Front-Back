@@ -77,36 +77,36 @@ layout_mode = 2
 placeholder_text = "Contraseña"
 secret = true
 
-[node name="PanelRegistro" type="VBoxContainer" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="PanelRegistro" type="VBoxContainer" parent="CenterContainer/Panel/Margen/VBox" unique_id=48115699]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="LblNombreReal" type="Label" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
+[node name="LblNombreReal" type="Label" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro" unique_id=249941138]
 layout_mode = 2
 text = "Nombre real:"
 
-[node name="NombreRealInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
-layout_mode = 2
+[node name="NombreRealInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro" unique_id=1408977481]
 custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
 placeholder_text = "Tu nombre"
 
-[node name="LblApellidos" type="Label" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
+[node name="LblApellidos" type="Label" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro" unique_id=600084376]
 layout_mode = 2
 text = "Apellidos:"
 
-[node name="ApellidosInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
-layout_mode = 2
+[node name="ApellidosInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro" unique_id=1480836172]
 custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
 placeholder_text = "Tus apellidos"
 
-[node name="LblEmail" type="Label" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
+[node name="LblEmail" type="Label" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro" unique_id=731718383]
 layout_mode = 2
 text = "Email:"
 
-[node name="EmailInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro"]
-layout_mode = 2
+[node name="EmailInput" type="LineEdit" parent="CenterContainer/Panel/Margen/VBox/PanelRegistro" unique_id=1810806719]
 custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
 placeholder_text = "tu@email.com"
 
 [node name="Sep2" type="HSeparator" parent="CenterContainer/Panel/Margen/VBox" unique_id=1257494220]
@@ -124,7 +124,7 @@ theme_override_font_sizes/font_size = 12
 text = "O crear cuenta de profesor"
 flat = true
 
-[node name="BtnCancelarRegistro" type="Button" parent="CenterContainer/Panel/Margen/VBox"]
+[node name="BtnCancelarRegistro" type="Button" parent="CenterContainer/Panel/Margen/VBox" unique_id=1564713443]
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
@@ -137,5 +137,3 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
 theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
-
-
