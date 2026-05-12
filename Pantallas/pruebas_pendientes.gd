@@ -6,13 +6,13 @@ extends Control
 
 func _ready():
 	btn_volver.pressed.connect(_on_volver)
-	var alumno_id = GameManager.usuario_actual.get("id", -1)
-	if alumno_id == -1:
+	var alumno_id = GameManager.id_str(GameManager.usuario_actual.get("id"))
+	if alumno_id.is_empty():
 		Notificador.notificar("Sesión no iniciada", Color.MAGENTA)
 		_on_volver()
 		return
 	vacio.text = "Cargando..."
-	ConexionManager.peticion_get("/pruebas/pendientes/%s" % str(alumno_id), _on_pruebas_recibidas)
+	ConexionManager.peticion_get("/pruebas/pendientes/%s" % alumno_id, _on_pruebas_recibidas)
 
 func _on_pruebas_recibidas(data, code):
 	if code == 204 or (data is Array and data.is_empty()):
@@ -62,7 +62,7 @@ func _crear_tarjeta_prueba(p: Dictionary):
 	var btn = Button.new()
 	btn.text = "Empezar"
 	btn.custom_minimum_size = Vector2(110, 40)
-	var prueba_id = int(p.get("id", -1))
+	var prueba_id = GameManager.id_int(p.get("id"))
 	var prueba_titulo = str(p.get("titulo", "Prueba"))
 	btn.pressed.connect(func(): _empezar_prueba(prueba_id, prueba_titulo))
 	hbox.add_child(btn)

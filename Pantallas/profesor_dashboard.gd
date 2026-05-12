@@ -56,8 +56,10 @@ func _ready():
 	_cargar_aulas()
 
 func _cargar_aulas():
-	var prof_id = GameManager.usuario_actual.get("id", "")
-	ConexionManager.peticion_get("/aulas/profesor/%s" % str(prof_id), _on_aulas_recibidas)
+	var prof_id = GameManager.id_str(GameManager.usuario_actual.get("id"))
+	if prof_id.is_empty():
+		return
+	ConexionManager.peticion_get("/aulas/profesor/%s" % prof_id, _on_aulas_recibidas)
 
 func _on_aulas_recibidas(data, code):
 	if code == 200 and data is Array:
@@ -75,11 +77,11 @@ func _on_aulas_recibidas(data, code):
 
 func _on_aula_seleccionada(index):
 	if aulas_data.is_empty(): return
-	var aula_id = aulas_data[index].get("id", "")
-	GameManager.aula_seleccionada_id = str(aula_id)
+	var aula_id = GameManager.id_str(aulas_data[index].get("id"))
+	GameManager.aula_seleccionada_id = aula_id
 	lista_alumnos.clear()
 	lista_alumnos.add_item("Cargando alumnos...")
-	ConexionManager.peticion_get("/aulas/%s/alumnos" % str(aula_id), _on_alumnos_recibidos)
+	ConexionManager.peticion_get("/aulas/%s/alumnos" % aula_id, _on_alumnos_recibidos)
 
 func _on_alumnos_recibidos(data, code):
 	lista_alumnos.clear()
@@ -111,16 +113,17 @@ func _on_iniciar_proceso_generacion():
 		return
 
 	Notificador.notificar("1/2: Creando aula...", Color.CYAN)
-	var prof_id = GameManager.usuario_actual.get("id", "")
+	var prof_id = GameManager.id_int(GameManager.usuario_actual.get("id"))
 	var payload = {"nombre": nombre, "profesorId": prof_id}
 	ConexionManager.peticion_post("/aulas/crear", payload, _on_aula_creada)
 
 func _on_aula_creada(data, code):
 	if (code == 200 or code == 201) and data != null:
 		var cant = int(spin_alumnos.value)
+		var aula_id = GameManager.id_str(data.get("id"))
 		Notificador.notificar("2/2: Generando credenciales...", Color.GOLD)
 		ConexionManager.peticion_post(
-			"/aulas/%s/generar-alumnos" % str(data.get("id", "")),
+			"/aulas/%s/generar-alumnos" % aula_id,
 			{"cantidad": cant},
 			_on_generacion_completada
 		)
@@ -205,8 +208,8 @@ func _on_revisar_puntuaciones():
 	tree_puntuaciones.visible = true
 	panel_flotante.visible = true
 
-	var aula_id = aulas_data[cmb_aulas.selected].get("id", "")
-	ConexionManager.peticion_get("/puntuacion/aula/%s" % str(aula_id), _on_puntuaciones_recibidas)
+	var aula_id = GameManager.id_str(aulas_data[cmb_aulas.selected].get("id"))
+	ConexionManager.peticion_get("/puntuacion/aula/%s" % aula_id, _on_puntuaciones_recibidas)
 
 func _on_puntuaciones_recibidas(data, code):
 	tree_puntuaciones.clear()

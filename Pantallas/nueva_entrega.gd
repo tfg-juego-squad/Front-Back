@@ -181,7 +181,7 @@ func _on_guardar():
 				return
 
 	var payload = {
-		"aulaId": int(GameManager.aula_seleccionada_id),
+		"aulaId": GameManager.id_int(GameManager.aula_seleccionada_id),
 		"titulo": nombre_input.text.strip_edges(),
 		"fechaLimite": _construir_fecha_limite(),
 		"puntuacionMaxima": _preguntas_payload.size()
@@ -244,7 +244,7 @@ func _on_prueba_guardada(data, code):
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 		return
 
-	_prueba_id_actual = int(data.get("id", -1))
+	_prueba_id_actual = GameManager.id_int(data.get("id"))
 	if _prueba_id_actual < 0:
 		Notificador.notificar("Prueba creada pero sin id válido", Color.ORANGE)
 		return
