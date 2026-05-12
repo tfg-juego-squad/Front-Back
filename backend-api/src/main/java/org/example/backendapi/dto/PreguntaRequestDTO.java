@@ -17,6 +17,9 @@ public class PreguntaRequestDTO {
 
     private Integer tiempoLimiteSegundos = 30;
 
+    @NotNull(message = "El valor de puntos es obligatorio")
+    private Integer valorPuntos;
+
     @NotNull(message = "La pregunta debe pertenecer a una prueba")
     private Long pruebaId;
 

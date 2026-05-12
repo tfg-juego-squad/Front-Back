@@ -79,10 +79,8 @@ public class RespuestaAlumnoService {
 
                 // MOTOR DE AUTO-CORRECCIÓN Y ASIGNACIÓN DE PUNTOS
                 if (opcion.getEsCorrecta()) {
-                    int totalPreguntas = pregunta.getPrueba().getPreguntas().size();
-                    // Dividimos los puntos totales del examen entre el número de preguntas equitativamente
-                    int puntosPorPregunta = pregunta.getPrueba().getPuntuacionMaxima() / (totalPreguntas > 0 ? totalPreguntas : 1);
-                    respuesta.setPuntosAsignados(puntosPorPregunta);
+                    // Se asigna directamente el valor que el profesor le dio a esta pregunta
+                    respuesta.setPuntosAsignados(pregunta.getValorPuntos());
                 } else {
                     respuesta.setPuntosAsignados(0); // Respuesta fallada
                 }

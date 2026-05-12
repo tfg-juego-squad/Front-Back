@@ -156,11 +156,13 @@ public class UsuarioService {
                     .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
             if (usuarioABorrar.getRol() == TipoRol.ROL_PROFESOR) {
-                throw new ForbiddenException("No tienes permisos para borrar a otros profesores.");
-            }
-
-            if (usuarioABorrar.getAula() == null || !usuarioABorrar.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
-                throw new ForbiddenException("No puedes borrar a un alumno que no pertenece a tu aula.");
+                if (!usuarioABorrar.getId().equals(usuarioLogueado.getId())) {
+                    throw new ForbiddenException("No tienes permisos para borrar a otros profesores.");
+                }
+            } else {
+                if (usuarioABorrar.getAula() == null || !usuarioABorrar.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
+                    throw new ForbiddenException("No puedes borrar a un alumno que no pertenece a tu aula.");
+                }
             }
         }
 
