@@ -15,6 +15,7 @@ import org.example.backendapi.model.dao.IUsuarioDAO;
 import org.example.backendapi.model.entities.Aula;
 import org.example.backendapi.model.entities.TipoRol;
 import org.example.backendapi.model.entities.Usuario;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,6 +41,7 @@ public class AulaService {
     private final SecurityService securityService;
     private final AulaMapper aulaMapper;
     private final UsuarioMapper usuarioMapper;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Obtiene la lista de aulas creadas por un profesor específico.
@@ -195,7 +197,7 @@ public class AulaService {
         alumno.setNombreReal(nombreReal);
         alumno.setApellidos(apellidos);
         alumno.setEmail(email);
-        alumno.setHashContrasena(securityService.hashPassword(passwordPlana)); // Hash por seguridad
+        alumno.setHashContrasena(passwordEncoder.encode(passwordPlana));
         alumno.setFechaCreacion(Instant.now());
         alumno.setAula(aula);
         alumno.setRol(TipoRol.ROL_ESTUDIANTE);

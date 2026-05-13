@@ -6,19 +6,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.example.backendapi.model.entities.Aula;
-import org.example.backendapi.model.entities.TipoRol;
-import org.example.backendapi.model.entities.Usuario;
+import org.example.backendapi.model.dao.ITokenDAO;
 import org.example.backendapi.service.JwtService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * Filtro para interceptar las peticiones y validar el token JWT.
@@ -28,6 +26,8 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+    private final ITokenDAO tokenDAO;
 
     @Override
     protected void doFilterInternal(
@@ -35,61 +35,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+        if (request.getServletPath().contains("/tfg/usuarios/login") ||
+                request.getServletPath().contains("/tfg/usuarios/profesor/alta")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String nombreUsuario;
 
-        // Validar si la petición trae el token Bearer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Quitar "Bearer " para quedarnos con el token
         jwt = authHeader.substring(7);
+        nombreUsuario = jwtService.extractUsername(jwt);
 
-        try {
-            nombreUsuario = jwtService.extractUsername(jwt);
+        if (nombreUsuario != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            if (nombreUsuario != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Sacar los datos necesarios del propio token
-                String rol = jwtService.extractRol(jwt);
-                Long id = jwtService.extractId(jwt);
-                
-                Long aulaId = null;
-                try {
-                    Object aulaIdObj = jwtService.extractClaim(jwt, claims -> claims.get("aulaId"));
-                    if (aulaIdObj != null) {
-                        aulaId = Long.valueOf(aulaIdObj.toString());
-                    }
-                } catch (Exception ignored) { }
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(nombreUsuario);
 
-                // Crear el objeto usuario para el contexto de seguridad
-                Usuario usuarioAuth = new Usuario();
-                usuarioAuth.setId(id);
-                usuarioAuth.setNombreUsuario(nombreUsuario);
-                usuarioAuth.setRol(TipoRol.valueOf(rol));
-                
-                if (aulaId != null) {
-                    Aula aulaDummy = new Aula();
-                    aulaDummy.setId(aulaId);
-                    usuarioAuth.setAula(aulaDummy);
-                }
+            var isTokenValid = tokenDAO.findByToken(jwt)
+                    .map(t -> !t.isExpired() && !t.isRevoked())
+                    .orElse(false);
 
-                if (jwtService.isTokenValid(jwt, usuarioAuth.getNombreUsuario())) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            usuarioAuth,
-                            null,
-                            Collections.singletonList(new SimpleGrantedAuthority(rol))
-                    );
+            if (jwtService.isTokenValid(jwt, userDetails.getUsername()) && isTokenValid) {
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
-        } catch (Exception e) {
-            // Si el token falla, limpiar el contexto
-            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
