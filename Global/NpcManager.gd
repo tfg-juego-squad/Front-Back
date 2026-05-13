@@ -8,8 +8,12 @@ extends Node
 # el backend pueda guardarlo cuando lo soporte.
 
 const NPCS = [
-	{"id": "npc_actividades", "nombre": "NPC Actividades", "materia": "Actividades", "color": Color(0.4, 0.95, 0.6)},
-	{"id": "npc_examen",      "nombre": "NPC Examen",      "materia": "Exámenes",    "color": Color(1, 0.7, 0.3)},
+	{"id": "npc_actividades", "nombre": "NPC Actividades", "materia": "Actividades",   "color": Color(0.4, 0.95, 0.6)},
+	{"id": "npc_examen1",     "nombre": "NPC Examen A",    "materia": "Exámenes",      "color": Color(1, 0.7, 0.3)},
+	{"id": "npc_examen2",     "nombre": "NPC Examen B",    "materia": "Exámenes",      "color": Color(1, 0.55, 0.25)},
+	{"id": "npc_examen3",     "nombre": "NPC Examen C",    "materia": "Exámenes",      "color": Color(1, 0.45, 0.15)},
+	{"id": "npc_dialogo1",    "nombre": "NPC Diálogo Norte", "materia": "Diálogo",    "color": Color(0.6, 0.75, 1)},
+	{"id": "npc_dialogo2",    "nombre": "NPC Diálogo Sur",   "materia": "Diálogo",    "color": Color(0.55, 0.65, 0.95)},
 ]
 
 const RUTA_ASIGNACIONES := "user://npc_asignaciones.json"
