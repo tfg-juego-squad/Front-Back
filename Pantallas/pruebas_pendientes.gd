@@ -87,6 +87,7 @@ func _crear_tarjeta_prueba(p: Dictionary):
 
 	var tipo = str(p.get("tipo", "EXAMEN")).to_upper()
 	var es_minijuego = tipo == "MINIJUEGO"
+	var es_dialogo = tipo == "DIALOGO"
 
 	var lbl_titulo = Label.new()
 	var prefijo_tipo = ""
@@ -94,31 +95,47 @@ func _crear_tarjeta_prueba(p: Dictionary):
 		prefijo_tipo = "[MINIJUEGO] "
 	elif tipo == "ACTIVIDAD":
 		prefijo_tipo = "[ACTIVIDAD] "
+	elif es_dialogo:
+		prefijo_tipo = "[DIÁLOGO] "
 	lbl_titulo.text = "%s%s" % [prefijo_tipo, str(p.get("titulo", "Prueba"))]
 	lbl_titulo.add_theme_font_size_override("font_size", 16)
 	if es_minijuego:
 		lbl_titulo.add_theme_color_override("font_color", Color(1, 0.85, 0.4, 1))
+	elif es_dialogo:
+		lbl_titulo.add_theme_color_override("font_color", Color(0.6, 0.85, 1, 1))
 	vbox.add_child(lbl_titulo)
 
 	var lbl_meta = Label.new()
 	if es_minijuego:
 		var niveles = int(p.get("nivelesMinijuego", 5))
-		lbl_meta.text = "Memoria de secuencia · %d niveles" % niveles
+		var subtipo = str(p.get("subtipoMinijuego", "SECUENCIA"))
+		var nombre_subtipo = "Esquiva-bloques" if subtipo == "ESQUIVA" else "Memoria de secuencia"
+		lbl_meta.text = "%s · %d niveles" % [nombre_subtipo, niveles]
+	elif es_dialogo:
+		lbl_meta.text = "El NPC tiene algo que contarte"
 	else:
 		var fecha_limite = p.get("fechaLimite", "")
-		lbl_meta.text = "Límite: %s" % str(fecha_limite)
+		var sufijo_eval = "" if bool(p.get("evaluable", true)) else "  ·  No evaluable"
+		lbl_meta.text = "Límite: %s%s" % [str(fecha_limite), sufijo_eval]
 	lbl_meta.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9, 1))
 	lbl_meta.add_theme_font_size_override("font_size", 11)
 	vbox.add_child(lbl_meta)
 
 	var btn = Button.new()
-	btn.text = "Jugar" if es_minijuego else "Empezar"
+	if es_minijuego:
+		btn.text = "Jugar"
+	elif es_dialogo:
+		btn.text = "Escuchar"
+	else:
+		btn.text = "Empezar"
 	btn.custom_minimum_size = Vector2(110, 40)
 	var prueba_id = GameManager.id_int(p.get("id"))
 	var prueba_titulo = str(p.get("titulo", "Prueba"))
 	var prueba_data = p.duplicate(true)
 	if es_minijuego:
 		btn.pressed.connect(func(): _empezar_minijuego(prueba_data))
+	elif es_dialogo:
+		btn.pressed.connect(func(): _abrir_dialogo(prueba_data))
 	else:
 		btn.pressed.connect(func(): _empezar_prueba(prueba_id, prueba_titulo))
 	hbox.add_child(btn)
@@ -133,6 +150,10 @@ func _empezar_prueba(p_id: int, p_titulo: String):
 	tree.root.add_child(instancia)
 	tree.current_scene.queue_free()
 	tree.current_scene = instancia
+
+func _abrir_dialogo(p: Dictionary):
+	GameManager.dialogo_pendiente = p
+	get_tree().change_scene_to_file("res://Pantallas/pantalla_dialogo.tscn")
 
 func _empezar_minijuego(p: Dictionary):
 	# La escena del minijuego leerá GameManager.minijuego_pendiente en su _ready

@@ -9,6 +9,10 @@ var token: String = ""
 # aquí para no tener que reabrir la lista al cambiar de escena.
 var minijuego_pendiente: Dictionary = {}
 
+# Prueba tipo=DIALOGO que el alumno acaba de abrir; la lee
+# Pantallas/pantalla_dialogo.gd al cargar para mostrar su texto.
+var dialogo_pendiente: Dictionary = {}
+
 var _cerrando_sesion: bool = false
 
 func guardar_sesion(datos: Dictionary):

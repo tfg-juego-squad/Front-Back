@@ -1,0 +1,93 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Pantallas/pantalla_dialogo.gd" id="1"]
+
+[node name="PantallaDialogo" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.09, 0.1, 0.16, 1)
+
+[node name="Layout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Header" type="PanelContainer" parent="Layout"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="Layout/Header"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Sep" type="Control" parent="Layout/Header/HBox"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+
+[node name="BtnSalir" type="Button" parent="Layout/Header/HBox"]
+custom_minimum_size = Vector2(120, 38)
+layout_mode = 2
+size_flags_vertical = 4
+text = "< Salir"
+
+[node name="LblTitulo" type="Label" parent="Layout/Header/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "NPC dice..."
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+
+[node name="Centro" type="MarginContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 80
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 80
+theme_override_constants/margin_bottom = 30
+
+[node name="PanelTexto" type="PanelContainer" parent="Layout/Centro"]
+layout_mode = 2
+
+[node name="MargenTexto" type="MarginContainer" parent="Layout/Centro/PanelTexto"]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 25
+
+[node name="LblTexto" type="Label" parent="Layout/Centro/PanelTexto/MargenTexto"]
+layout_mode = 2
+size_flags_vertical = 3
+text = ""
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 20
+vertical_alignment = 0
+
+[node name="PanelInfo" type="PanelContainer" parent="Layout"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="LblInfo" type="Label" parent="Layout/PanelInfo"]
+layout_mode = 2
+text = "Pulsa Salir o cualquier tecla para volver al mapa"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 1, 1, 0.5)
+theme_override_font_sizes/font_size = 12
