@@ -36,9 +36,14 @@ func _ready():
 func _process(_delta):
 	if _jugador_anim == null or not is_instance_valid(_jugador_anim) or espejo_jugador == null:
 		return
+	if espejo_jugador.sprite_frames == null:
+		return
 	# Reflejamos animación y frame del personaje real en el retrato del HUD.
-	if espejo_jugador.animation != _jugador_anim.animation:
-		espejo_jugador.play(_jugador_anim.animation)
+	var anim_actual = _jugador_anim.animation
+	if anim_actual == "" or not espejo_jugador.sprite_frames.has_animation(anim_actual):
+		return
+	if espejo_jugador.animation != anim_actual:
+		espejo_jugador.play(anim_actual)
 	espejo_jugador.frame = _jugador_anim.frame
 
 func _input(event):
@@ -72,7 +77,10 @@ func _inicializar_vista_cercana():
 		panel_retrato.visible = false
 		return
 	espejo_jugador.sprite_frames = _jugador_anim.sprite_frames
-	espejo_jugador.play(_jugador_anim.animation)
+	# Arrancamos solo si la animación existe en los frames copiados.
+	var anim = _jugador_anim.animation
+	if espejo_jugador.sprite_frames and anim != "" and espejo_jugador.sprite_frames.has_animation(anim):
+		espejo_jugador.play(anim)
 
 func _actualizar_xp():
 	# El backend devuelve null si el alumno aún no tiene nivel/XP iniciados.

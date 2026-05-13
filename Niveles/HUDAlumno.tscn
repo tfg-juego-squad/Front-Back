@@ -195,4 +195,3 @@ color = Color(0.08, 0.1, 0.18, 1)
 [node name="EspejoJugador" type="AnimatedSprite2D" parent="UIParent/PanelRetrato/VBoxRetrato/VistaCercana/SubViewport"]
 position = Vector2(64, 72)
 scale = Vector2(2, 2)
-animation = &"Quieto"
