@@ -143,14 +143,31 @@ layout_mode = 2
 theme_override_constants/separation = 15
 
 [node name="BtnAdjunto" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto"]
-custom_minimum_size = Vector2(200, 40)
+custom_minimum_size = Vector2(220, 40)
 layout_mode = 2
-text = "Añadir Archivo (.zip, .pdf)"
+text = "Adjuntar instrucciones (.zip)"
+tooltip_text = "Sube un .zip con instrucciones extra que el alumno podrá descargar"
 
 [node name="NombreAdjunto" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Sin adjunto"
 theme_override_colors/font_color = Color(1, 1, 1, 0.5)
+
+[node name="BtnQuitarAdjunto" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto"]
+custom_minimum_size = Vector2(36, 40)
+layout_mode = 2
+visible = false
+text = "X"
+tooltip_text = "Quitar archivo adjunto"
+
+[node name="DialogoAdjunto" type="FileDialog" parent="."]
+title = "Selecciona el ZIP con instrucciones"
+initial_position = 2
+size = Vector2i(720, 520)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.zip ; Archivo ZIP")
 
 [node name="Formulario" type="MarginContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer"]
 visible = false
@@ -172,42 +189,6 @@ theme_override_constants/separation = 20
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Configuración del Examen"
-
-[node name="HBoxPlantillas" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="BtnDescargarPlantilla" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxPlantillas"]
-custom_minimum_size = Vector2(250, 40)
-layout_mode = 2
-text = "Descargar Plantilla CSV"
-tooltip_text = "Genera un CSV de ejemplo abrible con Excel para que rellenes las preguntas"
-
-[node name="BtnSubirPlantilla" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxPlantillas"]
-custom_minimum_size = Vector2(250, 40)
-layout_mode = 2
-text = "Importar desde CSV"
-tooltip_text = "Carga las preguntas desde un CSV con el formato de la plantilla"
-
-[node name="DialogoDescargar" type="FileDialog" parent="."]
-title = "Guardar plantilla CSV"
-initial_position = 2
-size = Vector2i(700, 500)
-file_mode = 4
-access = 2
-filters = PackedStringArray("*.csv ; Archivo CSV")
-current_file = "plantilla_preguntas.csv"
-
-[node name="DialogoSubir" type="FileDialog" parent="."]
-title = "Importar preguntas desde CSV"
-initial_position = 2
-size = Vector2i(700, 500)
-file_mode = 0
-access = 2
-filters = PackedStringArray("*.csv ; Archivo CSV")
-
-[node name="Sep" type="HSeparator" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
-layout_mode = 2
 
 [node name="GridFechas" type="GridContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox"]
 layout_mode = 2
@@ -279,10 +260,60 @@ theme_override_constants/margin_top = 25
 theme_override_constants/margin_right = 25
 theme_override_constants/margin_bottom = 25
 
-[node name="Label" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado"]
+[node name="ScrollAv" type="ScrollContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado"]
 layout_mode = 2
-text = "Actividad Avanzada (Próximamente)"
-horizontal_alignment = 1
+
+[node name="VBoxAv" type="VBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="TituloAv" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Minijuego: Memoria de Secuencia"
+
+[node name="DescAv" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv"]
+layout_mode = 2
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.75, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "El alumno verá la secuencia de colores y deberá repetirla. Al superar o fallar cada nivel el juego le hará una pregunta aleatoria de las que añadas abajo. Se asigna automáticamente al NPC de Actividades."
+
+[node name="HBoxNiveles" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="LblNiveles" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/HBoxNiveles"]
+layout_mode = 2
+text = "Niveles del minijuego:"
+
+[node name="NivelesSpin" type="SpinBox" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/HBoxNiveles"]
+layout_mode = 2
+min_value = 3.0
+max_value = 10.0
+value = 5.0
+custom_minimum_size = Vector2(80, 35)
+
+[node name="LblNivelesPista" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/HBoxNiveles"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.55)
+theme_override_font_sizes/font_size = 11
+text = "(3-10) — secuencia crece +1 por nivel"
+
+[node name="TituloBanco" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Banco de preguntas (aleatorias por nivel)"
+
+[node name="ListaPreguntasAv" type="VBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnAddPreguntaAv" type="Button" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "+ Añadir Pregunta al banco"
 
 [node name="HBoxFinal" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs"]
 layout_mode = 2

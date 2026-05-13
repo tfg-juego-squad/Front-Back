@@ -11,6 +11,7 @@ import java.util.List;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface PruebaMapper {
     @Mapping(source = "aula.id", target = "aulaId")
+    @Mapping(target = "tipo", expression = "java(prueba.getTipo() == null ? null : prueba.getTipo().name())")
     PruebaResponseDTO toResponseDTO(Prueba prueba);
 
     List<PruebaResponseDTO> toResponseDTOList(List<Prueba> pruebas);

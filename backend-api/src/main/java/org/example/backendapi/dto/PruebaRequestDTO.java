@@ -22,4 +22,10 @@ public class PruebaRequestDTO {
     /** Identificador del NPC del mundo al que se asigna esta prueba.
      *  Opcional: si es null, la prueba aparece en el NPC general. */
     private String npcId;
+
+    /** ACTIVIDAD / EXAMEN / MINIJUEGO. Por defecto EXAMEN si no se envía. */
+    private String tipo;
+
+    /** Solo para tipo = MINIJUEGO: nº de niveles del minijuego. */
+    private Integer nivelesMinijuego;
 }

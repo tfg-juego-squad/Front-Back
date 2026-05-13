@@ -85,24 +85,42 @@ func _crear_tarjeta_prueba(p: Dictionary):
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(vbox)
 
+	var tipo = str(p.get("tipo", "EXAMEN")).to_upper()
+	var es_minijuego = tipo == "MINIJUEGO"
+
 	var lbl_titulo = Label.new()
-	lbl_titulo.text = str(p.get("titulo", "Prueba"))
+	var prefijo_tipo = ""
+	if es_minijuego:
+		prefijo_tipo = "[MINIJUEGO] "
+	elif tipo == "ACTIVIDAD":
+		prefijo_tipo = "[ACTIVIDAD] "
+	lbl_titulo.text = "%s%s" % [prefijo_tipo, str(p.get("titulo", "Prueba"))]
 	lbl_titulo.add_theme_font_size_override("font_size", 16)
+	if es_minijuego:
+		lbl_titulo.add_theme_color_override("font_color", Color(1, 0.85, 0.4, 1))
 	vbox.add_child(lbl_titulo)
 
 	var lbl_meta = Label.new()
-	var fecha_limite = p.get("fechaLimite", "")
-	lbl_meta.text = "Límite: %s" % str(fecha_limite)
+	if es_minijuego:
+		var niveles = int(p.get("nivelesMinijuego", 5))
+		lbl_meta.text = "Memoria de secuencia · %d niveles" % niveles
+	else:
+		var fecha_limite = p.get("fechaLimite", "")
+		lbl_meta.text = "Límite: %s" % str(fecha_limite)
 	lbl_meta.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9, 1))
 	lbl_meta.add_theme_font_size_override("font_size", 11)
 	vbox.add_child(lbl_meta)
 
 	var btn = Button.new()
-	btn.text = "Empezar"
+	btn.text = "Jugar" if es_minijuego else "Empezar"
 	btn.custom_minimum_size = Vector2(110, 40)
 	var prueba_id = GameManager.id_int(p.get("id"))
 	var prueba_titulo = str(p.get("titulo", "Prueba"))
-	btn.pressed.connect(func(): _empezar_prueba(prueba_id, prueba_titulo))
+	var prueba_data = p.duplicate(true)
+	if es_minijuego:
+		btn.pressed.connect(func(): _empezar_minijuego(prueba_data))
+	else:
+		btn.pressed.connect(func(): _empezar_prueba(prueba_id, prueba_titulo))
 	hbox.add_child(btn)
 
 	lista.add_child(panel)
@@ -115,6 +133,12 @@ func _empezar_prueba(p_id: int, p_titulo: String):
 	tree.root.add_child(instancia)
 	tree.current_scene.queue_free()
 	tree.current_scene = instancia
+
+func _empezar_minijuego(p: Dictionary):
+	# La escena del minijuego leerá GameManager.minijuego_pendiente en su _ready
+	# y arrancará la partida con los datos de esta prueba.
+	GameManager.minijuego_pendiente = p
+	get_tree().change_scene_to_file("res://Pantallas/minijuego_secuencia.tscn")
 
 func _on_volver():
 	NpcManager.reset_npc_activo()

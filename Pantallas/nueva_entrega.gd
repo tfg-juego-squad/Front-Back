@@ -8,11 +8,11 @@ extends Control
 @onready var puntuacion_objetivo_spin = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxPuntuacion/PuntuacionObjetivoSpin
 @onready var npc_option = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNpc/NpcOption
 @onready var btn_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/BtnAdjunto
+@onready var btn_quitar_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/BtnQuitarAdjunto
 @onready var nombre_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/NombreAdjunto
+@onready var dialogo_adjunto = $DialogoAdjunto
 
 # --- Módulo Formulario ---
-@onready var btn_descargar_plantilla = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxPlantillas/BtnDescargarPlantilla
-@onready var btn_subir_plantilla = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxPlantillas/BtnSubirPlantilla
 @onready var fecha_input = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/GridFechas/FechaInput
 @onready var hora_input = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/GridFechas/HoraInput
 @onready var check_sin_tiempo = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/HBoxGlobalTime/CheckSinTiempo
@@ -22,9 +22,10 @@ extends Control
 @onready var btn_preview = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/BtnPreview
 @onready var lbl_total_puntos = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/LblTotalPuntos
 
-# --- FileDialogs CSV ---
-@onready var dialogo_descargar = $DialogoDescargar
-@onready var dialogo_subir = $DialogoSubir
+# --- Módulo Avanzado (minijuego) ---
+@onready var niveles_minijuego_spin = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/HBoxNiveles/NivelesSpin
+@onready var lista_preguntas_av = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/ListaPreguntasAv
+@onready var btn_add_pregunta_av = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/BtnAddPreguntaAv
 
 # --- Constantes ---
 const TIPO_TEST = "TEST"
@@ -33,13 +34,11 @@ const COLOR_DEFICIT = Color(1, 0.55, 0.4, 1)
 const COLOR_EXCESO = Color(1, 0.4, 0.4, 1)
 const COLOR_OK = Color(0.4, 0.95, 0.5, 1)
 
-# Header e ejemplo del CSV plantilla.
-const CSV_HEADER = "enunciado,tipo,valorPuntos,respuestas"
-const CSV_EJEMPLOS = [
-	"\"¿Cuánto es 2+2?\",TEST,10,\"3|0;4|1;5|0;6|0\"",
-	"\"¿Cuál es la capital de España?\",TEST,10,\"Madrid|1;Barcelona|0;Sevilla|0;Valencia|0\"",
-	"\"Explica con tus palabras el ciclo del agua\",DESARROLLO,20,",
-]
+# Tiempo por pregunta: 5 s mínimo, sin tope inicial hasta que el profesor
+# active el tiempo máximo global (entonces se recalcula).
+const TIEMPO_PREG_MIN := 5
+const TIEMPO_PREG_DEFAULT := 30
+const TIEMPO_PREG_TOPE_SIN_LIMITE := 3600
 
 signal puntuacion_cambiada
 
@@ -47,23 +46,25 @@ var contador_preguntas := 0
 var _preguntas_payload: Array = []
 var _prueba_id_actual: int = -1
 var _npc_seleccionado: String = ""
+var _adjunto_path: String = ""
 
 func _ready():
 	btn_volver.pressed.connect(_on_volver)
 	btn_guardar_global.pressed.connect(_on_guardar)
 	btn_adjunto.pressed.connect(_on_btn_adjunto)
-	btn_descargar_plantilla.pressed.connect(_on_descargar_plantilla)
-	btn_subir_plantilla.pressed.connect(_on_subir_plantilla)
-	check_sin_tiempo.toggled.connect(func(on): tiempo_global_spin.editable = not on)
+	btn_quitar_adjunto.pressed.connect(_on_quitar_adjunto)
+	dialogo_adjunto.file_selected.connect(_on_adjunto_seleccionado)
+	check_sin_tiempo.toggled.connect(_on_check_sin_tiempo_toggled)
+	tiempo_global_spin.value_changed.connect(func(_v): _refrescar_topes_tiempo_pregunta())
 	btn_add_pregunta.pressed.connect(func(): _on_add_pregunta())
+	btn_add_pregunta_av.pressed.connect(func(): _on_add_pregunta({}, lista_preguntas_av, true))
 	btn_preview.pressed.connect(_on_preview)
 	puntuacion_objetivo_spin.value_changed.connect(func(_v): _actualizar_total_puntos())
 	puntuacion_cambiada.connect(_actualizar_total_puntos)
-	dialogo_descargar.file_selected.connect(_on_destino_plantilla_seleccionado)
-	dialogo_subir.file_selected.connect(_on_csv_seleccionado)
 
 	_poblar_selector_npc()
 	_on_add_pregunta()
+	_refrescar_topes_tiempo_pregunta()
 
 func _poblar_selector_npc():
 	npc_option.clear()
@@ -71,15 +72,22 @@ func _poblar_selector_npc():
 		npc_option.add_item("%s · %s" % [npc["nombre"], npc["materia"]])
 	npc_option.selected = 0
 
+func _on_check_sin_tiempo_toggled(on: bool):
+	tiempo_global_spin.editable = not on
+	_refrescar_topes_tiempo_pregunta()
+
 # =====================================================================
 # CREACIÓN DINÁMICA DE PREGUNTAS
 # =====================================================================
 
-func _on_add_pregunta(initial: Dictionary = {}):
+func _on_add_pregunta(initial: Dictionary = {}, contenedor: VBoxContainer = null, modo_simple: bool = false):
+	if contenedor == null:
+		contenedor = lista_preguntas
 	contador_preguntas += 1
 
 	var panel = PanelContainer.new()
 	panel.set_meta("es_pregunta", true)
+	panel.set_meta("modo_simple", modo_simple)
 
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 15)
@@ -132,6 +140,31 @@ func _on_add_pregunta(initial: Dictionary = {}):
 		puntuacion_cambiada.emit()
 	)
 	header.add_child(btn_del)
+
+	# --- Fila tiempo por pregunta (en segundos, tope = tiempo global) ---
+	var hbox_tiempo = HBoxContainer.new()
+	hbox_tiempo.name = "HBoxTiempoPregunta"
+	hbox_tiempo.add_theme_constant_override("separation", 8)
+	vbox.add_child(hbox_tiempo)
+
+	var lbl_tiempo = Label.new()
+	lbl_tiempo.text = "Tiempo (segundos):"
+	lbl_tiempo.add_theme_color_override("font_color", Color(0.7, 0.85, 1, 1))
+	hbox_tiempo.add_child(lbl_tiempo)
+
+	var spin_tiempo = SpinBox.new()
+	spin_tiempo.name = "TiempoPregunta"
+	spin_tiempo.min_value = TIEMPO_PREG_MIN
+	spin_tiempo.max_value = TIEMPO_PREG_TOPE_SIN_LIMITE
+	spin_tiempo.value = TIEMPO_PREG_DEFAULT
+	spin_tiempo.custom_minimum_size = Vector2(100, 0)
+	hbox_tiempo.add_child(spin_tiempo)
+
+	var lbl_tope = Label.new()
+	lbl_tope.name = "LblTope"
+	lbl_tope.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
+	lbl_tope.add_theme_font_size_override("font_size", 11)
+	hbox_tiempo.add_child(lbl_tope)
 
 	# --- Enunciado ---
 	var enunciado = TextEdit.new()
@@ -188,15 +221,22 @@ func _on_add_pregunta(initial: Dictionary = {}):
 
 	opt_tipo.item_selected.connect(_on_tipo_pregunta_seleccionado.bind(opt_tipo, bloque_test, lista_respuestas, spin_n))
 
-	lista_preguntas.add_child(panel)
+	contenedor.add_child(panel)
 
-	# --- Aplicar datos iniciales (si vienen del CSV) o crear 4 opciones por defecto si es TEST ---
+	# En modo simple (Avanzado/minijuego) ocultamos la puntuación porque no
+	# hay objetivo agregado: cada pregunta vale lo que diga su propio spin.
+	if modo_simple:
+		lbl_puntos.visible = false
+		spin_puntos.visible = false
+
+	# --- Aplicar datos iniciales o crear 4 opciones por defecto si es TEST ---
 	if not initial.is_empty():
 		_aplicar_datos_iniciales(panel, initial)
 	else:
 		# Default = TEST → generar 4 opciones de partida visibles
 		_regenerar_opciones(lista_respuestas, int(spin_n.value))
 
+	_aplicar_tope_tiempo_a_pregunta(spin_tiempo, lbl_tope, modo_simple)
 	puntuacion_cambiada.emit()
 
 func _aplicar_datos_iniciales(panel: Node, data: Dictionary):
@@ -224,7 +264,6 @@ func _aplicar_datos_iniciales(panel: Node, data: Dictionary):
 		var respuestas = data.get("respuestasPosibles", [])
 		spin_n.value = max(respuestas.size(), 2)
 		_regenerar_opciones(lista_resp, respuestas.size())
-		# Poblar las opciones
 		for i in range(respuestas.size()):
 			var fila = lista_resp.get_child(i)
 			if fila == null:
@@ -272,6 +311,42 @@ func _add_respuesta(contenedor: VBoxContainer):
 	contenedor.add_child(hbox)
 
 # =====================================================================
+# TIEMPO POR PREGUNTA: tope = tiempo global (si está activado)
+# =====================================================================
+
+func _tope_tiempo_pregunta_segundos() -> int:
+	if check_sin_tiempo.button_pressed:
+		return TIEMPO_PREG_TOPE_SIN_LIMITE
+	return max(TIEMPO_PREG_MIN, int(tiempo_global_spin.value) * 60)
+
+func _refrescar_topes_tiempo_pregunta():
+	if not is_inside_tree() or lista_preguntas == null:
+		return
+	for panel in lista_preguntas.get_children():
+		if not panel.has_meta("es_pregunta"):
+			continue
+		var spin = _get_spin_tiempo_pregunta(panel)
+		var lbl = _get_lbl_tope_pregunta(panel)
+		if spin and lbl:
+			_aplicar_tope_tiempo_a_pregunta(spin, lbl)
+
+func _aplicar_tope_tiempo_a_pregunta(spin: SpinBox, lbl: Label, modo_simple: bool = false):
+	# El modo simple (minijuego) no usa tiempo global del Formulario, así que
+	# cada pregunta puede durar lo que quiera el profesor.
+	if modo_simple:
+		spin.max_value = TIEMPO_PREG_TOPE_SIN_LIMITE
+		lbl.text = "(sin tope)"
+		return
+	var tope = _tope_tiempo_pregunta_segundos()
+	spin.max_value = tope
+	if spin.value > tope:
+		spin.value = tope
+	if check_sin_tiempo.button_pressed:
+		lbl.text = "(sin límite global)"
+	else:
+		lbl.text = "máx %d s" % tope
+
+# =====================================================================
 # CONTADOR DE PUNTUACIÓN EN TIEMPO REAL
 # =====================================================================
 
@@ -301,130 +376,39 @@ func _get_spin_valor_pregunta(panel: Node) -> SpinBox:
 	var header = vbox.get_node_or_null("HeaderPregunta") if vbox else null
 	return header.get_node_or_null("ValorPuntos") if header else null
 
+func _get_spin_tiempo_pregunta(panel: Node) -> SpinBox:
+	var margin = panel.get_child(0) if panel.get_child_count() > 0 else null
+	var vbox = margin.get_child(0) if margin and margin.get_child_count() > 0 else null
+	var hbox = vbox.get_node_or_null("HBoxTiempoPregunta") if vbox else null
+	return hbox.get_node_or_null("TiempoPregunta") if hbox else null
+
+func _get_lbl_tope_pregunta(panel: Node) -> Label:
+	var margin = panel.get_child(0) if panel.get_child_count() > 0 else null
+	var vbox = margin.get_child(0) if margin and margin.get_child_count() > 0 else null
+	var hbox = vbox.get_node_or_null("HBoxTiempoPregunta") if vbox else null
+	return hbox.get_node_or_null("LblTope") if hbox else null
+
 # =====================================================================
-# HANDLERS DE ARCHIVO / PLANTILLA
+# ADJUNTO (.zip) — selección local; se sube cuando el backend lo soporte
 # =====================================================================
 
 func _on_btn_adjunto():
-	nombre_adjunto.text = "Archivo seleccionado: proyecto.zip"
-	Notificador.notificar("Adjunto vinculado", Color.CYAN)
+	dialogo_adjunto.popup_centered_ratio(0.6)
 
-# --- DESCARGAR PLANTILLA ---
-
-func _on_descargar_plantilla():
-	dialogo_descargar.popup_centered_ratio(0.6)
-
-func _on_destino_plantilla_seleccionado(path: String):
-	var f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		Notificador.notificar("No se pudo escribir el archivo", Color.RED)
+func _on_adjunto_seleccionado(path: String):
+	if path.is_empty():
 		return
-	f.store_line(CSV_HEADER)
-	for ejemplo in CSV_EJEMPLOS:
-		f.store_line(ejemplo)
-	f.close()
-	Notificador.notificar("Plantilla guardada en %s" % path.get_file(), Color.GREEN)
+	_adjunto_path = path
+	nombre_adjunto.text = path.get_file()
+	nombre_adjunto.add_theme_color_override("font_color", Color(0.5, 0.95, 0.6, 1))
+	btn_quitar_adjunto.visible = true
+	Notificador.notificar("Adjunto vinculado: %s" % path.get_file(), Color.CYAN)
 
-# --- IMPORTAR CSV ---
-
-func _on_subir_plantilla():
-	dialogo_subir.popup_centered_ratio(0.6)
-
-func _on_csv_seleccionado(path: String):
-	var f = FileAccess.open(path, FileAccess.READ)
-	if f == null:
-		Notificador.notificar("No se pudo abrir el archivo", Color.RED)
-		return
-	var contenido = f.get_as_text()
-	f.close()
-
-	var lineas = contenido.split("\n")
-	if lineas.size() < 2:
-		Notificador.notificar("El CSV no contiene preguntas", Color.ORANGE)
-		return
-
-	# Eliminar las preguntas existentes vacías para no acumular
-	_limpiar_preguntas_vacias()
-
-	var num_importadas = 0
-	var num_error = 0
-	for i in range(1, lineas.size()):    # saltar header
-		var linea = lineas[i].strip_edges()
-		if linea.is_empty():
-			continue
-		var celdas = _parse_csv_line(linea)
-		if celdas.size() < 3:
-			num_error += 1
-			continue
-		var enunciado = celdas[0].strip_edges()
-		var tipo = celdas[1].strip_edges().to_upper()
-		var valor = celdas[2].strip_edges().to_int()
-		if valor <= 0:
-			valor = 10
-		var respuestas: Array = []
-		if tipo == TIPO_TEST and celdas.size() >= 4:
-			respuestas = _parse_respuestas_csv(celdas[3])
-		_on_add_pregunta({
-			"enunciado": enunciado,
-			"tipo": tipo if tipo == TIPO_TEST or tipo == TIPO_DESARROLLO else TIPO_TEST,
-			"valorPuntos": valor,
-			"respuestasPosibles": respuestas
-		})
-		num_importadas += 1
-
-	if num_importadas > 0:
-		Notificador.notificar("Importadas %d preguntas" % num_importadas, Color.GREEN)
-	if num_error > 0:
-		Notificador.notificar("%d líneas con formato incorrecto" % num_error, Color.ORANGE)
-
-func _limpiar_preguntas_vacias():
-	for panel in lista_preguntas.get_children():
-		if not panel.has_meta("es_pregunta"):
-			continue
-		var margin = panel.get_child(0)
-		var vbox = margin.get_child(0)
-		var enunciado_node = vbox.get_node_or_null("Enunciado")
-		if enunciado_node and enunciado_node.text.strip_edges().is_empty():
-			panel.queue_free()
-
-# Parser CSV simple: respeta comillas dobles y permite comas dentro.
-func _parse_csv_line(linea: String) -> Array:
-	var resultado: Array = []
-	var actual = ""
-	var en_comillas = false
-	var i = 0
-	while i < linea.length():
-		var c = linea[i]
-		if c == "\"":
-			# comilla doble dentro de comillas = comilla literal
-			if en_comillas and i + 1 < linea.length() and linea[i + 1] == "\"":
-				actual += "\""
-				i += 2
-				continue
-			en_comillas = not en_comillas
-		elif c == "," and not en_comillas:
-			resultado.append(actual)
-			actual = ""
-		else:
-			actual += c
-		i += 1
-	resultado.append(actual)
-	return resultado
-
-# Formato respuestas: "texto1|correcta1;texto2|correcta2;..." donde correcta = 0 ó 1 (o true/false)
-func _parse_respuestas_csv(raw: String) -> Array:
-	var out: Array = []
-	for entrada in raw.split(";"):
-		var partes = entrada.split("|")
-		if partes.size() < 2:
-			continue
-		var texto = partes[0].strip_edges()
-		if texto.is_empty():
-			continue
-		var marca = partes[1].strip_edges().to_lower()
-		var es_correcta = marca == "1" or marca == "true" or marca == "si" or marca == "sí"
-		out.append({"texto": texto, "esCorrecta": es_correcta})
-	return out
+func _on_quitar_adjunto():
+	_adjunto_path = ""
+	nombre_adjunto.text = "Sin adjunto"
+	nombre_adjunto.add_theme_color_override("font_color", Color(1, 1, 1, 0.5))
+	btn_quitar_adjunto.visible = false
 
 # =====================================================================
 # PREVISUALIZACIÓN
@@ -455,31 +439,83 @@ func _on_guardar():
 		Notificador.notificar("No hay aula seleccionada, vuelve al Dashboard", Color.MAGENTA)
 		return
 
-	_preguntas_payload = _recoger_preguntas()
-	if _preguntas_payload.is_empty():
-		Notificador.notificar("Añade al menos una pregunta", Color.ORANGE)
+	var preguntas_examen = _recoger_preguntas()
+	var preguntas_minijuego = _recoger_preguntas_avanzado()
+
+	# El profesor solo puede rellenar una pestaña de preguntas a la vez.
+	if not preguntas_examen.is_empty() and not preguntas_minijuego.is_empty():
+		Notificador.notificar(
+			"Tienes preguntas en Formulario y Avanzado: borra una de las dos antes de guardar",
+			Color.RED
+		)
 		return
 
-	for i in range(_preguntas_payload.size()):
-		var pq = _preguntas_payload[i]
+	var tipo := "ACTIVIDAD"
+	var niveles_minijuego = null
+	var npc_forzado := ""
+
+	if not preguntas_examen.is_empty():
+		tipo = "EXAMEN"
+		_preguntas_payload = preguntas_examen
+		if not _validar_preguntas_examen(_preguntas_payload):
+			return
+	elif not preguntas_minijuego.is_empty():
+		tipo = "MINIJUEGO"
+		_preguntas_payload = preguntas_minijuego
+		if not _validar_preguntas_minijuego(_preguntas_payload):
+			return
+		niveles_minijuego = int(niveles_minijuego_spin.value)
+		# El minijuego siempre vive en el NPC de Actividades.
+		npc_forzado = "npc_actividades"
+	else:
+		_preguntas_payload = []
+
+	# Recordar el NPC elegido para asignar después
+	var npcs = NpcManager.get_npcs()
+	if not npc_forzado.is_empty():
+		_npc_seleccionado = npc_forzado
+		# Reflejarlo en el selector para coherencia visual.
+		for i in range(npcs.size()):
+			if npcs[i]["id"] == npc_forzado:
+				npc_option.selected = i
+				break
+	elif npc_option.selected >= 0 and npc_option.selected < npcs.size():
+		_npc_seleccionado = npcs[npc_option.selected]["id"]
+
+	var payload = {
+		"aulaId": GameManager.id_int(GameManager.aula_seleccionada_id),
+		"titulo": nombre_input.text.strip_edges(),
+		"fechaLimite": _construir_fecha_limite(),
+		"npcId": _npc_seleccionado,
+		"tipo": tipo
+	}
+	if niveles_minijuego != null:
+		payload["nivelesMinijuego"] = niveles_minijuego
+
+	Notificador.notificar("Guardando %s..." % tipo.to_lower(), Color.CYAN)
+	ConexionManager.peticion_post("/pruebas/crear", payload, _on_prueba_guardada)
+
+func _validar_preguntas_examen(preguntas: Array) -> bool:
+	for i in range(preguntas.size()):
+		var pq = preguntas[i]
 		if pq["tipo"] == TIPO_TEST:
 			if pq["respuestasPosibles"].size() < 2:
 				Notificador.notificar("Pregunta %d (TEST) necesita al menos 2 opciones" % (i + 1), Color.ORANGE)
-				return
+				return false
 			var correctas = 0
 			for r in pq["respuestasPosibles"]:
 				if r["esCorrecta"]:
 					correctas += 1
 			if correctas == 0:
 				Notificador.notificar("Pregunta %d (TEST) sin respuesta correcta" % (i + 1), Color.ORANGE)
-				return
+				return false
 			if correctas > 1:
 				Notificador.notificar("Pregunta %d (TEST): solo puede haber una correcta" % (i + 1), Color.ORANGE)
-				return
+				return false
 
 	# Validación de suma vs objetivo
 	var total = 0
-	for pq in _preguntas_payload:
+	for pq in preguntas:
 		total += int(pq["valorPuntos"])
 	var objetivo = int(puntuacion_objetivo_spin.value)
 	if total != objetivo:
@@ -487,26 +523,36 @@ func _on_guardar():
 			"La suma de puntos (%d) no coincide con la puntuación objetivo (%d)" % [total, objetivo],
 			Color.RED
 		)
-		return
+		return false
+	return true
 
-	# Recordar el NPC elegido para asignar después
-	var npcs = NpcManager.get_npcs()
-	if npc_option.selected >= 0 and npc_option.selected < npcs.size():
-		_npc_seleccionado = npcs[npc_option.selected]["id"]
+func _validar_preguntas_minijuego(preguntas: Array) -> bool:
+	# En el minijuego solo exigimos coherencia interna por pregunta TEST.
+	# El valorPuntos se ignora a efectos de puntuación agregada.
+	for i in range(preguntas.size()):
+		var pq = preguntas[i]
+		if pq["tipo"] == TIPO_TEST:
+			if pq["respuestasPosibles"].size() < 2:
+				Notificador.notificar("Pregunta %d (TEST) necesita al menos 2 opciones" % (i + 1), Color.ORANGE)
+				return false
+			var correctas = 0
+			for r in pq["respuestasPosibles"]:
+				if r["esCorrecta"]:
+					correctas += 1
+			if correctas != 1:
+				Notificador.notificar("Pregunta %d (TEST): marca exactamente 1 correcta" % (i + 1), Color.ORANGE)
+				return false
+	return true
 
-	var payload = {
-		"aulaId": GameManager.id_int(GameManager.aula_seleccionada_id),
-		"titulo": nombre_input.text.strip_edges(),
-		"fechaLimite": _construir_fecha_limite(),
-		# Enviado como hint; el backend puede ignorarlo si aún no lo soporta.
-		"npcId": _npc_seleccionado
-	}
-	Notificador.notificar("Guardando prueba...", Color.CYAN)
-	ConexionManager.peticion_post("/pruebas/crear", payload, _on_prueba_guardada)
+func _recoger_preguntas_avanzado() -> Array:
+	return _leer_preguntas_de(lista_preguntas_av)
 
 func _recoger_preguntas() -> Array:
+	return _leer_preguntas_de(lista_preguntas)
+
+func _leer_preguntas_de(contenedor: VBoxContainer) -> Array:
 	var out: Array = []
-	for panel in lista_preguntas.get_children():
+	for panel in contenedor.get_children():
 		if not panel.has_meta("es_pregunta"):
 			continue
 		var margin = panel.get_child(0)
@@ -525,7 +571,17 @@ func _recoger_preguntas() -> Array:
 			continue
 
 		var tipo = opt.get_item_text(opt.selected)
-		var valor_puntos = int(spin.value) if spin else 1
+		# En modo simple no hay valor de puntuación; usamos 0 como neutro.
+		var modo_simple = panel.get_meta("modo_simple", false)
+		var valor_puntos: int
+		if modo_simple:
+			valor_puntos = 0
+		elif spin:
+			valor_puntos = int(spin.value)
+		else:
+			valor_puntos = 1
+		var spin_tiempo = _get_spin_tiempo_pregunta(panel)
+		var tiempo_seg = int(spin_tiempo.value) if spin_tiempo else TIEMPO_PREG_DEFAULT
 		var respuestas: Array = []
 		if tipo == TIPO_TEST and bloque_test:
 			var lista_resp = bloque_test.get_node_or_null("ListaRespuestas")
@@ -542,6 +598,7 @@ func _recoger_preguntas() -> Array:
 			"enunciado": enunciado_text,
 			"tipo": tipo,
 			"valorPuntos": valor_puntos,
+			"tiempoLimiteSegundos": tiempo_seg,
 			"respuestasPosibles": respuestas
 		})
 	return out
@@ -571,9 +628,14 @@ func _on_prueba_guardada(data, code):
 		Notificador.notificar("Prueba creada pero sin id válido", Color.ORANGE)
 		return
 
-	# Persistir asociación local prueba_id -> npc_id
 	if not _npc_seleccionado.is_empty():
 		NpcManager.asignar_prueba(_prueba_id_actual, _npc_seleccionado)
+
+	if _preguntas_payload.is_empty():
+		Notificador.notificar("Actividad creada con éxito", Color.GREEN)
+		await get_tree().create_timer(1.0).timeout
+		get_tree().change_scene_to_file("res://Pantallas/profesor_dashboard.tscn")
+		return
 
 	Notificador.notificar("Subiendo preguntas (%d)..." % _preguntas_payload.size(), Color.CYAN)
 	_enviar_siguiente_pregunta(1)
@@ -590,6 +652,7 @@ func _enviar_siguiente_pregunta(num: int):
 		"enunciado": pq["enunciado"],
 		"tipo": pq["tipo"],
 		"valorPuntos": pq["valorPuntos"],
+		"tiempoLimiteSegundos": pq["tiempoLimiteSegundos"],
 		"pruebaId": _prueba_id_actual,
 		"respuestasPosibles": pq["respuestasPosibles"]
 	}

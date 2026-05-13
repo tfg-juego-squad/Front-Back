@@ -29,7 +29,8 @@ func _input(event):
 		return
 	if event.is_echo() or not event.is_pressed():
 		return
-	if not (event.is_action_pressed("ui_accept") or Input.is_physical_key_pressed(KEY_E)):
+	var es_tecla_e = event is InputEventKey and event.physical_keycode == KEY_E
+	if not (event.is_action_pressed("ui_accept") or es_tecla_e):
 		return
 
 	if GameManager.es_profesor:

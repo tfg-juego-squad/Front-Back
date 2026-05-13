@@ -1,0 +1,259 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Pantallas/minijuego_secuencia.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.06, 0.07, 0.12, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 1, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 1, 1, 0.35)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
+bg_color = Color(0, 0, 0, 0.6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal"]
+bg_color = Color(0.1, 0.1, 0.16, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.85, 0.4, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_bg"]
+bg_color = Color(0.1, 0.1, 0.2, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="MinijuegoSecuencia" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.09, 0.14, 1)
+
+[node name="Layout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
+
+[node name="Header" type="PanelContainer" parent="Layout"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="Layout/Header"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Sep" type="Control" parent="Layout/Header/HBox"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+
+[node name="BtnSalir" type="Button" parent="Layout/Header/HBox"]
+custom_minimum_size = Vector2(120, 38)
+layout_mode = 2
+size_flags_vertical = 4
+text = "< Salir"
+
+[node name="Titulo" type="Label" parent="Layout/Header/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Memoria de Secuencia"
+vertical_alignment = 1
+
+[node name="LblNivel" type="Label" parent="Layout/Header/HBox"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+size_flags_vertical = 4
+horizontal_alignment = 2
+text = "Nivel 0 / 0"
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+
+[node name="SepRight" type="Control" parent="Layout/Header/HBox"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+
+[node name="CentroPanel" type="MarginContainer" parent="Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 20
+
+[node name="PanelJuego" type="PanelContainer" parent="Layout/CentroPanel"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxCentro" type="VBoxContainer" parent="Layout/CentroPanel/PanelJuego"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="LblEstado" type="Label" parent="Layout/CentroPanel/PanelJuego/VBoxCentro"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Cargando..."
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+
+[node name="GridBotones" type="GridContainer" parent="Layout/CentroPanel/PanelJuego/VBoxCentro"]
+custom_minimum_size = Vector2(0, 320)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+columns = 2
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 30
+
+[node name="BtnRojo" type="Button" parent="Layout/CentroPanel/PanelJuego/VBoxCentro/GridBotones"]
+custom_minimum_size = Vector2(180, 140)
+layout_mode = 2
+text = "Rojo"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+
+[node name="BtnVerde" type="Button" parent="Layout/CentroPanel/PanelJuego/VBoxCentro/GridBotones"]
+custom_minimum_size = Vector2(180, 140)
+layout_mode = 2
+text = "Verde"
+theme_override_font_sizes/font_size = 22
+
+[node name="BtnAzul" type="Button" parent="Layout/CentroPanel/PanelJuego/VBoxCentro/GridBotones"]
+custom_minimum_size = Vector2(180, 140)
+layout_mode = 2
+text = "Azul"
+theme_override_font_sizes/font_size = 22
+
+[node name="BtnAmarillo" type="Button" parent="Layout/CentroPanel/PanelJuego/VBoxCentro/GridBotones"]
+custom_minimum_size = Vector2(180, 140)
+layout_mode = 2
+text = "Amarillo"
+theme_override_font_sizes/font_size = 22
+
+[node name="LblTuTurno" type="Label" parent="Layout/CentroPanel/PanelJuego/VBoxCentro"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.75, 0.85, 1, 1)
+
+[node name="OverlayPregunta" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="ModalPregunta" type="PanelContainer" parent="OverlayPregunta"]
+custom_minimum_size = Vector2(680, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -340.0
+offset_top = -260.0
+offset_right = 340.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
+
+[node name="MarginModal" type="MarginContainer" parent="OverlayPregunta/ModalPregunta"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="VBoxModal" type="VBoxContainer" parent="OverlayPregunta/ModalPregunta/MarginModal"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="LblCabeceraModal" type="Label" parent="OverlayPregunta/ModalPregunta/MarginModal/VBoxModal"]
+layout_mode = 2
+text = "PREGUNTA SORPRESA"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+
+[node name="LblTiempo" type="Label" parent="OverlayPregunta/ModalPregunta/MarginModal/VBoxModal"]
+layout_mode = 2
+text = "Tiempo restante: -- s"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 0.6, 0.4, 1)
+
+[node name="ProgresoTiempo" type="ProgressBar" parent="OverlayPregunta/ModalPregunta/MarginModal/VBoxModal"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+value = 1.0
+show_percentage = false
+theme_override_styles/background = SubResource("StyleBoxFlat_progress_bg")
+
+[node name="LblEnunciado" type="Label" parent="OverlayPregunta/ModalPregunta/MarginModal/VBoxModal"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+text = ""
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 16
+
+[node name="ContenedorRespuesta" type="VBoxContainer" parent="OverlayPregunta/ModalPregunta/MarginModal/VBoxModal"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="HBoxBotonesModal" type="HBoxContainer" parent="OverlayPregunta/ModalPregunta/MarginModal/VBoxModal"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 15
+
+[node name="BtnEnviarPregunta" type="Button" parent="OverlayPregunta/ModalPregunta/MarginModal/VBoxModal/HBoxBotonesModal"]
+custom_minimum_size = Vector2(200, 42)
+layout_mode = 2
+text = "Enviar respuesta"
+
+[node name="BtnSaltarPregunta" type="Button" parent="OverlayPregunta/ModalPregunta/MarginModal/VBoxModal/HBoxBotonesModal"]
+custom_minimum_size = Vector2(140, 42)
+layout_mode = 2
+text = "Saltar"
+
+[node name="TimerPregunta" type="Timer" parent="."]
+wait_time = 0.1

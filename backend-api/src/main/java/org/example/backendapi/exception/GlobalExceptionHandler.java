@@ -1,18 +1,25 @@
 package org.example.backendapi.exception;
 
-import org.apache.coyote.BadRequestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // Manejo de recursos no encontrados (Ej: Usuario no existe)
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -26,10 +33,31 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    // Manejo de excepciones genéricas
+    // Bean Validation fallida (@Valid sobre @RequestBody): devolvemos 400 con
+    // detalle por campo en lugar de tirar al handler genérico (que daba 500).
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+        String detalle = ex.getBindingResult().getFieldErrors().stream()
+                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+        return buildResponse(HttpStatus.BAD_REQUEST, "Datos inválidos: " + detalle);
+    }
+
+    // JSON malformado / fecha no parseable / tipo incompatible en el body.
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleUnreadable(HttpMessageNotReadableException ex) {
+        log.warn("Body de petición ilegible: {}", ex.getMostSpecificCause().getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                "JSON inválido: " + ex.getMostSpecificCause().getMessage());
+    }
+
+    // Manejo de excepciones genéricas — logueamos el stacktrace completo para
+    // poder diagnosticar 500s desde los logs del servidor.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ha ocurrido un error interno en el servidor.");
+        log.error("Excepción no manejada", ex);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Error interno: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
     }
 
     // Manejo de excepciones de prohibición
@@ -47,6 +75,7 @@ public class GlobalExceptionHandler {
     // Errores de la base de datos (claves duplicadas, etc.)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("DataIntegrityViolation", ex);
         return buildResponse(HttpStatus.CONFLICT, "Error de integridad: el recurso ya existe o está relacionado con otros datos.");
     }
 
