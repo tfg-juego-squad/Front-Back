@@ -42,7 +42,6 @@ const TIEMPO_PREG_TOPE_SIN_LIMITE := 3600
 
 signal puntuacion_cambiada
 
-var contador_preguntas := 0
 var _preguntas_payload: Array = []
 var _prueba_id_actual: int = -1
 var _npc_seleccionado: String = ""
@@ -83,7 +82,6 @@ func _on_check_sin_tiempo_toggled(on: bool):
 func _on_add_pregunta(initial: Dictionary = {}, contenedor: VBoxContainer = null, modo_simple: bool = false):
 	if contenedor == null:
 		contenedor = lista_preguntas
-	contador_preguntas += 1
 
 	var panel = PanelContainer.new()
 	panel.set_meta("es_pregunta", true)
@@ -107,7 +105,7 @@ func _on_add_pregunta(initial: Dictionary = {}, contenedor: VBoxContainer = null
 	vbox.add_child(header)
 
 	var lbl = Label.new()
-	lbl.text = "Pregunta #" + str(contador_preguntas)
+	lbl.name = "LblNumero"
 	lbl.add_theme_color_override("font_color", Color.AQUAMARINE)
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(lbl)
@@ -137,6 +135,9 @@ func _on_add_pregunta(initial: Dictionary = {}, contenedor: VBoxContainer = null
 	btn_del.custom_minimum_size = Vector2(36, 0)
 	btn_del.pressed.connect(func():
 		panel.queue_free()
+		# La numeración se recalcula tras eliminar; queue_free() es diferido
+		# así que esperamos un frame para no ver al panel borrado todavía.
+		call_deferred("_renumerar_preguntas", contenedor)
 		puntuacion_cambiada.emit()
 	)
 	header.add_child(btn_del)
@@ -237,6 +238,7 @@ func _on_add_pregunta(initial: Dictionary = {}, contenedor: VBoxContainer = null
 		_regenerar_opciones(lista_respuestas, int(spin_n.value))
 
 	_aplicar_tope_tiempo_a_pregunta(spin_tiempo, lbl_tope, modo_simple)
+	_renumerar_preguntas(contenedor)
 	puntuacion_cambiada.emit()
 
 func _aplicar_datos_iniciales(panel: Node, data: Dictionary):
@@ -276,14 +278,47 @@ func _aplicar_datos_iniciales(panel: Node, data: Dictionary):
 func _on_tipo_pregunta_seleccionado(opt: OptionButton, bloque_test: VBoxContainer, lista_respuestas: VBoxContainer, spin_n: SpinBox, idx: int):
 	var es_test = opt.get_item_text(idx) == TIPO_TEST
 	bloque_test.visible = es_test
-	if es_test and lista_respuestas.get_child_count() == 0:
-		_regenerar_opciones(lista_respuestas, int(spin_n.value))
+	# Reload completo del constructor de la pregunta al cambiar el tipo:
+	# tiramos las opciones anteriores y, si es TEST, regeneramos limpias.
+	for hijo in lista_respuestas.get_children():
+		hijo.queue_free()
+	# Reseteamos también el grupo de "correcta" para que no quede una marcada
+	# residual al cambiar de tipo y volver.
+	var grupo = ButtonGroup.new()
+	lista_respuestas.set_meta("grupo_correctas", grupo)
+	if es_test:
+		spin_n.value = max(int(spin_n.value), 2)
+		# call_deferred evita pisar las queue_free() recién pedidas.
+		call_deferred("_regenerar_opciones", lista_respuestas, int(spin_n.value))
 
 func _regenerar_opciones(contenedor: VBoxContainer, cantidad: int):
 	for hijo in contenedor.get_children():
 		hijo.queue_free()
 	for i in range(max(cantidad, 2)):
 		_add_respuesta(contenedor)
+
+# Reasigna "Pregunta #N" en cada panel según su posición actual en el
+# contenedor. Llamado al añadir/borrar para que la numeración siempre
+# refleje las preguntas vivas, no un contador acumulado.
+func _renumerar_preguntas(contenedor: VBoxContainer):
+	if contenedor == null:
+		return
+	var n := 0
+	for panel in contenedor.get_children():
+		if not panel.has_meta("es_pregunta"):
+			continue
+		if not is_instance_valid(panel) or panel.is_queued_for_deletion():
+			continue
+		n += 1
+		var lbl = _get_lbl_numero_pregunta(panel)
+		if lbl:
+			lbl.text = "Pregunta #%d" % n
+
+func _get_lbl_numero_pregunta(panel: Node) -> Label:
+	var margin = panel.get_child(0) if panel.get_child_count() > 0 else null
+	var vbox = margin.get_child(0) if margin and margin.get_child_count() > 0 else null
+	var header = vbox.get_node_or_null("HeaderPregunta") if vbox else null
+	return header.get_node_or_null("LblNumero") if header else null
 
 func _add_respuesta(contenedor: VBoxContainer):
 	var hbox = HBoxContainer.new()
