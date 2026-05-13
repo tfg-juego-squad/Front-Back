@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,7 +47,7 @@ public class PruebaService {
         Prueba nuevaPrueba = new Prueba();
         nuevaPrueba.setAula(aula);
         nuevaPrueba.setTitulo(request.getTitulo());
-
+        nuevaPrueba.setPreguntas(new ArrayList<>());
         nuevaPrueba.setFechaLimite(request.getFechaLimite());
         nuevaPrueba.setFechaCreacion(Instant.now());
         nuevaPrueba.setNpcId(request.getNpcId());
