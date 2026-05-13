@@ -136,9 +136,14 @@ func _empezar_prueba(p_id: int, p_titulo: String):
 
 func _empezar_minijuego(p: Dictionary):
 	# La escena del minijuego leerá GameManager.minijuego_pendiente en su _ready
-	# y arrancará la partida con los datos de esta prueba.
+	# y arrancará la partida con los datos de esta prueba. El subtipo decide
+	# qué escena se carga.
 	GameManager.minijuego_pendiente = p
-	get_tree().change_scene_to_file("res://Pantallas/minijuego_secuencia.tscn")
+	var subtipo = str(p.get("subtipoMinijuego", "SECUENCIA")).to_upper()
+	var escena = "res://Pantallas/minijuego_secuencia.tscn"
+	if subtipo == "ESQUIVA":
+		escena = "res://Pantallas/minijuego_esquiva.tscn"
+	get_tree().change_scene_to_file(escena)
 
 func _on_volver():
 	NpcManager.reset_npc_activo()
