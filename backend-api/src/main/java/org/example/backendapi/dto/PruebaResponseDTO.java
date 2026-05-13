@@ -13,4 +13,7 @@ public class PruebaResponseDTO {
     private String npcId;
     private String tipo;
     private Integer nivelesMinijuego;
+    private String subtipoMinijuego;
+    private Boolean evaluable;
+    private String texto;
 }

@@ -2,6 +2,7 @@ package org.example.backendapi.control;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.backendapi.dto.EstadisticaPreguntaDTO;
 import org.example.backendapi.dto.PruebaRequestDTO;
 import org.example.backendapi.dto.PruebaResponseDTO;
 import org.example.backendapi.model.entities.Usuario;
@@ -60,5 +61,13 @@ public class PruebaControl {
             @AuthenticationPrincipal Usuario usuarioLogueado) {
         pruebaService.eliminarPrueba(pruebaId, usuarioLogueado);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{pruebaId}/estadisticas")
+    @PreAuthorize("hasAuthority('ROL_PROFESOR')")
+    public ResponseEntity<List<EstadisticaPreguntaDTO>> estadisticas(
+            @PathVariable Long pruebaId,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        return ResponseEntity.ok(pruebaService.obtenerEstadisticas(pruebaId, usuarioLogueado));
     }
 }

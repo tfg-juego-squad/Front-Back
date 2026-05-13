@@ -13,5 +13,7 @@ public enum TipoPrueba {
     /** Minijuego del NPC de Actividades: banco de preguntas + niveles. */
     MINIJUEGO,
     /** Contenedor sintético por aula para las notas manuales del profesor. */
-    NOTA_MANUAL
+    NOTA_MANUAL,
+    /** NPC parlante: solo muestra un texto fijo al alumno, sin preguntas. */
+    DIALOGO
 }

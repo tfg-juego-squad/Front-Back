@@ -12,4 +12,7 @@ public interface IRespuestaAlumnoDAO extends CrudRepository<RespuestaAlumno, Lon
     
     // Para que el profesor vea qué le queda por corregir de sus aulas
     List<RespuestaAlumno> findByPregunta_Prueba_Aula_Profesor_IdAndPuntosAsignadosIsNull(Long profesorId);
+
+    // Todas las respuestas de cualquier alumno a una prueba (para estadísticas)
+    List<RespuestaAlumno> findByPregunta_Prueba_Id(Long pruebaId);
 }
