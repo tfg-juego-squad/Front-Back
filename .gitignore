@@ -15,3 +15,7 @@ obj/
 Thumbs.db
 
 .idea
+
+# Documentación generada (local)
+documentacion_tareas_*.html
+analysis_results.md

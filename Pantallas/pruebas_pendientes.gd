@@ -121,6 +121,21 @@ func _crear_tarjeta_prueba(p: Dictionary):
 	lbl_meta.add_theme_font_size_override("font_size", 11)
 	vbox.add_child(lbl_meta)
 
+	# Si el profesor exige un nivel mínimo y el alumno no llega, la prueba se
+	# muestra en gris con su requisito al lado y el botón deshabilitado.
+	var nivel_min = int(p.get("nivelMinimo", 1))
+	var nivel_alumno_raw = GameManager.usuario_actual.get("nivelActual")
+	var nivel_alumno = 1 if nivel_alumno_raw == null else int(nivel_alumno_raw)
+	var bloqueada = nivel_min > nivel_alumno
+	if bloqueada:
+		var lbl_req = Label.new()
+		lbl_req.text = "Requiere nivel %d (tienes %d)" % [nivel_min, nivel_alumno]
+		lbl_req.add_theme_color_override("font_color", Color(1, 0.5, 0.5, 1))
+		lbl_req.add_theme_font_size_override("font_size", 11)
+		vbox.add_child(lbl_req)
+		lbl_titulo.modulate = Color(1, 1, 1, 0.5)
+		lbl_meta.modulate = Color(1, 1, 1, 0.5)
+
 	var btn = Button.new()
 	if es_minijuego:
 		btn.text = "Jugar"
@@ -129,6 +144,7 @@ func _crear_tarjeta_prueba(p: Dictionary):
 	else:
 		btn.text = "Empezar"
 	btn.custom_minimum_size = Vector2(110, 40)
+	btn.disabled = bloqueada
 	var prueba_id = GameManager.id_int(p.get("id"))
 	var prueba_titulo = str(p.get("titulo", "Prueba"))
 	var prueba_data = p.duplicate(true)
@@ -162,8 +178,11 @@ func _empezar_minijuego(p: Dictionary):
 	GameManager.minijuego_pendiente = p
 	var subtipo = str(p.get("subtipoMinijuego", "SECUENCIA")).to_upper()
 	var escena = "res://Pantallas/minijuego_secuencia.tscn"
-	if subtipo == "ESQUIVA":
-		escena = "res://Pantallas/minijuego_esquiva.tscn"
+	match subtipo:
+		"ESQUIVA":
+			escena = "res://Pantallas/minijuego_esquiva.tscn"
+		"HOTLINE":
+			escena = "res://Pantallas/minijuego_hotline.tscn"
 	get_tree().change_scene_to_file(escena)
 
 func _on_volver():

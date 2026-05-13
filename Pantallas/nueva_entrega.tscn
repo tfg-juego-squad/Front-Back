@@ -96,7 +96,7 @@ text = "Título:"
 [node name="NombreInput" type="LineEdit" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 custom_minimum_size = Vector2(0, 35)
 layout_mode = 2
-placeholder_text = "Ej: Ecuaciones de primer grado"
+placeholder_text = "Título de la actividad"
 
 [node name="HBoxPuntuacion" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 layout_mode = 2
@@ -139,6 +139,36 @@ button_pressed = true
 text = "Esta actividad es evaluable (cuenta para nota)"
 tooltip_text = "Si lo desmarcas, la actividad sigue apareciendo pero no suma puntos al ranking"
 
+[node name="HBoxNivelMinimo" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="L_NivelMinimo" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNivelMinimo"]
+layout_mode = 2
+text = "Nivel mínimo del alumno:"
+theme_override_font_sizes/font_size = 14
+
+[node name="NivelMinimoSpin" type="SpinBox" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNivelMinimo"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 35)
+min_value = 1
+max_value = 50
+value = 1
+tooltip_text = "Los alumnos con un nivel inferior no podrán empezar la prueba"
+
+[node name="L_Xp" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNivelMinimo"]
+layout_mode = 2
+text = "XP recompensa:"
+theme_override_font_sizes/font_size = 14
+
+[node name="XpRecompensaSpin" type="SpinBox" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNivelMinimo"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 35)
+min_value = 0
+max_value = 500
+value = 10
+tooltip_text = "XP que sumará el alumno al completar esta prueba (examen, minijuego o diálogo)"
+
 [node name="L_Desc" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 layout_mode = 2
 text = "Descripción:"
@@ -146,7 +176,7 @@ text = "Descripción:"
 [node name="DescripcionInput" type="TextEdit" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
-placeholder_text = "Instrucciones para los alumnos..."
+placeholder_text = "Instrucciones para los alumnos"
 
 [node name="HBoxAdjunto" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 layout_mode = 2
@@ -216,7 +246,7 @@ placeholder_text = "dd/mm/aaaa"
 
 [node name="LabelH" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/GridFechas"]
 layout_mode = 2
-text = "Hora Tope:"
+text = "Hora máxima:"
 
 [node name="HoraInput" type="LineEdit" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Formulario/Scroll/VBox/GridFechas"]
 custom_minimum_size = Vector2(100, 0)
@@ -301,12 +331,14 @@ text = "Tipo de minijuego:"
 [node name="SubtipoOption" type="OptionButton" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/HBoxSubtipo"]
 layout_mode = 2
 custom_minimum_size = Vector2(240, 35)
-item_count = 2
+item_count = 3
 selected = 0
 popup/item_0/text = "Memoria de Secuencia"
 popup/item_0/id = 0
-popup/item_1/text = "Esquiva-bloques"
+popup/item_1/text = "Conducción (3 carriles)"
 popup/item_1/id = 1
+popup/item_2/text = "Hotline (top-down)"
+popup/item_2/id = 2
 tooltip_text = "Mecánica del juego. La función educativa (preguntas tras cada nivel) es la misma."
 
 [node name="HBoxNiveles" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv"]
@@ -376,7 +408,7 @@ text = "Texto que dirá el NPC:"
 custom_minimum_size = Vector2(0, 260)
 layout_mode = 2
 size_flags_vertical = 3
-placeholder_text = "Ej: ¡Hola viajero! ¿Sabías que la fotosíntesis convierte la luz del sol en azúcares? Estudia bien tu unidad..."
+placeholder_text = "Texto que dirá el NPC al alumno"
 wrap_mode = 1
 
 [node name="HBoxFinal" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs"]

@@ -8,6 +8,8 @@ extends Control
 @onready var puntuacion_objetivo_spin = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxPuntuacion/PuntuacionObjetivoSpin
 @onready var npc_option = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNpc/NpcOption
 @onready var check_evaluable = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxEvaluable/CheckEvaluable
+@onready var nivel_minimo_spin = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNivelMinimo/NivelMinimoSpin
+@onready var xp_recompensa_spin = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNivelMinimo/XpRecompensaSpin
 @onready var btn_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/BtnAdjunto
 @onready var btn_quitar_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/BtnQuitarAdjunto
 @onready var nombre_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/NombreAdjunto
@@ -69,6 +71,40 @@ func _ready():
 	_poblar_selector_npc()
 	_on_add_pregunta()
 	_refrescar_topes_tiempo_pregunta()
+	_instalar_filtros_fecha_hora()
+
+# =====================================================================
+# VALIDACIÓN DE ENTRADAS DE FECHA Y HORA
+# Filtra cualquier carácter que no sea dígito o separador permitido.
+# fecha: dígitos + "/" + "-"   |   hora: dígitos + ":"
+# =====================================================================
+
+func _instalar_filtros_fecha_hora():
+	fecha_input.text_changed.connect(_on_fecha_text_changed)
+	hora_input.text_changed.connect(_on_hora_text_changed)
+
+func _on_fecha_text_changed(nuevo: String):
+	_aplicar_filtro_line_edit(fecha_input, nuevo, "0123456789/-")
+
+func _on_hora_text_changed(nuevo: String):
+	_aplicar_filtro_line_edit(hora_input, nuevo, "0123456789:")
+
+func _aplicar_filtro_line_edit(le: LineEdit, valor: String, permitidos: String):
+	var limpio := ""
+	for c in valor:
+		if permitidos.contains(c):
+			limpio += c
+	if limpio == valor:
+		return
+	# Conservamos el caret donde estaba (ajustado por los caracteres eliminados
+	# que quedaban a la izquierda del cursor).
+	var caret_antes = le.caret_column
+	var eliminados_antes_caret := 0
+	for i in range(min(caret_antes, valor.length())):
+		if not permitidos.contains(valor[i]):
+			eliminados_antes_caret += 1
+	le.text = limpio
+	le.caret_column = max(0, caret_antes - eliminados_antes_caret)
 
 func _poblar_selector_npc():
 	npc_option.clear()
@@ -487,17 +523,29 @@ func _on_quitar_adjunto():
 # =====================================================================
 
 func _on_preview():
+	# Si ya hay un preview montado lo retiramos antes de abrir otro
+	var existente = get_node_or_null("PreviewOverlay")
+	if existente:
+		existente.queue_free()
+
+	# Buscamos en las dos listas: una previsualización con sentido es la primera
+	# que tenga preguntas. Así el botón funciona tanto en el constructor de
+	# examen como en el banco del minijuego.
 	var preguntas = _recoger_preguntas()
+	if preguntas.is_empty():
+		preguntas = _recoger_preguntas_avanzado()
 	if preguntas.is_empty():
 		Notificador.notificar("Añade al menos una pregunta antes de previsualizar", Color.ORANGE)
 		return
+
+	# Montamos el preview como hijo de esta escena (overlay) en lugar de
+	# cambiar la escena: así no se pierde nada del formulario al cerrar.
 	var escena = load("res://Pantallas/preview_prueba.tscn")
 	var instancia = escena.instantiate()
+	instancia.name = "PreviewOverlay"
+	instancia.set_meta("modo_overlay", true)
 	instancia.cargar_preview(nombre_input.text.strip_edges(), preguntas)
-	var tree = get_tree()
-	tree.root.add_child(instancia)
-	tree.current_scene.queue_free()
-	tree.current_scene = instancia
+	add_child(instancia)
 
 # =====================================================================
 # GUARDADO Y VALIDACIÓN
@@ -571,7 +619,9 @@ func _on_guardar():
 		"fechaLimite": _construir_fecha_limite(),
 		"npcId": _npc_seleccionado,
 		"tipo": tipo,
-		"evaluable": check_evaluable.button_pressed if check_evaluable else true
+		"evaluable": check_evaluable.button_pressed if check_evaluable else true,
+		"nivelMinimo": int(nivel_minimo_spin.value) if nivel_minimo_spin else 1,
+		"xpRecompensa": int(xp_recompensa_spin.value) if xp_recompensa_spin else 10
 	}
 	if niveles_minijuego != null:
 		payload["nivelesMinijuego"] = niveles_minijuego
@@ -589,6 +639,7 @@ func _subtipo_minijuego_actual() -> String:
 		return "SECUENCIA"
 	match subtipo_minijuego_option.selected:
 		1: return "ESQUIVA"
+		2: return "HOTLINE"
 		_: return "SECUENCIA"
 
 func _validar_preguntas_examen(preguntas: Array) -> bool:

@@ -340,6 +340,13 @@ func _finalizar_minijuego():
 		"Minijuego completado: %d/%d niveles" % [_niveles_pasados, _niveles_totales],
 		Color.GREEN
 	)
+	# Marcar la prueba como completada para que no vuelva a salir como pendiente.
+	if _prueba_id >= 0:
+		ConexionManager.peticion_post(
+			"/puntuacion/alta",
+			{"idPrueba": _prueba_id},
+			func(_d, _c): pass
+		)
 
 func _on_salir():
 	NpcManager.reset_npc_activo()

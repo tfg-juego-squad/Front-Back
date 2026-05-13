@@ -16,4 +16,6 @@ public class PruebaResponseDTO {
     private String subtipoMinijuego;
     private Boolean evaluable;
     private String texto;
+    private Integer nivelMinimo;
+    private Integer xpRecompensa;
 }

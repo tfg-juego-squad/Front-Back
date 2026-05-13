@@ -23,6 +23,14 @@ script/source = "extends Node2D
 
 @onready var menu_pausa = $MenuPausa
 
+func _ready():
+	# Si veníamos de hablar con un NPC, hacer un minijuego o una prueba,
+	# colocamos al PJ donde estaba en vez de dejar que arranque en el origen.
+	call_deferred(\"_restaurar_posicion_pj\")
+
+func _restaurar_posicion_pj():
+	GameManager.restaurar_posicion_jugador()
+
 func _input(event):
 	if event.is_action_pressed(\"ui_cancel\"): # ESC por defecto
 		menu_pausa.toggle_pausa()
@@ -1235,17 +1243,22 @@ position = Vector2(300, -255)
 rotation = -1.5707964
 shape = SubResource("WorldBoundaryShape2D_puy14")
 
-[node name="NPC - Examen4" parent="." unique_id=259196628 instance=ExtResource("10_08jxx")]
+[node name="NPC - Dialogo1" parent="." unique_id=259196628 instance=ExtResource("10_08jxx")]
 position = Vector2(172, 1)
+npc_id = "npc_dialogo1"
 
-[node name="NPC - Examen5" parent="." unique_id=922594569 instance=ExtResource("10_08jxx")]
+[node name="NPC - Dialogo2" parent="." unique_id=922594569 instance=ExtResource("10_08jxx")]
 position = Vector2(312, 608)
+npc_id = "npc_dialogo2"
 
 [node name="NPC - Examen6" parent="." unique_id=2116129956 instance=ExtResource("10_08jxx")]
 position = Vector2(148, 610)
+npc_id = "npc_examen1"
 
 [node name="NPC - Examen7" parent="." unique_id=871675835 instance=ExtResource("10_08jxx")]
 position = Vector2(-339, 174)
+npc_id = "npc_examen2"
 
 [node name="NPC - Examen8" parent="." unique_id=2103502606 instance=ExtResource("10_08jxx")]
 position = Vector2(228, 1016)
+npc_id = "npc_examen3"

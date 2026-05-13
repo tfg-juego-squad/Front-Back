@@ -61,6 +61,8 @@ public class PruebaService {
         nuevaPrueba.setSubtipoMinijuego(request.getSubtipoMinijuego());
         nuevaPrueba.setEvaluable(request.getEvaluable() == null ? Boolean.TRUE : request.getEvaluable());
         nuevaPrueba.setTexto(request.getTexto());
+        nuevaPrueba.setNivelMinimo(request.getNivelMinimo() == null ? 1 : Math.max(1, request.getNivelMinimo()));
+        nuevaPrueba.setXpRecompensa(request.getXpRecompensa() == null ? 10 : Math.max(0, request.getXpRecompensa()));
 
         Prueba guardada = pruebaDAO.save(nuevaPrueba);
         return pruebaMapper.toResponseDTO(guardada);
@@ -129,6 +131,12 @@ public class PruebaService {
         }
         if (request.getTexto() != null) {
             prueba.setTexto(request.getTexto());
+        }
+        if (request.getNivelMinimo() != null) {
+            prueba.setNivelMinimo(Math.max(1, request.getNivelMinimo()));
+        }
+        if (request.getXpRecompensa() != null) {
+            prueba.setXpRecompensa(Math.max(0, request.getXpRecompensa()));
         }
 
         Prueba actualizada = pruebaDAO.save(prueba);

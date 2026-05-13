@@ -103,9 +103,12 @@ public class PuntuacionService {
         nueva.setAlumno(alumnoCompleto);
         nueva.setPrueba(prueba);
         nueva.setFechaCompletado(Instant.now());
-        
-        // El alumno gana experiencia base para subir de nivel
-        alumnoCompleto.ganarExperiencia(puntosCalculados);
+
+        // El alumno gana la XP que el profesor configuró para esta prueba; si no
+        // hay valor (datos antiguos) caemos al comportamiento legacy (suma de
+        // puntos del examen) para no penalizar a los alumnos retroactivamente.
+        int xpRecompensa = prueba.getXpRecompensa() == null ? puntosCalculados : prueba.getXpRecompensa();
+        alumnoCompleto.ganarExperiencia(xpRecompensa);
 
         usuarioDAO.save(alumnoCompleto);
         Puntuacion guardada = puntuacionDAO.save(nueva);

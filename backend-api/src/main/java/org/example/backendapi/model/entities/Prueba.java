@@ -54,6 +54,16 @@ public class Prueba {
     @Column(name = "texto", columnDefinition = "TEXT")
     private String texto;
 
+    /** Nivel mínimo del alumno para poder hacer la prueba. 1 = sin restricción. */
+    @ColumnDefault("1")
+    @Column(name = "nivel_minimo", nullable = false)
+    private Integer nivelMinimo = 1;
+
+    /** XP que recibe el alumno al completar esta prueba (independiente de la nota). */
+    @ColumnDefault("10")
+    @Column(name = "xp_recompensa", nullable = false)
+    private Integer xpRecompensa = 10;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aula_id", nullable = false)
     private Aula aula;

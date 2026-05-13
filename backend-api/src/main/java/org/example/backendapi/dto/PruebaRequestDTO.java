@@ -37,4 +37,10 @@ public class PruebaRequestDTO {
 
     /** Texto del NPC cuando tipo = DIALOGO. */
     private String texto;
+
+    /** Nivel mínimo del alumno para realizar la prueba. Default 1. */
+    private Integer nivelMinimo;
+
+    /** XP que recibe el alumno al completar esta prueba. Default 10. */
+    private Integer xpRecompensa;
 }

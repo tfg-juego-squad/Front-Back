@@ -101,4 +101,10 @@ func _siguiente():
 		_mostrar_pregunta_actual()
 
 func _on_cerrar():
+	# Si nos han instanciado como overlay (desde nueva_entrega) simplemente
+	# nos retiramos sin tocar la escena padre — así el formulario sigue
+	# intacto. En modo standalone volvemos al constructor por compatibilidad.
+	if get_meta("modo_overlay", false):
+		queue_free()
+		return
 	get_tree().change_scene_to_file("res://Pantallas/nueva_entrega.tscn")

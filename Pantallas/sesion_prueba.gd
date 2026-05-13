@@ -124,7 +124,10 @@ func _actualizar_tiempo_visible():
 	else:
 		tiempo_label.add_theme_color_override("font_color", Color(1, 0.9, 0.5, 1))
 
-func _on_opcion_test_toggled(resp_id: int, pressed: bool):
+func _on_opcion_test_toggled(pressed: bool, resp_id: int):
+	# Callable.bind añade el resp_id AL FINAL, así que la firma debe ser
+	# (pressed: bool, resp_id: int). En el orden inverso Godot lanzaba un
+	# "Cannot convert argument" tras pulsar la primera opción.
 	if pressed:
 		respuesta_elegida_id = resp_id
 

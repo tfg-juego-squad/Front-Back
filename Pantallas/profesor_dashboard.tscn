@@ -1,6 +1,21 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://Pantallas/profesor_dashboard.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_PanelFlotante"]
+bg_color = Color(0.14, 0.16, 0.22, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.4, 0.55, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 8
+
 [node name="ProfesorDashboard" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -191,13 +206,15 @@ text = "Ajustes Alumnado"
 
 [node name="PanelFlotante" type="PanelContainer" parent="."]
 visible = false
-self_modulate = Color(1, 1, 1, 0.95)
+z_index = 10
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.2
-anchor_top = 0.15
-anchor_right = 0.8
-anchor_bottom = 0.85
+anchor_left = 0.12
+anchor_top = 0.06
+anchor_right = 0.88
+anchor_bottom = 0.94
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_PanelFlotante")
 
 [node name="MargenFlotante" type="MarginContainer" parent="PanelFlotante"]
 layout_mode = 2
@@ -255,7 +272,7 @@ text = "Nombre del Aula:"
 [node name="EditNombreAula" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 35)
-placeholder_text = "Ej: 1ºA DAM"
+placeholder_text = "Nombre del aula"
 
 [node name="LabelCant" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
 layout_mode = 2

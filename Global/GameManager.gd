@@ -15,6 +15,36 @@ var dialogo_pendiente: Dictionary = {}
 
 var _cerrando_sesion: bool = false
 
+# Posición del jugador en el mundo. Se guarda antes de cambiar a otra pantalla
+# (NPC, pruebas, dialogo, minijuego) para volver al mismo sitio en el mapa.
+var posicion_jugador: Vector2 = Vector2.ZERO
+var posicion_jugador_guardada: bool = false
+
+# Guarda la posición global del nodo "User-PJ" de la escena actual (si existe).
+func guardar_posicion_jugador():
+	var tree = Engine.get_main_loop() as SceneTree
+	if tree == null or tree.current_scene == null:
+		return
+	var pj = tree.current_scene.get_node_or_null("User-PJ")
+	if pj == null:
+		return
+	posicion_jugador = pj.global_position
+	posicion_jugador_guardada = true
+
+# Restaura la posición sobre el nodo "User-PJ" de la escena actual si hay una
+# guardada. Devuelve true si efectivamente colocó al jugador.
+func restaurar_posicion_jugador() -> bool:
+	if not posicion_jugador_guardada:
+		return false
+	var tree = Engine.get_main_loop() as SceneTree
+	if tree == null or tree.current_scene == null:
+		return false
+	var pj = tree.current_scene.get_node_or_null("User-PJ")
+	if pj == null:
+		return false
+	pj.global_position = posicion_jugador
+	return true
+
 func guardar_sesion(datos: Dictionary):
 	usuario_actual = datos
 	es_profesor = false
