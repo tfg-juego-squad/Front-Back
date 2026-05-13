@@ -50,9 +50,22 @@ public class PruebaService {
         nuevaPrueba.setFechaLimite(request.getFechaLimite());
         nuevaPrueba.setFechaCreacion(Instant.now());
         nuevaPrueba.setNpcId(request.getNpcId());
+        nuevaPrueba.setTipo(parseTipo(request.getTipo()));
+        nuevaPrueba.setNivelesMinijuego(request.getNivelesMinijuego());
 
         Prueba guardada = pruebaDAO.save(nuevaPrueba);
         return pruebaMapper.toResponseDTO(guardada);
+    }
+
+    private TipoPrueba parseTipo(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return TipoPrueba.EXAMEN;
+        }
+        try {
+            return TipoPrueba.valueOf(raw.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("Tipo de prueba inválido: " + raw);
+        }
     }
 
     /**
@@ -93,6 +106,12 @@ public class PruebaService {
         prueba.setTitulo(request.getTitulo());
         prueba.setFechaLimite(request.getFechaLimite());
         prueba.setNpcId(request.getNpcId());
+        if (request.getTipo() != null) {
+            prueba.setTipo(parseTipo(request.getTipo()));
+        }
+        if (request.getNivelesMinijuego() != null) {
+            prueba.setNivelesMinijuego(request.getNivelesMinijuego());
+        }
 
         Prueba actualizada = pruebaDAO.save(prueba);
         return pruebaMapper.toResponseDTO(actualizada);

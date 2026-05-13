@@ -5,6 +5,10 @@ var es_profesor: bool = false
 var aula_seleccionada_id: String = ""
 var token: String = ""
 
+# Prueba seleccionada por el alumno para jugar el minijuego: la guardamos
+# aquí para no tener que reabrir la lista al cambiar de escena.
+var minijuego_pendiente: Dictionary = {}
+
 var _cerrando_sesion: bool = false
 
 func guardar_sesion(datos: Dictionary):

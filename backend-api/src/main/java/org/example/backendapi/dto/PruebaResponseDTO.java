@@ -11,4 +11,6 @@ public class PruebaResponseDTO {
     private Instant fechaLimite;
     private Long aulaId;
     private String npcId;
+    private String tipo;
+    private Integer nivelesMinijuego;
 }

@@ -32,6 +32,15 @@ public class Prueba {
     @Column(name = "npc_id", length = 50)
     private String npcId;
 
+    /** Diferencia ACTIVIDAD / EXAMEN / MINIJUEGO (Avanzado). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", length = 20)
+    private TipoPrueba tipo = TipoPrueba.EXAMEN;
+
+    /** Niveles del minijuego (solo aplica si tipo = MINIJUEGO). */
+    @Column(name = "niveles_minijuego")
+    private Integer nivelesMinijuego;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aula_id", nullable = false)
     private Aula aula;
