@@ -129,6 +129,16 @@ layout_mode = 2
 custom_minimum_size = Vector2(300, 35)
 tooltip_text = "El alumno verá esta prueba al hablar con este NPC del mundo"
 
+[node name="HBoxEvaluable" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CheckEvaluable" type="CheckBox" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxEvaluable"]
+layout_mode = 2
+button_pressed = true
+text = "Esta actividad es evaluable (cuenta para nota)"
+tooltip_text = "Si lo desmarcas, la actividad sigue apareciendo pero no suma puntos al ranking"
+
 [node name="L_Desc" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox"]
 layout_mode = 2
 text = "Descripción:"
@@ -278,7 +288,26 @@ layout_mode = 2
 autowrap_mode = 3
 theme_override_colors/font_color = Color(0.75, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 12
-text = "El alumno verá la secuencia de colores y deberá repetirla. Al superar o fallar cada nivel el juego le hará una pregunta aleatoria de las que añadas abajo. Se asigna automáticamente al NPC de Actividades."
+text = "Al superar o fallar cada nivel el juego le hará al alumno una pregunta aleatoria de las que añadas abajo. Se asigna automáticamente al NPC de Actividades."
+
+[node name="HBoxSubtipo" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="LblSubtipo" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/HBoxSubtipo"]
+layout_mode = 2
+text = "Tipo de minijuego:"
+
+[node name="SubtipoOption" type="OptionButton" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/HBoxSubtipo"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 35)
+item_count = 2
+selected = 0
+popup/item_0/text = "Memoria de Secuencia"
+popup/item_0/id = 0
+popup/item_1/text = "Esquiva-bloques"
+popup/item_1/id = 1
+tooltip_text = "Mecánica del juego. La función educativa (preguntas tras cada nivel) es la misma."
 
 [node name="HBoxNiveles" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv"]
 layout_mode = 2
@@ -314,6 +343,41 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 text = "+ Añadir Pregunta al banco"
+
+[node name="Dialogo" type="MarginContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 25
+theme_override_constants/margin_bottom = 25
+
+[node name="VBoxDialogo" type="VBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Dialogo"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TituloDialogo" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Dialogo/VBoxDialogo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "NPC parlante (sin prueba)"
+
+[node name="DescDialogo" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Dialogo/VBoxDialogo"]
+layout_mode = 2
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.75, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Si rellenas esta pestaña la \"actividad\" se guarda como tipo DIÁLOGO: el NPC asignado solo dirá este texto cuando el alumno hable con él. No abre lista de pruebas. Recuerda elegir un NPC de Diálogo (Norte/Sur) en la pestaña Actividad."
+
+[node name="LblTextoDialogo" type="Label" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Dialogo/VBoxDialogo"]
+layout_mode = 2
+text = "Texto que dirá el NPC:"
+
+[node name="TextoDialogoInput" type="TextEdit" parent="Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Dialogo/VBoxDialogo"]
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 2
+size_flags_vertical = 3
+placeholder_text = "Ej: ¡Hola viajero! ¿Sabías que la fotosíntesis convierte la luz del sol en azúcares? Estudia bien tu unidad..."
+wrap_mode = 1
 
 [node name="HBoxFinal" type="HBoxContainer" parent="Layout/Centro/PanelContenedor/VBoxTabs"]
 layout_mode = 2
