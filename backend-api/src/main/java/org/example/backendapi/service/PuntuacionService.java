@@ -3,6 +3,7 @@ package org.example.backendapi.service;
 import lombok.RequiredArgsConstructor;
 import org.example.backendapi.dto.PuntuacionRequestDTO;
 import org.example.backendapi.dto.PuntuacionResponseDTO;
+import org.example.backendapi.dto.RankingEntradaDTO;
 import org.example.backendapi.exception.ResourceNotFoundException;
 import org.example.backendapi.exception.ForbiddenException;
 import org.example.backendapi.mapper.PuntuacionMapper;
@@ -13,7 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Servicio encargado de gestionar las Puntuaciones globales (las notas de los exámenes terminados).
@@ -169,6 +174,82 @@ public class PuntuacionService {
                     p.setTipo(TipoPrueba.NOTA_MANUAL);
                     return pruebaDAO.save(p);
                 });
+    }
+
+    /**
+     * Ranking del aula: agrupa por alumno, suma puntos y aplica ranking
+     * "standard competition" para empates (1, 2, 2, 4). Marca al alumno
+     * de la petición con esTuyo=true para que el cliente lo resalte.
+     */
+    public List<RankingEntradaDTO> obtenerRanking(Long aulaId, Usuario usuarioLogueado) {
+        Aula aula = aulaDAO.findById(aulaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Aula no encontrada"));
+
+        // Permisos: profesor del aula o alumno del aula.
+        if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR) {
+            if (!aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
+                throw new ForbiddenException("No puedes ver el ranking de un aula que no es tuya.");
+            }
+        } else if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE) {
+            if (usuarioLogueado.getAula() == null
+                    || !usuarioLogueado.getAula().getId().equals(aulaId)) {
+                throw new ForbiddenException("No puedes ver el ranking de un aula a la que no perteneces.");
+            }
+        }
+
+        // Cargamos todos los alumnos del aula y arrancamos a 0 para que los
+        // que no han puntuado todavía también salgan en el ranking.
+        Map<Long, RankingEntradaDTO> porAlumno = new LinkedHashMap<>();
+        if (aula.getAlumnos() != null) {
+            for (Usuario alu : aula.getAlumnos()) {
+                if (alu.getRol() != TipoRol.ROL_ESTUDIANTE) continue;
+                RankingEntradaDTO r = new RankingEntradaDTO();
+                r.setAlumnoId(alu.getId());
+                r.setNombreUsuario(alu.getNombreUsuario());
+                r.setNombreReal(alu.getNombreReal());
+                r.setPuntos(0);
+                r.setNivel(alu.getNivel() == null ? 1 : alu.getNivel());
+                r.setEsTuyo(alu.getId().equals(usuarioLogueado.getId()));
+                porAlumno.put(alu.getId(), r);
+            }
+        }
+
+        // Sumamos las puntuaciones reales del aula.
+        for (Puntuacion p : puntuacionDAO.findPuntuacionByPrueba_Aula_Id(aulaId)) {
+            Long alumnoId = p.getAlumno() == null ? null : p.getAlumno().getId();
+            if (alumnoId == null) continue;
+            RankingEntradaDTO r = porAlumno.get(alumnoId);
+            if (r == null) {
+                // Alumno con puntuación pero ya no está en el aula → lo incluimos igual.
+                r = new RankingEntradaDTO();
+                r.setAlumnoId(alumnoId);
+                r.setNombreUsuario(p.getAlumno().getNombreUsuario());
+                r.setNombreReal(p.getAlumno().getNombreReal());
+                r.setPuntos(0);
+                r.setNivel(p.getAlumno().getNivel() == null ? 1 : p.getAlumno().getNivel());
+                r.setEsTuyo(alumnoId.equals(usuarioLogueado.getId()));
+                porAlumno.put(alumnoId, r);
+            }
+            r.setPuntos(r.getPuntos() + (p.getPuntosObtenidos() == null ? 0 : p.getPuntosObtenidos()));
+        }
+
+        // Ordenamos descendente por puntos.
+        List<RankingEntradaDTO> ranking = new ArrayList<>(porAlumno.values());
+        ranking.sort(Comparator.comparingInt(RankingEntradaDTO::getPuntos).reversed());
+
+        // Posiciones con standard competition ranking: 1, 2, 2, 4 ...
+        int pos = 0;
+        int idx = 0;
+        Integer puntosPrev = null;
+        for (RankingEntradaDTO r : ranking) {
+            idx++;
+            if (puntosPrev == null || !r.getPuntos().equals(puntosPrev)) {
+                pos = idx;
+                puntosPrev = r.getPuntos();
+            }
+            r.setPosicion(pos);
+        }
+        return ranking;
     }
 
     /**

@@ -28,4 +28,13 @@ public class PruebaRequestDTO {
 
     /** Solo para tipo = MINIJUEGO: nº de niveles del minijuego. */
     private Integer nivelesMinijuego;
+
+    /** Subtipo de minijuego (SECUENCIA, ESQUIVA, ...). Opcional. */
+    private String subtipoMinijuego;
+
+    /** Si la actividad cuenta para nota. Default true. */
+    private Boolean evaluable;
+
+    /** Texto del NPC cuando tipo = DIALOGO. */
+    private String texto;
 }

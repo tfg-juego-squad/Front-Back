@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.backendapi.dto.PuntuacionManualRequestDTO;
 import org.example.backendapi.dto.PuntuacionRequestDTO;
 import org.example.backendapi.dto.PuntuacionResponseDTO;
+import org.example.backendapi.dto.RankingEntradaDTO;
 import org.example.backendapi.model.entities.Usuario;
 import org.example.backendapi.service.PuntuacionService;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,13 @@ public class PuntuacionControl {
             @PathVariable Long aulaId,
             @AuthenticationPrincipal Usuario usuarioLogueado) {
         return ResponseEntity.ok(puntuacionService.buscarPorAula(aulaId, usuarioLogueado));
+    }
+
+    @GetMapping("/aula/{aulaId}/ranking")
+    public ResponseEntity<List<RankingEntradaDTO>> ranking(
+            @PathVariable Long aulaId,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        return ResponseEntity.ok(puntuacionService.obtenerRanking(aulaId, usuarioLogueado));
     }
 
     @PostMapping("/alta")

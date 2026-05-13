@@ -194,7 +194,7 @@ public class UsuarioService {
             destino.setEmail(request.getEmail());
         }
         if (request.getPasswordPlana() != null && !request.getPasswordPlana().isBlank()) {
-            destino.setHashContrasena(securityService.hashPassword(request.getPasswordPlana()));
+            destino.setHashContrasena(passwordEncoder.encode(request.getPasswordPlana()));
         }
 
         Usuario guardado = usuarioDAO.save(destino);

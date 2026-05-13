@@ -41,6 +41,19 @@ public class Prueba {
     @Column(name = "niveles_minijuego")
     private Integer nivelesMinijuego;
 
+    /** Subtipo de minijuego cuando tipo = MINIJUEGO (ej. SECUENCIA, ESQUIVA). */
+    @Column(name = "subtipo_minijuego", length = 20)
+    private String subtipoMinijuego;
+
+    /** Si la actividad cuenta para nota o es solo formativa. Default true. */
+    @ColumnDefault("1")
+    @Column(name = "evaluable", nullable = false)
+    private Boolean evaluable = true;
+
+    /** Texto fijo que el NPC dirá al alumno cuando tipo = DIALOGO. */
+    @Column(name = "texto", columnDefinition = "TEXT")
+    private String texto;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aula_id", nullable = false)
     private Aula aula;
