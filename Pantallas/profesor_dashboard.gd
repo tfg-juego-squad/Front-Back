@@ -411,7 +411,7 @@ func _cargar_historial_notas(alu: Dictionary):
 		_on_historial_notas.bind(alumno_id)
 	)
 
-func _on_historial_notas(alumno_id: int, data, code):
+func _on_historial_notas(data, code, alumno_id: int):
 	historial_notas.clear()
 	if code != 200 or not (data is Array):
 		historial_notas.add_item("Sin historial")
