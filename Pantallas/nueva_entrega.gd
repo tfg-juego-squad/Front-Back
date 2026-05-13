@@ -639,15 +639,38 @@ func _leer_preguntas_de(contenedor: VBoxContainer) -> Array:
 	return out
 
 func _construir_fecha_limite() -> String:
-	var fecha = fecha_input.text.strip_edges()
+	var fecha_iso = _normalizar_fecha(fecha_input.text.strip_edges())
 	var hora = hora_input.text.strip_edges()
-	if fecha.is_empty():
+	if fecha_iso.is_empty():
+		# Sin fecha: por defecto +7 días desde ahora (UTC).
 		return Time.get_datetime_string_from_unix_time(int(Time.get_unix_time_from_system()) + 604800) + "Z"
 	if hora.is_empty():
 		hora = "23:59:00"
 	elif hora.length() == 5:
 		hora += ":00"
-	return "%sT%sZ" % [fecha, hora]
+	return "%sT%sZ" % [fecha_iso, hora]
+
+# Acepta dd/mm/yyyy, dd-mm-yyyy o yyyy-mm-dd y devuelve siempre YYYY-MM-DD.
+# Si el texto no es reconocible devuelve cadena vacía → defaultea a +7 días.
+func _normalizar_fecha(raw: String) -> String:
+	if raw.is_empty():
+		return ""
+	# Aceptamos / o - como separador
+	var partes = raw.replace("/", "-").split("-")
+	if partes.size() != 3:
+		return ""
+	# Si el primer trozo tiene 4 dígitos asumimos ya formato ISO yyyy-mm-dd.
+	if partes[0].length() == 4:
+		return "%s-%s-%s" % [partes[0], _pad2(partes[1]), _pad2(partes[2])]
+	# Formato español dd-mm-yyyy → yyyy-mm-dd.
+	if partes[2].length() == 4:
+		return "%s-%s-%s" % [partes[2], _pad2(partes[1]), _pad2(partes[0])]
+	return ""
+
+func _pad2(s: String) -> String:
+	if s.length() >= 2:
+		return s
+	return "0" + s
 
 # =====================================================================
 # COMUNICACIÓN SECUENCIAL CON BACKEND

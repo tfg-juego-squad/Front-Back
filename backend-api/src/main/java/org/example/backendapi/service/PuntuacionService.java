@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -161,6 +162,7 @@ public class PuntuacionService {
                     Prueba p = new Prueba();
                     p.setAula(aula);
                     p.setTitulo("Nota manual");
+                    p.setPreguntas(new ArrayList<>());
                     p.setFechaCreacion(Instant.now());
                     // Fecha límite remota para que nunca aparezca como pendiente.
                     p.setFechaLimite(Instant.now().plusSeconds(60L * 60 * 24 * 365 * 10));
