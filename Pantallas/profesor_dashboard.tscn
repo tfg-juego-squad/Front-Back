@@ -177,6 +177,12 @@ text = "Corregir Pendientes"
 [node name="Sep2" type="HSeparator" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
 layout_mode = 2
 
+[node name="BtnEstadisticas" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 64)
+theme_override_font_sizes/font_size = 18
+text = "Estadísticas de pruebas"
+
 [node name="BtnAjustes" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
 layout_mode = 2
 custom_minimum_size = Vector2(280, 64)
@@ -283,6 +289,39 @@ visible = false
 layout_mode = 2
 custom_minimum_size = Vector2(0, 35)
 text = "Exportar credenciales a CSV"
+
+[node name="VBoxEstadisticas" type="VBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="HBoxSelectorPrueba" type="HBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LblPrueba" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/HBoxSelectorPrueba"]
+layout_mode = 2
+text = "Prueba:"
+
+[node name="CmbPruebas" type="OptionButton" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/HBoxSelectorPrueba"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 38)
+
+[node name="LblHintStats" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.55)
+theme_override_font_sizes/font_size = 11
+text = "Las preguntas con más \"saltadas\" salen arriba — son las que conviene revisar."
+
+[node name="TreeStats" type="Tree" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 4
+column_titles_visible = true
+hide_root = true
+theme_override_font_sizes/font_size = 14
 
 [node name="ScrollGestion" type="ScrollContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
 visible = false

@@ -11,6 +11,7 @@ extends Control
 @onready var btn_nueva_entrega = $Layout/MainContent/PanelBotones/VBoxBotones/BtnNuevaEntrega
 @onready var btn_revisar = $Layout/MainContent/PanelBotones/VBoxBotones/BtnRevisar
 @onready var btn_corregir = $Layout/MainContent/PanelBotones/VBoxBotones/BtnCorregir
+@onready var btn_estadisticas = $Layout/MainContent/PanelBotones/VBoxBotones/BtnEstadisticas
 @onready var btn_ajustes = $Layout/MainContent/PanelBotones/VBoxBotones/BtnAjustes
 @onready var btn_cerrar_sesion = $Layout/Header/HBoxHeader/BtnCerrarSesion
 
@@ -26,6 +27,11 @@ extends Control
 @onready var btn_confirmar_generar = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/BtnConfirmarGenerar
 @onready var text_resultado = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/TextResultado
 @onready var btn_exportar_csv = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/BtnExportarCSV
+
+# --- Estadísticas de pruebas ---
+@onready var vbox_estadisticas = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas
+@onready var cmb_pruebas_stats = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/HBoxSelectorPrueba/CmbPruebas
+@onready var tree_stats = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/TreeStats
 
 # --- Gestión de alumno ---
 @onready var scroll_gestion = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion
@@ -46,11 +52,14 @@ var aulas_data: Array = []
 var alumnos_data: Array = []
 var alumno_seleccionado: Dictionary = {}
 var credenciales_recientes: Array = []
+var pruebas_stats: Array = []  # cached para el panel de estadísticas
 
 func _ready():
 	btn_nueva_entrega.pressed.connect(_on_nueva_entrega)
 	btn_revisar.pressed.connect(_on_revisar_puntuaciones)
 	btn_corregir.pressed.connect(_on_corregir_pendientes)
+	btn_estadisticas.pressed.connect(_on_abrir_estadisticas)
+	cmb_pruebas_stats.item_selected.connect(_on_prueba_stats_elegida)
 	btn_ajustes.pressed.connect(_on_abrir_generacion)
 	btn_cerrar_sesion.pressed.connect(_on_cerrar_sesion)
 	btn_cerrar_flotante.pressed.connect(_cerrar_panel_flotante)
@@ -285,6 +294,7 @@ func _limpiar_paneles_flotantes():
 	vbox_generacion.visible = false
 	btn_exportar_csv.visible = false
 	scroll_gestion.visible = false
+	vbox_estadisticas.visible = false
 
 func _cerrar_panel_flotante():
 	panel_flotante.visible = false
@@ -415,6 +425,98 @@ func _cargar_historial_notas(alu: Dictionary):
 		"/puntuacion/aula/%s" % GameManager.aula_seleccionada_id,
 		_on_historial_notas.bind(alumno_id)
 	)
+
+# =====================================================================
+# ESTADÍSTICAS DE PRUEBAS (profesor)
+# =====================================================================
+
+func _on_abrir_estadisticas():
+	if GameManager.aula_seleccionada_id.is_empty():
+		Notificador.notificar("Selecciona un aula primero", Color.ORANGE)
+		return
+	_limpiar_paneles_flotantes()
+	titulo_flotante.text = "ESTADÍSTICAS DE PRUEBAS"
+	vbox_estadisticas.visible = true
+	panel_flotante.visible = true
+
+	tree_stats.clear()
+	tree_stats.set_column_title(0, "Pregunta")
+	tree_stats.set_column_title(1, "Saltadas")
+	tree_stats.set_column_title(2, "Contestadas")
+	tree_stats.set_column_title(3, "Total")
+	tree_stats.set_column_expand(0, true)
+	tree_stats.set_column_expand(1, false)
+	tree_stats.set_column_expand(2, false)
+	tree_stats.set_column_expand(3, false)
+
+	cmb_pruebas_stats.clear()
+	cmb_pruebas_stats.add_item("Cargando...")
+	pruebas_stats.clear()
+	ConexionManager.peticion_get(
+		"/pruebas/aula/%s" % GameManager.aula_seleccionada_id,
+		_on_pruebas_para_stats
+	)
+
+func _on_pruebas_para_stats(data, code):
+	cmb_pruebas_stats.clear()
+	tree_stats.clear()
+	if code != 200 or not (data is Array) or data.is_empty():
+		cmb_pruebas_stats.add_item("(Sin pruebas)")
+		return
+	# Filtramos las NOTA_MANUAL y DIALOGO (no tienen preguntas con stats)
+	pruebas_stats.clear()
+	for p in data:
+		var tipo = str(p.get("tipo", "")).to_upper()
+		if tipo == "NOTA_MANUAL" or tipo == "DIALOGO":
+			continue
+		pruebas_stats.append(p)
+	if pruebas_stats.is_empty():
+		cmb_pruebas_stats.add_item("(Sin pruebas con preguntas)")
+		return
+	for p in pruebas_stats:
+		cmb_pruebas_stats.add_item(str(p.get("titulo", "Prueba")))
+	cmb_pruebas_stats.selected = 0
+	_on_prueba_stats_elegida(0)
+
+func _on_prueba_stats_elegida(idx: int):
+	if idx < 0 or idx >= pruebas_stats.size():
+		return
+	var prueba = pruebas_stats[idx]
+	var prueba_id = GameManager.id_str(prueba.get("id"))
+	tree_stats.clear()
+	var root = tree_stats.create_item()
+	var cargando = tree_stats.create_item(root)
+	cargando.set_text(0, "Cargando estadísticas...")
+	ConexionManager.peticion_get("/pruebas/%s/estadisticas" % prueba_id, _on_stats_recibidas)
+
+func _on_stats_recibidas(data, code):
+	tree_stats.clear()
+	var root = tree_stats.create_item()
+	if code != 200 or not (data is Array):
+		var item = tree_stats.create_item(root)
+		item.set_text(0, ConexionManager.mensaje_error(data, code))
+		return
+	if data.is_empty():
+		var item = tree_stats.create_item(root)
+		item.set_text(0, "Sin preguntas en esta prueba")
+		return
+	for fila in data:
+		var item = tree_stats.create_item(root)
+		var enun = str(fila.get("enunciado", ""))
+		if enun.length() > 80:
+			enun = enun.substr(0, 77) + "..."
+		item.set_text(0, "[%s] %s" % [str(fila.get("tipo", "")), enun])
+		var saltadas = int(fila.get("saltadas", 0))
+		var contestadas = int(fila.get("contestadas", 0))
+		var total = int(fila.get("total", 0))
+		item.set_text(1, str(saltadas))
+		item.set_text(2, str(contestadas))
+		item.set_text(3, str(total))
+		# Resaltamos en naranja las preguntas con saltadas > contestadas
+		if total > 0 and saltadas > contestadas:
+			item.set_custom_color(1, Color(1, 0.55, 0.4, 1))
+		elif saltadas > 0:
+			item.set_custom_color(1, Color(1, 0.85, 0.4, 1))
 
 func _on_historial_notas(data, code, alumno_id: int):
 	historial_notas.clear()
