@@ -152,11 +152,11 @@ func _actualizar_particulas(delta: float):
 # =====================================================================
 
 func _draw():
-	var size = get_viewport_rect().size
-	draw_rect(Rect2(Vector2.ZERO, size), COLOR_FONDO)
+	var pantalla = get_viewport_rect().size
+	draw_rect(Rect2(Vector2.ZERO, pantalla), COLOR_FONDO)
 	_dibujar_particulas()
-	_dibujar_texto(size)
-	_dibujar_instruccion(size)
+	_dibujar_texto(pantalla)
+	_dibujar_instruccion(pantalla)
 
 func _dibujar_particulas():
 	for p in _particulas:
@@ -164,20 +164,25 @@ func _dibujar_particulas():
 		c.a = p.alpha()
 		draw_circle(p.posicion, p.radio, c)
 
-func _dibujar_texto(size: Vector2):
+func _dibujar_texto(pantalla: Vector2):
 	var font = ThemeDB.fallback_font
 	var alto = font.get_height(TAMANO_TEXTO)
 	var ascent = font.get_ascent(TAMANO_TEXTO)
 	var ancho_total = font.get_string_size(TEXTO, HORIZONTAL_ALIGNMENT_LEFT, -1, TAMANO_TEXTO).x
-	var x = (size.x - ancho_total) / 2.0
-	var y = (size.y - alto) / 2.0 + ascent
+	var x = (pantalla.x - ancho_total) / 2.0
+	var y = (pantalla.y - alto) / 2.0 + ascent
 
 	# Posición normalizada [0..1] del barrido del brillo
 	var barrido = fposmod(_tiempo * VEL_BARRIDO / DURACION_BRILLO, 1.0)
+	var canvas = get_canvas_item()
 
 	var n = TEXTO.length()
 	for i in range(n):
-		var ch = TEXTO[i]
+		# Letra individual como String — usamos draw_string para evitar el
+		# typing inconsistente de Font.draw_char entre versiones de Godot.
+		var ch: String = TEXTO.substr(i, 1)
+		var ancho_letra = font.get_string_size(ch, HORIZONTAL_ALIGNMENT_LEFT, -1, TAMANO_TEXTO).x
+
 		var t_letra = float(i) / max(n - 1, 1)
 		var color = _color_gradiente(t_letra)
 
@@ -190,10 +195,12 @@ func _dibujar_texto(size: Vector2):
 		intensidad_brillo *= oscilacion
 
 		# Sombra (profundidad)
-		font.draw_char(
-			get_canvas_item(),
+		font.draw_string(
+			canvas,
 			Vector2(x + 4, y + 5),
 			ch,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
 			TAMANO_TEXTO,
 			Color(0, 0, 0, 0.55)
 		)
@@ -201,33 +208,37 @@ func _dibujar_texto(size: Vector2):
 		# Halo de brillo: varias pasadas alrededor para simular bloom
 		if intensidad_brillo > 0.01:
 			var glow = Color(1, 1, 1, 0.55 * intensidad_brillo).lerp(color, 0.3)
-			for off in [Vector2(-2,0), Vector2(2,0), Vector2(0,-2), Vector2(0,2)]:
-				font.draw_char(
-					get_canvas_item(),
+			for off in [Vector2(-2, 0), Vector2(2, 0), Vector2(0, -2), Vector2(0, 2)]:
+				font.draw_string(
+					canvas,
 					Vector2(x + off.x, y + off.y),
 					ch,
+					HORIZONTAL_ALIGNMENT_LEFT,
+					-1,
 					TAMANO_TEXTO,
 					glow
 				)
 
 		# Letra principal con su color del gradiente
-		var advance = font.draw_char(
-			get_canvas_item(),
+		font.draw_string(
+			canvas,
 			Vector2(x, y),
 			ch,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
 			TAMANO_TEXTO,
 			color
 		)
-		x += advance
+		x += ancho_letra
 
-func _dibujar_instruccion(size: Vector2):
+func _dibujar_instruccion(pantalla: Vector2):
 	var font = ThemeDB.fallback_font
 	# Parpadeo suave (entre 0.35 y 1.0)
 	var blink = (sin(_tiempo * TAU * 1.2) * 0.5 + 0.5) * 0.65 + 0.35
 	var ancho = font.get_string_size(
 		TEXTO_INSTRUCCION, HORIZONTAL_ALIGNMENT_LEFT, -1, TAMANO_INSTRUCCION
 	).x
-	var pos = Vector2((size.x - ancho) / 2.0, size.y * 0.82)
+	var pos = Vector2((pantalla.x - ancho) / 2.0, pantalla.y * 0.82)
 	font.draw_string(
 		get_canvas_item(),
 		pos,
