@@ -251,10 +251,15 @@ func _on_puntuaciones_recibidas(data, code):
 	var agregados: Dictionary = {}
 	for p in data:
 		var nombre = str(p.get("nombreUsuario", "Alumno"))
+		var puntos_raw = p.get("puntosObtenidos")
+		var puntos = 0 if puntos_raw == null else int(puntos_raw)
+		var nivel_raw = p.get("nivelActual")
+		var nivel = 0 if nivel_raw == null else int(nivel_raw)
 		if not agregados.has(nombre):
-			agregados[nombre] = {"puntos": 0, "nivel": int(p.get("nivelActual", 0))}
-		agregados[nombre]["puntos"] += int(p.get("puntosObtenidos", 0))
-		agregados[nombre]["nivel"] = int(p.get("nivelActual", agregados[nombre]["nivel"]))
+			agregados[nombre] = {"puntos": 0, "nivel": nivel}
+		agregados[nombre]["puntos"] += puntos
+		if nivel_raw != null:
+			agregados[nombre]["nivel"] = nivel
 
 	var ordenados: Array = agregados.keys()
 	ordenados.sort_custom(func(a, b): return agregados[a]["puntos"] > agregados[b]["puntos"])

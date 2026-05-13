@@ -220,7 +220,33 @@ func _on_add_pregunta(initial: Dictionary = {}, contenedor: VBoxContainer = null
 	btn_add_resp.pressed.connect(func(): _add_respuesta(lista_respuestas))
 	bloque_test.add_child(btn_add_resp)
 
-	opt_tipo.item_selected.connect(_on_tipo_pregunta_seleccionado.bind(opt_tipo, bloque_test, lista_respuestas, spin_n))
+	# --- Bloque DESARROLLO (oculto por defecto) ---
+	# En DESARROLLO el alumno escribe libremente; aquí el profesor no
+	# necesita configurar nada, solo dejamos un placeholder informativo.
+	var bloque_desarrollo = VBoxContainer.new()
+	bloque_desarrollo.name = "BloqueDesarrollo"
+	bloque_desarrollo.add_theme_constant_override("separation", 6)
+	bloque_desarrollo.visible = false
+	vbox.add_child(bloque_desarrollo)
+
+	var lbl_desarrollo = Label.new()
+	lbl_desarrollo.text = "El alumno escribirá libremente su respuesta. La corregirás manualmente desde \"Corregir Pendientes\"."
+	lbl_desarrollo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl_desarrollo.add_theme_color_override("font_color", Color(0.75, 0.85, 1, 1))
+	lbl_desarrollo.add_theme_font_size_override("font_size", 12)
+	bloque_desarrollo.add_child(lbl_desarrollo)
+
+	var preview_desarrollo = TextEdit.new()
+	preview_desarrollo.placeholder_text = "(Vista previa) — aquí escribirá el alumno..."
+	preview_desarrollo.editable = false
+	preview_desarrollo.custom_minimum_size = Vector2(0, 70)
+	bloque_desarrollo.add_child(preview_desarrollo)
+
+	# IMPORTANTE: Callable.bind añade args al final, así que la firma del
+	# handler debe ser (idx_emitido, *bindeados).
+	opt_tipo.item_selected.connect(
+		_on_tipo_pregunta_seleccionado.bind(opt_tipo, bloque_test, lista_respuestas, spin_n, bloque_desarrollo)
+	)
 
 	contenedor.add_child(panel)
 
@@ -247,6 +273,7 @@ func _aplicar_datos_iniciales(panel: Node, data: Dictionary):
 	var header = vbox.get_node("HeaderPregunta")
 	var enunciado_node = vbox.get_node("Enunciado")
 	var bloque_test = vbox.get_node("BloqueTest")
+	var bloque_desarrollo = vbox.get_node_or_null("BloqueDesarrollo")
 	var opt_tipo = header.get_node("TipoPregunta")
 	var spin_puntos = header.get_node("ValorPuntos")
 	var lista_resp = bloque_test.get_node("ListaRespuestas")
@@ -260,9 +287,13 @@ func _aplicar_datos_iniciales(panel: Node, data: Dictionary):
 	if tipo == TIPO_DESARROLLO:
 		opt_tipo.selected = 1
 		bloque_test.visible = false
+		if bloque_desarrollo:
+			bloque_desarrollo.visible = true
 	else:
 		opt_tipo.selected = 0
 		bloque_test.visible = true
+		if bloque_desarrollo:
+			bloque_desarrollo.visible = false
 		var respuestas = data.get("respuestasPosibles", [])
 		spin_n.value = max(respuestas.size(), 2)
 		_regenerar_opciones(lista_resp, respuestas.size())
@@ -275,9 +306,10 @@ func _aplicar_datos_iniciales(panel: Node, data: Dictionary):
 			texto_input.text = str(respuestas[i].get("texto", ""))
 			check.button_pressed = bool(respuestas[i].get("esCorrecta", false))
 
-func _on_tipo_pregunta_seleccionado(opt: OptionButton, bloque_test: VBoxContainer, lista_respuestas: VBoxContainer, spin_n: SpinBox, idx: int):
+func _on_tipo_pregunta_seleccionado(idx: int, opt: OptionButton, bloque_test: VBoxContainer, lista_respuestas: VBoxContainer, spin_n: SpinBox, bloque_desarrollo: VBoxContainer):
 	var es_test = opt.get_item_text(idx) == TIPO_TEST
 	bloque_test.visible = es_test
+	bloque_desarrollo.visible = not es_test
 	# Reload completo del constructor de la pregunta al cambiar el tipo:
 	# tiramos las opciones anteriores y, si es TEST, regeneramos limpias.
 	for hijo in lista_respuestas.get_children():
@@ -716,7 +748,8 @@ func _enviar_siguiente_pregunta(num: int):
 	}
 	ConexionManager.peticion_post("/preguntas/crear", payload, _on_pregunta_guardada.bind(num))
 
-func _on_pregunta_guardada(num: int, data, code):
+func _on_pregunta_guardada(data, code, num: int):
+	# Callable.bind añade el num al final, por eso este orden.
 	if code == 200 or code == 201:
 		_enviar_siguiente_pregunta(num + 1)
 	else:
