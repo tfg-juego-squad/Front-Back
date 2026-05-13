@@ -138,6 +138,59 @@ public class UsuarioService {
     }
 
     /**
+     * Actualiza parcialmente los datos de un usuario. Solo se modifican los
+     * campos que vengan no-null en el DTO. El profesor puede editar sus
+     * propios alumnos y a sí mismo; un alumno solo a sí mismo.
+     */
+    @Transactional
+    public UsuarioResponseDTO actualizarUsuario(
+            Long id,
+            org.example.backendapi.dto.UsuarioUpdateRequestDTO request,
+            Usuario usuarioLogueado) {
+        Usuario destino = usuarioDAO.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+
+        // Permisos: alumno solo a sí mismo; profesor a sí mismo y a sus alumnos
+        if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE
+                && !usuarioLogueado.getId().equals(destino.getId())) {
+            throw new ForbiddenException("No puedes editar la cuenta de otro usuario.");
+        }
+        if (usuarioLogueado.getRol() == TipoRol.ROL_PROFESOR
+                && !usuarioLogueado.getId().equals(destino.getId())) {
+            if (destino.getRol() == TipoRol.ROL_PROFESOR) {
+                throw new ForbiddenException("No puedes editar a otro profesor.");
+            }
+            if (destino.getAula() == null
+                    || !destino.getAula().getProfesor().getId().equals(usuarioLogueado.getId())) {
+                throw new ForbiddenException("Ese alumno no pertenece a tu aula.");
+            }
+        }
+
+        if (request.getNombreUsuario() != null && !request.getNombreUsuario().isBlank()
+                && !request.getNombreUsuario().equals(destino.getNombreUsuario())) {
+            if (!usuarioDAO.findUsuarioByNombreUsuario(request.getNombreUsuario()).isEmpty()) {
+                throw new BadRequestException("Ese nombre de usuario ya está en uso");
+            }
+            destino.setNombreUsuario(request.getNombreUsuario());
+        }
+        if (request.getNombreReal() != null && !request.getNombreReal().isBlank()) {
+            destino.setNombreReal(request.getNombreReal());
+        }
+        if (request.getApellidos() != null && !request.getApellidos().isBlank()) {
+            destino.setApellidos(request.getApellidos());
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            destino.setEmail(request.getEmail());
+        }
+        if (request.getPasswordPlana() != null && !request.getPasswordPlana().isBlank()) {
+            destino.setHashContrasena(securityService.hashPassword(request.getPasswordPlana()));
+        }
+
+        Usuario guardado = usuarioDAO.save(destino);
+        return usuarioMapper.toResponseDTO(guardado);
+    }
+
+    /**
      * Elimina un usuario comprobando permisos.
      */
     @Transactional

@@ -12,7 +12,9 @@ import java.util.List;
 public interface PuntuacionMapper {
 
     @Mapping(source = "alumno.nombreUsuario", target = "nombreUsuario")
+    @Mapping(source = "alumno.id", target = "alumnoId")
     @Mapping(source = "prueba.titulo", target = "tituloPrueba")
+    @Mapping(target = "tipoPrueba", expression = "java(puntuacion.getPrueba() != null && puntuacion.getPrueba().getTipo() != null ? puntuacion.getPrueba().getTipo().name() : null)")
     PuntuacionResponseDTO toResponseDTO(Puntuacion puntuacion);
 
     List<PuntuacionResponseDTO> toResponseDTOList(List<Puntuacion> puntuacion);

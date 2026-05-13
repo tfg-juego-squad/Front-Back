@@ -23,6 +23,10 @@ public class Puntuacion {
     @Column(name = "fecha_completado")
     private Instant fechaCompletado;
 
+    /** Texto libre del profesor para las notas manuales (opcional). */
+    @Column(name = "motivo", length = 250)
+    private String motivo;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "alumno_id", nullable = false)
     private Usuario alumno;

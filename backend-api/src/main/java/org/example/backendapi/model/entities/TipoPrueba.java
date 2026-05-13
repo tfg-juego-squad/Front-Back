@@ -11,5 +11,7 @@ public enum TipoPrueba {
     /** Examen tradicional: lista de preguntas con puntuación objetivo. */
     EXAMEN,
     /** Minijuego del NPC de Actividades: banco de preguntas + niveles. */
-    MINIJUEGO
+    MINIJUEGO,
+    /** Contenedor sintético por aula para las notas manuales del profesor. */
+    NOTA_MANUAL
 }

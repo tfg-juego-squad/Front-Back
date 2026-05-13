@@ -283,3 +283,128 @@ visible = false
 layout_mode = 2
 custom_minimum_size = Vector2(0, 35)
 text = "Exportar credenciales a CSV"
+
+[node name="ScrollGestion" type="ScrollContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxGestionAlumno" type="VBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="LblGestionTitulo" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
+layout_mode = 2
+text = "Datos del alumno"
+theme_override_font_sizes/font_size = 18
+
+[node name="GridDatos" type="GridContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
+
+[node name="LblUsuario" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+text = "Usuario:"
+
+[node name="EditUsuario" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 32)
+placeholder_text = "Nombre de usuario"
+
+[node name="LblNombre" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+text = "Nombre real:"
+
+[node name="EditNombre" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 32)
+
+[node name="LblApellidos" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+text = "Apellidos:"
+
+[node name="EditApellidos" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 32)
+
+[node name="LblEmail" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+text = "Email:"
+
+[node name="EditEmail" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 32)
+
+[node name="LblPassword" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+text = "Contraseña nueva:"
+
+[node name="EditPassword" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 32)
+placeholder_text = "(dejar vacío para no cambiar)"
+secret = true
+
+[node name="HBoxAccionesAlumno" type="HBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BtnGuardarAlumno" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxAccionesAlumno"]
+layout_mode = 2
+custom_minimum_size = Vector2(180, 38)
+text = "Guardar cambios"
+
+[node name="BtnBorrarAlumno" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxAccionesAlumno"]
+layout_mode = 2
+custom_minimum_size = Vector2(180, 38)
+text = "Borrar alumno"
+theme_override_colors/font_color = Color(1, 0.55, 0.55, 1)
+
+[node name="SepNota" type="HSeparator" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
+layout_mode = 2
+
+[node name="LblTituloNota" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
+layout_mode = 2
+text = "Asignar nota manual"
+theme_override_font_sizes/font_size = 18
+
+[node name="HBoxNotaManual" type="HBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LblPuntos" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxNotaManual"]
+layout_mode = 2
+text = "Puntos:"
+
+[node name="PuntosNotaSpin" type="SpinBox" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxNotaManual"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 32)
+min_value = -200.0
+max_value = 200.0
+value = 10.0
+
+[node name="EditMotivoNota" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxNotaManual"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Motivo (opcional)"
+
+[node name="BtnAnadirNota" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxNotaManual"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 32)
+text = "+ Añadir nota"
+
+[node name="SepHistorial" type="HSeparator" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
+layout_mode = 2
+
+[node name="LblHistorial" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
+layout_mode = 2
+text = "Historial de notas"
+theme_override_font_sizes/font_size = 16
+
+[node name="HistorialNotas" type="ItemList" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 180)
+theme_override_font_sizes/font_size = 13

@@ -108,6 +108,68 @@ public class PuntuacionService {
     }
 
     /**
+     * Da de alta una nota manual del profesor a un alumno: no necesita una
+     * prueba previa. Internamente reutilizamos un Prueba sintético por aula
+     * marcado como TipoPrueba.NOTA_MANUAL para no romper la FK NOT NULL.
+     */
+    @Transactional
+    public PuntuacionResponseDTO crearPuntuacionManual(
+            org.example.backendapi.dto.PuntuacionManualRequestDTO request,
+            Usuario usuarioLogueado) {
+        if (usuarioLogueado.getRol() != TipoRol.ROL_PROFESOR) {
+            throw new ForbiddenException("Solo el profesor puede asignar notas manuales.");
+        }
+        Usuario alumno = usuarioDAO.findById(request.getAlumnoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Alumno no encontrado"));
+        if (alumno.getAula() == null) {
+            throw new org.example.backendapi.exception.BadRequestException(
+                    "El alumno no está asignado a un aula");
+        }
+        Aula aula = alumno.getAula();
+        if (!aula.getProfesor().getId().equals(usuarioLogueado.getId())) {
+            throw new ForbiddenException("Ese alumno no pertenece a tu aula.");
+        }
+
+        Prueba contenedor = obtenerOCrearContenedorNotaManual(aula);
+
+        int puntos = request.getPuntos() == null ? 0 : request.getPuntos();
+        Puntuacion nueva = new Puntuacion();
+        nueva.setAlumno(alumno);
+        nueva.setPrueba(contenedor);
+        nueva.setPuntosObtenidos(puntos);
+        nueva.setMotivo(request.getMotivo());
+        nueva.setFechaCompletado(Instant.now());
+
+        if (puntos > 0) {
+            alumno.ganarExperiencia(puntos);
+            usuarioDAO.save(alumno);
+        }
+        Puntuacion guardada = puntuacionDAO.save(nueva);
+        return puntuacionMapper.toResponseDTO(guardada);
+    }
+
+    /**
+     * Devuelve (creándola si hace falta) la Prueba contenedora de notas
+     * manuales para un aula. Es una entidad sintética que no se ve en la
+     * pantalla del alumno porque no genera pendientes.
+     */
+    private Prueba obtenerOCrearContenedorNotaManual(Aula aula) {
+        return pruebaDAO.findByAula_Id(aula.getId()).stream()
+                .filter(p -> p.getTipo() == TipoPrueba.NOTA_MANUAL)
+                .findFirst()
+                .orElseGet(() -> {
+                    Prueba p = new Prueba();
+                    p.setAula(aula);
+                    p.setTitulo("Nota manual");
+                    p.setFechaCreacion(Instant.now());
+                    // Fecha límite remota para que nunca aparezca como pendiente.
+                    p.setFechaLimite(Instant.now().plusSeconds(60L * 60 * 24 * 365 * 10));
+                    p.setTipo(TipoPrueba.NOTA_MANUAL);
+                    return pruebaDAO.save(p);
+                });
+    }
+
+    /**
      * Borra la nota de un alumno. Principalmente para casos excepcionales del profesor.
      */
     @Transactional
