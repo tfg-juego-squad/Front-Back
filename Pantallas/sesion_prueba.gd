@@ -28,6 +28,10 @@ var tiempo_limite_seg: int = TIEMPO_POR_DEFECTO_SEG
 var enviando: bool = false
 var auto_enviada: bool = false
 
+# Cuenta regresiva global del examen (suma de tiempos de todas las preguntas)
+var _tiempo_total_examen: float = 0.0
+var _examen_iniciado_en: float = 0.0
+
 func iniciar_con_prueba(p_id: int, p_titulo: String):
 	prueba_id = p_id
 	prueba_titulo = p_titulo
@@ -59,6 +63,15 @@ func _on_preguntas_recibidas(data, code):
 		_volver_al_nivel()
 		return
 	indice_actual = 0
+	# Calcular tiempo total del examen (suma de los tiempos de cada pregunta)
+	_tiempo_total_examen = 0.0
+	for q in preguntas:
+		var t = q.get("tiempoLimiteSegundos")
+		if t != null and int(float(str(t))) > 0:
+			_tiempo_total_examen += float(str(t))
+		else:
+			_tiempo_total_examen += TIEMPO_POR_DEFECTO_SEG
+	_examen_iniciado_en = Time.get_unix_time_from_system()
 	_mostrar_pregunta_actual()
 
 func _mostrar_pregunta_actual():
@@ -105,21 +118,36 @@ func _mostrar_pregunta_actual():
 	_actualizar_tiempo_visible()
 
 func _process(_delta):
-	if indice_actual >= preguntas.size() or enviando or auto_enviada or tiempo_limite_seg <= 0:
+	if indice_actual >= preguntas.size() or enviando:
 		return
 	_actualizar_tiempo_visible()
-	var transcurrido = Time.get_unix_time_from_system() - pregunta_iniciada_en
-	if transcurrido >= tiempo_limite_seg:
+	# Auto-envío si se agota el tiempo de la pregunta actual
+	if not auto_enviada and tiempo_limite_seg > 0:
+		var transcurrido = Time.get_unix_time_from_system() - pregunta_iniciada_en
+		if transcurrido >= tiempo_limite_seg:
+			auto_enviada = true
+			Notificador.notificar("Tiempo agotado", Color.MAGENTA)
+			_on_enviar()
+			return
+	# Auto-finalizar si se agota el tiempo total del examen
+	var total_transcurrido = Time.get_unix_time_from_system() - _examen_iniciado_en
+	if _tiempo_total_examen > 0 and total_transcurrido >= _tiempo_total_examen:
 		auto_enviada = true
-		Notificador.notificar("Tiempo agotado", Color.MAGENTA)
+		Notificador.notificar("¡Tiempo del examen agotado!", Color.RED)
 		_on_enviar()
 
 func _actualizar_tiempo_visible():
+	# Tiempo de la pregunta actual
 	var restante = tiempo_limite_seg - int(Time.get_unix_time_from_system() - pregunta_iniciada_en)
 	restante = max(restante, 0)
 	timer_bar.value = restante
-	tiempo_label.text = "%ds" % restante
-	if restante <= 5:
+	# Tiempo global restante del examen
+	var global_restante = _tiempo_total_examen - (Time.get_unix_time_from_system() - _examen_iniciado_en)
+	global_restante = max(global_restante, 0)
+	var minutos = int(global_restante) / 60
+	var segundos = int(global_restante) % 60
+	tiempo_label.text = "%ds  |  Total: %d:%02d" % [restante, minutos, segundos]
+	if restante <= 5 or global_restante <= 30:
 		tiempo_label.add_theme_color_override("font_color", Color(1, 0.4, 0.4, 1))
 	else:
 		tiempo_label.add_theme_color_override("font_color", Color(1, 0.9, 0.5, 1))
@@ -224,8 +252,8 @@ func _on_puntuacion_lista(data, code):
 
 	var subio_nivel = GameManager.aplicar_recompensa(data)
 	var puntos = 0
-	if data is Dictionary:
-		puntos = int(data.get("puntosObtenidos", 0))
+	if data is Dictionary and data.get("puntosObtenidos") != null:
+		puntos = int(float(str(data["puntosObtenidos"])))
 	Notificador.notificar("Prueba completada (+%d XP)" % puntos, Color.GREEN)
 
 	if subio_nivel:
@@ -235,7 +263,8 @@ func _on_puntuacion_lista(data, code):
 	_volver_al_nivel()
 
 func _mostrar_animacion_level_up():
-	var nivel = int(GameManager.usuario_actual.get("nivelActual", 1))
+	var nivel_raw = GameManager.usuario_actual.get("nivelActual")
+	var nivel = 1 if nivel_raw == null else int(float(str(nivel_raw)))
 	lbl_nivel_nuevo.text = "Nivel %d" % nivel
 	overlay_level_up.visible = true
 	overlay_level_up.modulate.a = 0

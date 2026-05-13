@@ -54,7 +54,9 @@ theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
 text = "Pregunta 0 / 0"
 
 [node name="TiempoLabel" type="Label" parent="Centro/Panel/Margen/VBox/HBoxInfo"]
+custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
+horizontal_alignment = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
 text = "—"
 
@@ -140,6 +142,6 @@ horizontal_alignment = 1
 [node name="LblNivelNuevo" type="Label" parent="OverlayLevelUp/CenterLU/VBoxLU"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color.WHITE
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Nivel 2"
 horizontal_alignment = 1

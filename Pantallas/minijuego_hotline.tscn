@@ -154,16 +154,37 @@ offset_bottom = 16.0
 mouse_filter = 2
 color = Color(1, 0.85, 0.3, 1)
 
+[node name="LblJugador" type="ColorRect" parent="Layout/CentroPanel/PanelJuego/VBoxCentro/MargenJuego/AreaJuego/Jugador"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 4.0
+offset_right = 20.0
+offset_bottom = 10.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.6)
+
 [node name="Salida" type="ColorRect" parent="Layout/CentroPanel/PanelJuego/VBoxCentro/MargenJuego/AreaJuego"]
 visible = false
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
 offset_left = 600.0
 offset_top = 320.0
-offset_right = 640.0
-offset_bottom = 360.0
+offset_right = 660.0
+offset_bottom = 380.0
 mouse_filter = 2
-color = Color(0.4, 1, 0.5, 1)
+color = Color(0.3, 0.95, 0.45, 0.7)
+
+[node name="LblSalida" type="ColorRect" parent="Layout/CentroPanel/PanelJuego/VBoxCentro/MargenJuego/AreaJuego/Salida"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+mouse_filter = 2
+color = Color(0.2, 0.8, 0.35, 0.5)
 
 [node name="HBoxEstado" type="HBoxContainer" parent="Layout/CentroPanel/PanelJuego/VBoxCentro"]
 custom_minimum_size = Vector2(0, 40)

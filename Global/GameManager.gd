@@ -107,9 +107,12 @@ func id_int(valor) -> int:
 func aplicar_recompensa(data) -> bool:
 	if typeof(data) != TYPE_DICTIONARY:
 		return false
-	var nivel_anterior = int(usuario_actual.get("nivelActual", 0))
-	if data.has("nivelActual"):
-		usuario_actual["nivelActual"] = int(data["nivelActual"])
-	if data.has("experienciaActual"):
-		usuario_actual["experienciaActual"] = int(data["experienciaActual"])
-	return int(usuario_actual.get("nivelActual", nivel_anterior)) > nivel_anterior
+	var nivel_raw = usuario_actual.get("nivelActual")
+	var nivel_anterior = 0 if nivel_raw == null else int(float(str(nivel_raw)))
+	if data.has("nivelActual") and data["nivelActual"] != null:
+		usuario_actual["nivelActual"] = int(float(str(data["nivelActual"])))
+	if data.has("experienciaActual") and data["experienciaActual"] != null:
+		usuario_actual["experienciaActual"] = int(float(str(data["experienciaActual"])))
+	var nivel_nuevo_raw = usuario_actual.get("nivelActual")
+	var nivel_nuevo = nivel_anterior if nivel_nuevo_raw == null else int(float(str(nivel_nuevo_raw)))
+	return nivel_nuevo > nivel_anterior

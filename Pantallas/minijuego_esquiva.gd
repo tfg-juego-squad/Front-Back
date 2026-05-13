@@ -26,20 +26,26 @@ extends Control
 
 # --- Parámetros del juego ---
 const NUM_CARRILES := 3
-const VEL_METROS_POR_SEG := 28.0     # metros virtuales por segundo
-const METROS_BASE_NIVEL := 220.0     # metros para superar nivel 1
-const METROS_INCREMENTO := 80.0      # +metros por cada nivel
-const METROS_ENTRE_PREGUNTAS := 90.0 # cada cuántos metros sale pregunta
-const SPAWN_INTERVALO_BASE := 1.10   # segundos entre coches (nivel 1)
+const VEL_METROS_POR_SEG := 28.0
+const METROS_BASE_NIVEL := 220.0
+const METROS_INCREMENTO := 80.0
+const METROS_ENTRE_PREGUNTAS := 90.0
+const SPAWN_INTERVALO_BASE := 1.10
 const SPAWN_INTERVALO_MIN := 0.45
-const SPAWN_INTERVALO_RED := 0.07    # se reduce por nivel
-const VEL_BLOQUE_PX := 280.0         # px/s que bajan los coches
-const VEL_BLOQUE_INCR := 35.0        # por nivel
+const SPAWN_INTERVALO_RED := 0.07
+const VEL_BLOQUE_PX := 280.0
+const VEL_BLOQUE_INCR := 35.0
 const TIEMPO_CONTINUAR := 0.9
 const INVULN_TRAS_CHOQUE := 1.2
-const TIEMPO_CAMBIO_CARRIL := 0.12   # segs interpolando entre carriles
+const TIEMPO_CAMBIO_CARRIL := 0.12
 
-const COLOR_COCHE = Color(1, 0.35, 0.35, 1)
+const COLORES_COCHE = [
+	Color(1, 0.35, 0.35, 1),  # rojo
+	Color(1, 0.55, 0.2, 1),   # naranja
+	Color(0.95, 0.8, 0.2, 1), # amarillo
+	Color(0.85, 0.3, 0.7, 1), # rosa
+	Color(0.5, 0.35, 0.9, 1), # morado
+]
 const COLOR_JUGADOR = Color(0.3, 0.95, 1.0, 1)
 const COLOR_JUGADOR_HIT = Color(1, 0.5, 0.3, 1)
 
@@ -66,6 +72,7 @@ var _nivel_en_curso: bool = false
 var _input_activo: bool = false
 var _x_carril: Array = []                    # posiciones x de cada carril
 var _rng := RandomNumberGenerator.new()
+var _marcas_carretera: Array = []  # líneas de carretera que se mueven hacia abajo
 
 # Estado de la pregunta activa
 var _pregunta_actual: Dictionary = {}
@@ -120,18 +127,53 @@ func _actualizar_label_nivel():
 	lbl_nivel.text = "Nivel %d / %d" % [max(_nivel_actual, 1), _niveles_totales]
 
 func _recalcular_carriles():
-	# Tres carriles equiespaciados respetando un margen lateral.
 	var ancho = area_juego.size.x
-	if ancho <= 0:
+	var alto = area_juego.size.y
+	if ancho <= 0 or alto <= 0:
 		return
+	# Jugador ~8% del ancho de carril → coches pequeños y proporcionados
+	var ancho_carril = ancho / float(NUM_CARRILES)
+	var tam_x = clamp(ancho_carril * 0.08, 28, 60)
+	var tam_y = tam_x * 1.8
+	jugador.custom_minimum_size = Vector2(tam_x, tam_y)
+	jugador.size = Vector2(tam_x, tam_y)
+	# Ajustar parabrisas del jugador
+	var parabrisas = jugador.get_node_or_null("LblJugador")
+	if parabrisas:
+		parabrisas.size = Vector2(tam_x * 0.7, tam_y * 0.15)
+		parabrisas.position = Vector2(tam_x * 0.15, tam_y * 0.1)
 	var margen = 30.0
 	var ancho_util = max(ancho - 2 * margen, 60.0)
 	_x_carril.clear()
 	for i in range(NUM_CARRILES):
 		var t = (float(i) + 0.5) / float(NUM_CARRILES)
 		_x_carril.append(margen + ancho_util * t - jugador.size.x / 2.0)
-	# Reposicionar al jugador en su carril actual
 	_colocar_jugador_instant(_carril_actual)
+	_crear_marcas_carretera()
+
+func _crear_marcas_carretera():
+	# Limpiar marcas anteriores
+	for m in _marcas_carretera:
+		if is_instance_valid(m):
+			m.queue_free()
+	_marcas_carretera.clear()
+	var ancho = area_juego.size.x
+	var alto = area_juego.size.y
+	var ancho_carril = ancho / float(NUM_CARRILES)
+	# Marcas punteadas entre carriles
+	for c in range(1, NUM_CARRILES):
+		var x_linea = 30.0 + (ancho - 60.0) * (float(c) / float(NUM_CARRILES))
+		var y = 0.0
+		while y < alto:
+			var marca = ColorRect.new()
+			marca.color = Color(0.6, 0.65, 0.7, 0.4)
+			marca.size = Vector2(3, 30)
+			marca.position = Vector2(x_linea - 1.5, y)
+			marca.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			area_juego.add_child(marca)
+			area_juego.move_child(marca, 0)  # detrás de todo
+			_marcas_carretera.append(marca)
+			y += 55.0
 
 func _colocar_jugador_instant(carril: int):
 	if _x_carril.is_empty():
@@ -167,7 +209,7 @@ func _iniciar_siguiente_nivel():
 	_colocar_jugador_instant(1)
 	jugador.modulate = Color.WHITE
 	jugador.color = COLOR_JUGADOR
-	lbl_estado.text = "¡Esquiva los coches! Usa A / D o ← →"
+	lbl_estado.text = "← A / D → para cambiar de carril · ¡Esquiva los coches!"
 	_nivel_en_curso = true
 	_input_activo = true
 
@@ -191,6 +233,7 @@ func _process(delta):
 	# aunque haya choque inmediato.
 	_metros_recorridos += VEL_METROS_POR_SEG * delta
 	lbl_tiempo.text = "%d / %d m" % [int(_metros_recorridos), int(_metros_objetivo)]
+	_animar_marcas_carretera(delta)
 
 	if _detectar_colision():
 		_on_choque()
@@ -249,15 +292,33 @@ func _spawnear_un_coche():
 	if _x_carril.is_empty():
 		return
 	var carril = _rng.randi_range(0, NUM_CARRILES - 1)
-	var ancho = jugador.size.x  # mismo ancho que el jugador
-	var alto = jugador.size.y * 1.4
+	var ancho = jugador.size.x
+	var alto = jugador.size.y
+	var color_coche = COLORES_COCHE[_rng.randi() % COLORES_COCHE.size()]
+	# Carrocería principal
 	var rect = ColorRect.new()
-	rect.color = COLOR_COCHE
+	rect.color = color_coche
 	rect.size = Vector2(ancho, alto)
 	rect.position = Vector2(_x_carril[carril], -alto)
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Parabrisas (barra oscura en la parte superior del coche)
+	var parabrisas = ColorRect.new()
+	parabrisas.color = Color(0.15, 0.2, 0.3, 0.85)
+	parabrisas.size = Vector2(ancho * 0.7, alto * 0.15)
+	parabrisas.position = Vector2(ancho * 0.15, alto * 0.12)
+	parabrisas.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.add_child(parabrisas)
 	area_juego.add_child(rect)
 	_bloques.append({"rect": rect, "vel": _vel_bloque_px, "carril": carril})
+
+func _animar_marcas_carretera(delta):
+	var alto = area_juego.size.y
+	for m in _marcas_carretera:
+		if not is_instance_valid(m):
+			continue
+		m.position.y += _vel_bloque_px * delta * 0.5
+		if m.position.y > alto:
+			m.position.y -= alto + 55.0
 
 func _mover_coches(delta):
 	var alto = area_juego.size.y

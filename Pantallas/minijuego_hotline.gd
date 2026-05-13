@@ -154,6 +154,10 @@ func _iniciar_siguiente_nivel():
 		lbl_objetivo.text = "Mata a los %d enemigos" % n_enemigos
 
 	# Reset del jugador
+	var area = area_juego.size
+	var tam_jugador = clamp(area.x / 40.0, 18, 36)
+	jugador.custom_minimum_size = Vector2(tam_jugador, tam_jugador)
+	jugador.size = Vector2(tam_jugador, tam_jugador)
 	jugador.color = COLOR_JUGADOR
 	jugador.visible = true
 	_colocar_jugador_centro()
@@ -162,7 +166,7 @@ func _iniciar_siguiente_nivel():
 	_vivo = true
 	_nivel_en_curso = true
 	_input_activo = true
-	lbl_estado.text = "¡Adelante! Nivel %d" % _nivel_actual
+	lbl_estado.text = "WASD mover · ESPACIO melee · CLIC disparar"
 
 func _colocar_jugador_centro():
 	var area = area_juego.size
@@ -184,10 +188,10 @@ func _colocar_salida():
 
 func _spawnear_enemigo():
 	var area = area_juego.size
-	# Aparecen pegados a los bordes
 	var lado = _rng.randi_range(0, 3)
+	var tam_base = clamp(area.x / 45.0, 16, 32)
+	var tam = Vector2(tam_base, tam_base)
 	var pos: Vector2
-	var tam = Vector2(26, 26)
 	match lado:
 		0: pos = Vector2(_rng.randf_range(0, area.x - tam.x), 0)
 		1: pos = Vector2(area.x - tam.x, _rng.randf_range(0, area.y - tam.y))
@@ -198,6 +202,13 @@ func _spawnear_enemigo():
 	rect.size = tam
 	rect.position = pos
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Ojo rojo pequeño como acento visual
+	var ojo = ColorRect.new()
+	ojo.color = Color(1, 0.9, 0.2, 0.9)
+	ojo.size = Vector2(tam_base * 0.3, tam_base * 0.3)
+	ojo.position = Vector2(tam_base * 0.35, tam_base * 0.2)
+	ojo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.add_child(ojo)
 	area_juego.add_child(rect)
 	var vel = VEL_ENEMIGO_BASE + VEL_ENEMIGO_INCR * (_nivel_actual - 1) + _rng.randf_range(-15, 15)
 	_enemigos.append({"rect": rect, "vel": vel})
@@ -402,7 +413,7 @@ func _intentar_disparar():
 	var dir = _direccion_apuntado()
 	var bala = ColorRect.new()
 	bala.color = COLOR_BALA
-	bala.size = Vector2(8, 4)
+	bala.size = Vector2(12, 6)
 	bala.position = origen - bala.size / 2.0
 	bala.pivot_offset = bala.size / 2.0
 	bala.rotation = dir.angle()

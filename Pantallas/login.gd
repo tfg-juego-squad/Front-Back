@@ -53,6 +53,7 @@ func _enviar_login():
 		Notificador.notificar("Rellena todos los campos", Color.MAGENTA)
 		return
 
+	login_button.disabled = true
 	var payload = {"nombreUsuario": usuario, "passwordPlana": contrasena}
 	Notificador.notificar("Autenticando...", Color.CYAN)
 	ConexionManager.peticion_post("/usuarios/login", payload, _on_login_response)
@@ -106,6 +107,7 @@ func _on_login_response(data, code):
 		GameManager.guardar_sesion(data)
 		if GameManager.token.is_empty():
 			Notificador.notificar("Sesión sin token, revisa el backend", Color.ORANGE)
+			login_button.disabled = false
 			return
 		if GameManager.es_profesor:
 			get_tree().change_scene_to_file("res://Pantallas/profesor_dashboard.tscn")
@@ -113,6 +115,8 @@ func _on_login_response(data, code):
 			# Alumno → pantalla de carga animada antes del mapa.
 			get_tree().change_scene_to_file("res://Pantallas/pantalla_carga.tscn")
 	elif code == 401:
+		login_button.disabled = false
 		Notificador.notificar("Usuario o clave incorrectos", Color.MAGENTA)
 	else:
+		login_button.disabled = false
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.ORANGE)

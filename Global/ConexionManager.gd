@@ -23,16 +23,27 @@ func _manejar_auth_error(response_code: int) -> bool:
 		return true
 	return false
 
+# Parsea el body como JSON, pero devuelve null silenciosamente si está vacío
+# o no es JSON válido. Antes el parser escupía "Unknown error getting token"
+# en consola por cada respuesta 204 / 200-sin-cuerpo / error sin payload.
+func _parse_body_json(texto: String):
+	if texto.strip_edges().is_empty():
+		return null
+	return JSON.parse_string(texto)
+
 func peticion_get(endpoint: String, callback: Callable):
 	var http = _crear_http()
 	http.request_completed.connect(func(_result, response_code, _headers, body):
 		var json_texto = body.get_string_from_utf8()
 		print("[DEBUG] GET %s (Code %d): %s" % [endpoint, response_code, json_texto])
-		var json_data = JSON.parse_string(json_texto)
+		var json_data = _parse_body_json(json_texto)
 		http.queue_free()
 		if _manejar_auth_error(response_code):
 			return
-		callback.call(json_data, response_code)
+		# Si el callback apuntaba a un nodo ya liberado (p.ej. la escena cambió
+		# mientras esta petición estaba en vuelo) lo dejamos pasar en silencio.
+		if callback.is_valid():
+			callback.call(json_data, response_code)
 	)
 	if http.request(BASE_URL + endpoint, _construir_headers(false)) != OK:
 		http.queue_free()
@@ -48,11 +59,14 @@ func peticion_delete(endpoint: String, callback: Callable):
 	http.request_completed.connect(func(_result, response_code, _headers, body):
 		var json_texto = body.get_string_from_utf8()
 		print("[DEBUG] DELETE %s (Code %d): %s" % [endpoint, response_code, json_texto])
-		var json_data = JSON.parse_string(json_texto)
+		var json_data = _parse_body_json(json_texto)
 		http.queue_free()
 		if _manejar_auth_error(response_code):
 			return
-		callback.call(json_data, response_code)
+		# Si el callback apuntaba a un nodo ya liberado (p.ej. la escena cambió
+		# mientras esta petición estaba en vuelo) lo dejamos pasar en silencio.
+		if callback.is_valid():
+			callback.call(json_data, response_code)
 	)
 	if http.request(BASE_URL + endpoint, _construir_headers(false), HTTPClient.METHOD_DELETE) != OK:
 		http.queue_free()
@@ -62,11 +76,14 @@ func _peticion_con_body(method: int, endpoint: String, data: Dictionary, callbac
 	http.request_completed.connect(func(_result, response_code, _headers, body):
 		var json_texto = body.get_string_from_utf8()
 		print("[DEBUG] %s %s (Code %d): %s" % [_nombre_metodo(method), endpoint, response_code, json_texto])
-		var json_data = JSON.parse_string(json_texto)
+		var json_data = _parse_body_json(json_texto)
 		http.queue_free()
 		if _manejar_auth_error(response_code):
 			return
-		callback.call(json_data, response_code)
+		# Si el callback apuntaba a un nodo ya liberado (p.ej. la escena cambió
+		# mientras esta petición estaba en vuelo) lo dejamos pasar en silencio.
+		if callback.is_valid():
+			callback.call(json_data, response_code)
 	)
 	var error = http.request(
 		BASE_URL + endpoint,
@@ -105,11 +122,14 @@ func peticion_multipart(endpoint: String, nombre_campo: String, ruta_local: Stri
 	http.request_completed.connect(func(_result, response_code, _headers, body):
 		var json_texto = body.get_string_from_utf8()
 		print("[DEBUG] UPLOAD %s (Code %d): %s" % [endpoint, response_code, json_texto])
-		var json_data = JSON.parse_string(json_texto)
+		var json_data = _parse_body_json(json_texto)
 		http.queue_free()
 		if _manejar_auth_error(response_code):
 			return
-		callback.call(json_data, response_code)
+		# Si el callback apuntaba a un nodo ya liberado (p.ej. la escena cambió
+		# mientras esta petición estaba en vuelo) lo dejamos pasar en silencio.
+		if callback.is_valid():
+			callback.call(json_data, response_code)
 	)
 	var err = http.request_raw(
 		BASE_URL + endpoint,
