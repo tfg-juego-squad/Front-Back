@@ -110,7 +110,8 @@ func _on_login_response(data, code):
 		if GameManager.es_profesor:
 			get_tree().change_scene_to_file("res://Pantallas/profesor_dashboard.tscn")
 		else:
-			get_tree().change_scene_to_file("res://Niveles/nivel_01.tscn")
+			# Alumno → pantalla de carga animada antes del mapa.
+			get_tree().change_scene_to_file("res://Pantallas/pantalla_carga.tscn")
 	elif code == 401:
 		Notificador.notificar("Usuario o clave incorrectos", Color.MAGENTA)
 	else:
