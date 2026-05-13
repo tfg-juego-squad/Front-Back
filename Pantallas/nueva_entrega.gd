@@ -7,6 +7,7 @@ extends Control
 @onready var nombre_input = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/NombreInput
 @onready var puntuacion_objetivo_spin = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxPuntuacion/PuntuacionObjetivoSpin
 @onready var npc_option = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxNpc/NpcOption
+@onready var check_evaluable = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxEvaluable/CheckEvaluable
 @onready var btn_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/BtnAdjunto
 @onready var btn_quitar_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/BtnQuitarAdjunto
 @onready var nombre_adjunto = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Actividad/VBox/HBoxAdjunto/NombreAdjunto
@@ -24,8 +25,12 @@ extends Control
 
 # --- Módulo Avanzado (minijuego) ---
 @onready var niveles_minijuego_spin = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/HBoxNiveles/NivelesSpin
+@onready var subtipo_minijuego_option = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/HBoxSubtipo/SubtipoOption
 @onready var lista_preguntas_av = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/ListaPreguntasAv
 @onready var btn_add_pregunta_av = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Avanzado/ScrollAv/VBoxAv/BtnAddPreguntaAv
+
+# --- Módulo Diálogo (NPC parlante) ---
+@onready var texto_dialogo_input = $Layout/Centro/PanelContenedor/VBoxTabs/TabContainer/Dialogo/VBoxDialogo/TextoDialogoInput
 
 # --- Constantes ---
 const TIPO_TEST = "TEST"
@@ -508,17 +513,24 @@ func _on_guardar():
 
 	var preguntas_examen = _recoger_preguntas()
 	var preguntas_minijuego = _recoger_preguntas_avanzado()
+	var texto_dialogo = texto_dialogo_input.text.strip_edges() if texto_dialogo_input else ""
+	var hay_dialogo = not texto_dialogo.is_empty()
 
-	# El profesor solo puede rellenar una pestaña de preguntas a la vez.
-	if not preguntas_examen.is_empty() and not preguntas_minijuego.is_empty():
+	# El profesor solo puede rellenar una pestaña "de contenido" a la vez.
+	var rellenas = 0
+	if not preguntas_examen.is_empty(): rellenas += 1
+	if not preguntas_minijuego.is_empty(): rellenas += 1
+	if hay_dialogo: rellenas += 1
+	if rellenas > 1:
 		Notificador.notificar(
-			"Tienes preguntas en Formulario y Avanzado: borra una de las dos antes de guardar",
+			"Solo puedes rellenar una de las pestañas Formulario / Avanzado / Diálogo",
 			Color.RED
 		)
 		return
 
 	var tipo := "ACTIVIDAD"
 	var niveles_minijuego = null
+	var subtipo_minijuego = null
 	var npc_forzado := ""
 
 	if not preguntas_examen.is_empty():
@@ -532,8 +544,12 @@ func _on_guardar():
 		if not _validar_preguntas_minijuego(_preguntas_payload):
 			return
 		niveles_minijuego = int(niveles_minijuego_spin.value)
+		subtipo_minijuego = _subtipo_minijuego_actual()
 		# El minijuego siempre vive en el NPC de Actividades.
 		npc_forzado = "npc_actividades"
+	elif hay_dialogo:
+		tipo = "DIALOGO"
+		_preguntas_payload = []
 	else:
 		_preguntas_payload = []
 
@@ -554,13 +570,26 @@ func _on_guardar():
 		"titulo": nombre_input.text.strip_edges(),
 		"fechaLimite": _construir_fecha_limite(),
 		"npcId": _npc_seleccionado,
-		"tipo": tipo
+		"tipo": tipo,
+		"evaluable": check_evaluable.button_pressed if check_evaluable else true
 	}
 	if niveles_minijuego != null:
 		payload["nivelesMinijuego"] = niveles_minijuego
+	if subtipo_minijuego != null:
+		payload["subtipoMinijuego"] = subtipo_minijuego
+	if hay_dialogo:
+		payload["texto"] = texto_dialogo
 
 	Notificador.notificar("Guardando %s..." % tipo.to_lower(), Color.CYAN)
 	ConexionManager.peticion_post("/pruebas/crear", payload, _on_prueba_guardada)
+
+# Devuelve el código del subtipo de minijuego seleccionado en el OptionButton.
+func _subtipo_minijuego_actual() -> String:
+	if subtipo_minijuego_option == null:
+		return "SECUENCIA"
+	match subtipo_minijuego_option.selected:
+		1: return "ESQUIVA"
+		_: return "SECUENCIA"
 
 func _validar_preguntas_examen(preguntas: Array) -> bool:
 	for i in range(preguntas.size()):
