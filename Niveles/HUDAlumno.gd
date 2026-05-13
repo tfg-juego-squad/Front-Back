@@ -6,11 +6,16 @@ extends CanvasLayer
 @onready var xp_label = $UIParent/XPBarContainer/VBox/XPLabel
 @onready var lista_vbox = $UIParent/PanelTareas/Margen/VBox/ListaTareas
 @onready var info_tab = $UIParent/InfoTab
-@onready var panel_retrato = $UIParent/PanelRetrato
-@onready var espejo_jugador: AnimatedSprite2D = $UIParent/PanelRetrato/VBoxRetrato/VistaCercana/SubViewport/EspejoJugador
+
+@onready var panel_ranking = $UIParent/PanelRanking
+@onready var vbox_lista_ranking = $UIParent/PanelRanking/MargenRanking/VBoxRanking/VBoxLista
+@onready var timer_refresh = $UIParent/PanelRanking/TimerRefresh
+
+const TOP_N := 5
+const COLOR_TU = Color(1, 0.9, 0.3, 1)        # destacado para "tú"
+const COLOR_NORMAL = Color(0.9, 0.9, 0.95, 1)
 
 var hud_visible = true
-var _jugador_anim: AnimatedSprite2D = null
 
 func _ready():
 	ui_parent.visible = true
@@ -21,37 +26,26 @@ func _ready():
 	if GameManager.es_profesor:
 		panel_tareas.visible = false
 		$UIParent/XPBarContainer.visible = false
-		panel_retrato.visible = false
+		panel_ranking.visible = false
 		return
 
 	panel_tareas.visible = true
 	_actualizar_xp()
 	_cargar_pruebas_pendientes()
-	_inicializar_vista_cercana()
+
+	timer_refresh.timeout.connect(_cargar_ranking)
+	_cargar_ranking()
 
 	await get_tree().create_timer(1.0).timeout
 	var nombre = GameManager.usuario_actual.get("nombreUsuario", "alumno")
 	Notificador.notificar("Bienvenido, %s" % nombre, Color.CYAN)
-
-func _process(_delta):
-	if _jugador_anim == null or not is_instance_valid(_jugador_anim) or espejo_jugador == null:
-		return
-	if espejo_jugador.sprite_frames == null:
-		return
-	# Reflejamos animación y frame del personaje real en el retrato del HUD.
-	var anim_actual = _jugador_anim.animation
-	if anim_actual == "" or not espejo_jugador.sprite_frames.has_animation(anim_actual):
-		return
-	if espejo_jugador.animation != anim_actual:
-		espejo_jugador.play(anim_actual)
-	espejo_jugador.frame = _jugador_anim.frame
 
 func _input(event):
 	if event.is_action_pressed("ui_focus_next"):
 		hud_visible = !hud_visible
 		panel_tareas.visible = hud_visible
 		$UIParent/XPBarContainer.visible = hud_visible
-		panel_retrato.visible = hud_visible
+		panel_ranking.visible = hud_visible
 		info_tab.text = "Presiona [TAB] para %s tareas" % ("ocultar" if hud_visible else "ver")
 		if hud_visible:
 			_animar_aparicion()
@@ -60,31 +54,8 @@ func _animar_aparicion():
 	ui_parent.modulate.a = 0
 	create_tween().tween_property(ui_parent, "modulate:a", 1.0, 0.2)
 
-# Inicializa el "espejo" del jugador: copia los SpriteFrames del personaje
-# real y reproduce su animación en cada frame para mostrar un retrato vivo.
-func _inicializar_vista_cercana():
-	if espejo_jugador == null:
-		return
-	var arbol = get_tree()
-	if arbol == null:
-		return
-	var jugador = arbol.get_root().find_child("User-PJ", true, false)
-	if jugador == null:
-		panel_retrato.visible = false
-		return
-	_jugador_anim = jugador.find_child("MoveAnimation", true, false) as AnimatedSprite2D
-	if _jugador_anim == null:
-		panel_retrato.visible = false
-		return
-	espejo_jugador.sprite_frames = _jugador_anim.sprite_frames
-	# Arrancamos solo si la animación existe en los frames copiados.
-	var anim = _jugador_anim.animation
-	if espejo_jugador.sprite_frames and anim != "" and espejo_jugador.sprite_frames.has_animation(anim):
-		espejo_jugador.play(anim)
-
 func _actualizar_xp():
 	# El backend devuelve null si el alumno aún no tiene nivel/XP iniciados.
-	# int(null) revienta, así que comprobamos antes.
 	var nivel_raw = GameManager.usuario_actual.get("nivelActual")
 	var xp_raw = GameManager.usuario_actual.get("experienciaActual")
 	var nivel = 1 if nivel_raw == null else int(nivel_raw)
@@ -129,3 +100,81 @@ func _on_pendientes(data, code):
 		lbl.text = "•  %s" % str(prueba.get("titulo", "Prueba"))
 		lbl.add_theme_color_override("font_color", Color.WHITE)
 		lista_vbox.add_child(lbl)
+
+# =====================================================================
+# RANKING (top 5 + tu posición si no estás dentro)
+# =====================================================================
+
+func _cargar_ranking():
+	var aula_id = GameManager.usuario_actual.get("aulaId")
+	if aula_id == null:
+		_mostrar_ranking_mensaje("Sin aula asignada")
+		return
+	ConexionManager.peticion_get("/puntuacion/aula/%s/ranking" % str(int(aula_id)), _on_ranking)
+
+func _on_ranking(data, code):
+	if code != 200 or not (data is Array):
+		_mostrar_ranking_mensaje("Sin datos")
+		return
+	for hijo in vbox_lista_ranking.get_children():
+		hijo.queue_free()
+	if data.is_empty():
+		_mostrar_ranking_mensaje("Aula vacía")
+		return
+
+	# top 5 + (si tú no estás dentro, añadirte al final)
+	var top = data.slice(0, min(TOP_N, data.size()))
+	var idx_tuyo_global := -1
+	for i in range(data.size()):
+		if bool(data[i].get("esTuyo", false)):
+			idx_tuyo_global = i
+			break
+
+	for entrada in top:
+		_anadir_fila_ranking(entrada)
+
+	if idx_tuyo_global >= TOP_N:
+		var sep = HSeparator.new()
+		vbox_lista_ranking.add_child(sep)
+		_anadir_fila_ranking(data[idx_tuyo_global])
+
+func _anadir_fila_ranking(entrada: Dictionary):
+	var es_tuyo = bool(entrada.get("esTuyo", false))
+	var posicion = int(entrada.get("posicion", 0))
+	var nombre = str(entrada.get("nombreUsuario", "alumno"))
+	var puntos = int(entrada.get("puntos", 0))
+
+	var fila = HBoxContainer.new()
+	fila.add_theme_constant_override("separation", 6)
+
+	var lbl_pos = Label.new()
+	lbl_pos.text = "#%d" % posicion
+	lbl_pos.custom_minimum_size = Vector2(40, 0)
+	lbl_pos.add_theme_color_override("font_color", COLOR_TU if es_tuyo else Color(0, 1, 1, 1))
+	lbl_pos.add_theme_font_size_override("font_size", 13)
+	fila.add_child(lbl_pos)
+
+	var lbl_nombre = Label.new()
+	lbl_nombre.text = ("TÚ · %s" % nombre) if es_tuyo else nombre
+	lbl_nombre.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl_nombre.add_theme_color_override("font_color", COLOR_TU if es_tuyo else COLOR_NORMAL)
+	lbl_nombre.add_theme_font_size_override("font_size", 12)
+	lbl_nombre.clip_text = true
+	fila.add_child(lbl_nombre)
+
+	var lbl_puntos = Label.new()
+	lbl_puntos.text = "%d" % puntos
+	lbl_puntos.add_theme_color_override("font_color", COLOR_TU if es_tuyo else COLOR_NORMAL)
+	lbl_puntos.add_theme_font_size_override("font_size", 12)
+	fila.add_child(lbl_puntos)
+
+	vbox_lista_ranking.add_child(fila)
+
+func _mostrar_ranking_mensaje(texto: String):
+	for hijo in vbox_lista_ranking.get_children():
+		hijo.queue_free()
+	var lbl = Label.new()
+	lbl.text = texto
+	lbl.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
+	lbl.add_theme_font_size_override("font_size", 11)
+	vbox_lista_ranking.add_child(lbl)
