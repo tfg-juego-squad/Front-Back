@@ -53,7 +53,10 @@ var _niveles_pasados: int = 0
 # Estado de la pregunta actual
 var _pregunta_actual: Dictionary = {}
 var _tiempo_restante_pregunta: float = 0.0
-var _input_pregunta: Node = null
+# _input_pregunta puede ser TextEdit (DESARROLLO) o ButtonGroup (TEST). Cómo
+# son tipos distintos sin superclase común (Node vs Resource), lo dejamos
+# sin tipar para que el parser acepte ambos.
+var _input_pregunta = null
 var _grupo_respuestas: ButtonGroup = null
 
 func _ready():
