@@ -843,7 +843,7 @@ shape = SubResource("CircleShape2D_r0xio")
 [node name="NPC - Examen" type="CharacterBody2D" parent="." unique_id=78054416]
 position = Vector2(328, 257)
 script = ExtResource("9_npc")
-npc_id = "npc_examen"
+npc_id = "npc_examen1"
 
 [node name="AnimacionNPC-Base" type="AnimatedSprite2D" parent="NPC - Examen" unique_id=1957883648]
 texture_filter = 1
@@ -871,7 +871,7 @@ shape = SubResource("CircleShape2D_r0xio")
 [node name="NPC - Examen2" type="CharacterBody2D" parent="." unique_id=1316108197]
 position = Vector2(328, 257)
 script = ExtResource("9_npc")
-npc_id = "npc_examen"
+npc_id = "npc_examen2"
 
 [node name="AnimacionNPC-Base" type="AnimatedSprite2D" parent="NPC - Examen2" unique_id=217908890]
 texture_filter = 1
@@ -901,7 +901,7 @@ shape = SubResource("CircleShape2D_r0xio")
 [node name="NPC - Examen3" type="CharacterBody2D" parent="." unique_id=1443203382]
 position = Vector2(328, 257)
 script = ExtResource("9_npc")
-npc_id = "npc_examen"
+npc_id = "npc_examen3"
 
 [node name="AnimacionNPC-Base" type="AnimatedSprite2D" parent="NPC - Examen3" unique_id=1573728724]
 texture_filter = 1
