@@ -2,6 +2,7 @@ package org.example.backendapi.control;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.backendapi.dto.PuntuacionManualRequestDTO;
 import org.example.backendapi.dto.PuntuacionRequestDTO;
 import org.example.backendapi.dto.PuntuacionResponseDTO;
 import org.example.backendapi.model.entities.Usuario;
@@ -41,6 +42,15 @@ public class PuntuacionControl {
             @Valid @RequestBody PuntuacionRequestDTO request,
             @AuthenticationPrincipal Usuario alumnoLogueado) {
         PuntuacionResponseDTO response = puntuacionService.crearPuntuacion(request, alumnoLogueado);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/manual")
+    @PreAuthorize("hasAuthority('ROL_PROFESOR')")
+    public ResponseEntity<PuntuacionResponseDTO> notaManual(
+            @Valid @RequestBody PuntuacionManualRequestDTO request,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        PuntuacionResponseDTO response = puntuacionService.crearPuntuacionManual(request, usuarioLogueado);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

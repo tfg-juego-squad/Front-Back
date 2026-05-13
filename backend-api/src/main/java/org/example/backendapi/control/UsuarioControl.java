@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.backendapi.dto.UsuarioLoginRequestDTO;
 import org.example.backendapi.dto.UsuarioRegistroRequestDTO;
 import org.example.backendapi.dto.UsuarioResponseDTO;
+import org.example.backendapi.dto.UsuarioUpdateRequestDTO;
 import org.example.backendapi.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,15 @@ public class UsuarioControl {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UsuarioLoginRequestDTO request) {
         UsuarioResponseDTO response = usuarioService.hacerLogin(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponseDTO> actualizarUsuario(
+            @PathVariable Long id,
+            @Valid @RequestBody UsuarioUpdateRequestDTO request,
+            @AuthenticationPrincipal Usuario usuarioLogueado) {
+        UsuarioResponseDTO response = usuarioService.actualizarUsuario(id, request, usuarioLogueado);
         return ResponseEntity.ok(response);
     }
 

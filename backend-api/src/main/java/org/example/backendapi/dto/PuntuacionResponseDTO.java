@@ -13,4 +13,7 @@ public class PuntuacionResponseDTO {
     private String tituloPrueba;
     private Integer nivelActual;
     private Integer experienciaActual;
+    private String motivo;
+    private String tipoPrueba;
+    private Long alumnoId;
 }
