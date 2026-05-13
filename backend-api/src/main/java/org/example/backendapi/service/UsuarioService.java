@@ -6,10 +6,16 @@ import org.example.backendapi.dto.UsuarioRegistroRequestDTO;
 import org.example.backendapi.dto.UsuarioResponseDTO;
 import org.example.backendapi.exception.BadRequestException;
 import org.example.backendapi.mapper.UsuarioMapper;
+import org.example.backendapi.model.dao.ITokenDAO;
 import org.example.backendapi.model.dao.IUsuarioDAO;
 import org.example.backendapi.model.entities.TipoRol;
+import org.example.backendapi.model.entities.Token;
+import org.example.backendapi.model.entities.TokenType;
 import org.example.backendapi.model.entities.Usuario;
 import org.example.backendapi.exception.ForbiddenException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.example.backendapi.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +33,12 @@ import java.util.*;
 public class UsuarioService {
 
     private final IUsuarioDAO usuarioDAO;
-    private final SecurityService securityService;
     private final JwtService jwtService;
     private final UsuarioMapper usuarioMapper;
+
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+    private final ITokenDAO tokenDAO;
 
     /**
      * Registra un nuevo profesor en el sistema.
@@ -51,13 +60,18 @@ public class UsuarioService {
         profesor.setEmail(request.getEmail());
 
         // Encriptar la contraseña antes de guardar
-        profesor.setHashContrasena(securityService.hashPassword(request.getPasswordPlana()));
+        profesor.setHashContrasena(passwordEncoder.encode(request.getPasswordPlana()));
         profesor.setFechaCreacion(Instant.now());
         profesor.setRol(TipoRol.ROL_PROFESOR);
 
         Usuario guardado = usuarioDAO.save(profesor);
 
-        return usuarioMapper.toResponseDTO(guardado);
+        String jwtToken = jwtService.generateToken(guardado);
+        saveUserToken(guardado, jwtToken);
+
+        UsuarioResponseDTO response = usuarioMapper.toResponseDTO(guardado);
+        response.setToken(jwtToken);
+        return response;
     }
 
     /**
@@ -66,22 +80,19 @@ public class UsuarioService {
      * @return DTO del usuario incluyendo el Token JWT generado para futuras peticiones.
      */
     public UsuarioResponseDTO hacerLogin(UsuarioLoginRequestDTO request) {
-        List<Usuario> usuarios = usuarioDAO.findUsuarioByNombreUsuario(request.getNombreUsuario());
-        if (usuarios.isEmpty()) {
-            throw new ResourceNotFoundException("Usuario no encontrado");
-        }
-        Usuario usuario = usuarios.get(0);
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getNombreUsuario(), request.getPasswordPlana())
+        );
 
-        // Validar contraseña
-        if (!securityService.checkPassword(request.getPasswordPlana(), usuario.getHashContrasena())) {
-            throw new BadRequestException("Contraseña incorrecta");
-        }
+        Usuario usuario = usuarioDAO.findUsuarioByNombreUsuario(request.getNombreUsuario()).get(0);
 
-        // Generar JWT
         String token = jwtService.generateToken(usuario);
+
+        revokeAllUserTokens(usuario);
+        saveUserToken(usuario, token);
+
         UsuarioResponseDTO responseDTO = usuarioMapper.toResponseDTO(usuario);
         responseDTO.setToken(token);
-
         return responseDTO;
     }
 
@@ -165,5 +176,27 @@ public class UsuarioService {
         }
 
         usuarioDAO.deleteById(id);
+    }
+
+    private void saveUserToken(Usuario usuario, String jwtToken) {
+        Token token = Token.builder()
+                .usuario(usuario)
+                .token(jwtToken)
+                .tipo(TokenType.BEARER)
+                .expired(false)
+                .revoked(false)
+                .build();
+        tokenDAO.save(token);
+    }
+
+    private void revokeAllUserTokens(Usuario usuario) {
+        var validUserTokens = tokenDAO.findAllValidTokensByUsuario(usuario.getId());
+        if (validUserTokens.isEmpty()) return;
+
+        validUserTokens.forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+        tokenDAO.saveAll(validUserTokens);
     }
 }
