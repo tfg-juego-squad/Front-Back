@@ -72,11 +72,15 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, "Acceso denegado: No tienes los permisos necesarios para realizar esta acción.");
     }
 
-    // Errores de la base de datos (claves duplicadas, etc.)
+    // Errores de la base de datos (claves duplicadas, FK rotas, NOT NULL, etc.)
+    // Devolvemos la causa SQL exacta en el body para poder diagnosticar 409s
+    // que de otro modo serían opacos.
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         log.warn("DataIntegrityViolation", ex);
-        return buildResponse(HttpStatus.CONFLICT, "Error de integridad: el recurso ya existe o está relacionado con otros datos.");
+        Throwable causa = ex.getMostSpecificCause();
+        String detalle = causa != null ? causa.getMessage() : ex.getMessage();
+        return buildResponse(HttpStatus.CONFLICT, "Conflicto en BD: " + detalle);
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {
