@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://bxdvqee473j6g" path="res://Assets/mision-char/Humane01.png" id="7_dpjde"]
 [ext_resource type="Texture2D" uid="uid://dsb67t27gscsh" path="res://Assets/mision-char/pelo/ha01.png" id="8_puy14"]
 [ext_resource type="Script" uid="uid://dmagwti2301qx" path="res://Niveles/npc_base.gd" id="9_npc"]
+[ext_resource type="PackedScene" path="res://npc_generico.tscn" id="10_08jxx"]
 
 [sub_resource type="GDScript" id="GDScript_nivel"]
 script/source = "extends Node2D
@@ -941,11 +942,26 @@ rotation = 3.1415927
 shape = SubResource("WorldBoundaryShape2D_puy14")
 
 [node name="CollisionShape2DIzq" type="CollisionShape2D" parent="BordesDelMundo" unique_id=945465722]
-position = Vector2(-180, -246)
+position = Vector2(-293, -266)
 rotation = 1.5707964
 shape = SubResource("WorldBoundaryShape2D_puy14")
 
 [node name="CollisionShape2DDer" type="CollisionShape2D" parent="BordesDelMundo" unique_id=847128807]
-position = Vector2(621, -257)
+position = Vector2(300, -255)
 rotation = -1.5707964
 shape = SubResource("WorldBoundaryShape2D_puy14")
+
+[node name="NPC - Examen4" parent="." unique_id=259196628 instance=ExtResource("10_08jxx")]
+position = Vector2(172, 1)
+
+[node name="NPC - Examen5" parent="." unique_id=922594569 instance=ExtResource("10_08jxx")]
+position = Vector2(312, 608)
+
+[node name="NPC - Examen6" parent="." unique_id=2116129956 instance=ExtResource("10_08jxx")]
+position = Vector2(148, 610)
+
+[node name="NPC - Examen7" parent="." unique_id=871675835 instance=ExtResource("10_08jxx")]
+position = Vector2(-339, 174)
+
+[node name="NPC - Examen8" parent="." unique_id=2103502606 instance=ExtResource("10_08jxx")]
+position = Vector2(228, 1016)
