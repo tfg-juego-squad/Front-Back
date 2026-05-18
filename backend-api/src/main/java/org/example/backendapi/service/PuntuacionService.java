@@ -211,7 +211,7 @@ public class PuntuacionService {
                 r.setNombreUsuario(alu.getNombreUsuario());
                 r.setNombreReal(alu.getNombreReal());
                 r.setPuntos(0);
-                r.setNivel(alu.getNivel() == null ? 1 : alu.getNivel());
+                r.setNivel(alu.getNivel() == null || alu.getNivel() == 0 ? 1 : alu.getNivel());
                 r.setEsTuyo(alu.getId().equals(usuarioLogueado.getId()));
                 porAlumno.put(alu.getId(), r);
             }
@@ -229,28 +229,43 @@ public class PuntuacionService {
                 r.setNombreUsuario(p.getAlumno().getNombreUsuario());
                 r.setNombreReal(p.getAlumno().getNombreReal());
                 r.setPuntos(0);
-                r.setNivel(p.getAlumno().getNivel() == null ? 1 : p.getAlumno().getNivel());
+                r.setNivel(p.getAlumno().getNivel() == null || p.getAlumno().getNivel() == 0 ? 1 : p.getAlumno().getNivel());
                 r.setEsTuyo(alumnoId.equals(usuarioLogueado.getId()));
                 porAlumno.put(alumnoId, r);
             }
             r.setPuntos(r.getPuntos() + (p.getPuntosObtenidos() == null ? 0 : p.getPuntosObtenidos()));
         }
 
-        // Ordenamos descendente por puntos.
+        // Convertimos la suma bruta de puntos al sistema RPG (1 nivel cada 100 pts)
+        for (RankingEntradaDTO ranking : porAlumno.values()) {
+            int totalPuntos = ranking.getPuntos();
+            int nivelesGanados = totalPuntos / 100;
+            int xpResidual = totalPuntos % 100;
+            ranking.setNivel(1 + nivelesGanados);
+            ranking.setPuntos(xpResidual);
+        }
+
+        // Ordenamos descendente primero por Nivel y luego por Puntos (XP residual).
         List<RankingEntradaDTO> ranking = new ArrayList<>(porAlumno.values());
-        ranking.sort(Comparator.comparingInt(RankingEntradaDTO::getPuntos).reversed());
+        ranking.sort((ranking1, ranking2) -> {
+            int comparacion = Integer.compare(ranking2.getNivel(), ranking1.getNivel());
+            if (comparacion == 0) {
+                return Integer.compare(ranking2.getPuntos(), ranking1.getPuntos());
+            }
+            return comparacion;
+        });
 
         // Posiciones con standard competition ranking: 1, 2, 2, 4 ...
         int pos = 0;
         int idx = 0;
-        Integer puntosPrev = null;
-        for (RankingEntradaDTO r : ranking) {
+        RankingEntradaDTO prev = null;
+        for (RankingEntradaDTO rankingEntrada : ranking) {
             idx++;
-            if (puntosPrev == null || !r.getPuntos().equals(puntosPrev)) {
+            if (prev == null || !rankingEntrada.getNivel().equals(prev.getNivel()) || !rankingEntrada.getPuntos().equals(prev.getPuntos())) {
                 pos = idx;
-                puntosPrev = r.getPuntos();
+                prev = rankingEntrada;
             }
-            r.setPosicion(pos);
+            rankingEntrada.setPosicion(pos);
         }
         return ranking;
     }
