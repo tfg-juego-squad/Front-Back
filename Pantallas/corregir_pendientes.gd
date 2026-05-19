@@ -45,18 +45,15 @@ func _on_pendientes_recibidas(data, code):
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 		return
 
-	# Agrupar respuestas por alumno. El backend envía `nombreUsuario` en cada
-	# respuesta para que no tengamos que pedir el usuario por separado.
+	# Agrupar respuestas por alumno. El backend envía nombreReal + apellidos
+	# (preferentes) y nombreUsuario como fallback, todo en cada respuesta.
 	for r in data:
 		var alumno_id = GameManager.id_int(r.get("alumnoId", -1))
 		if alumno_id < 0:
 			continue
 		if not _pendientes_por_alumno.has(alumno_id):
-			var nombre = str(r.get("nombreUsuario", "")).strip_edges()
-			if nombre.is_empty():
-				nombre = "Alumno %d" % alumno_id
 			_pendientes_por_alumno[alumno_id] = {
-				"nombre": nombre,
+				"nombre": GameManager.nombre_alumno(r),
 				"respuestas": []
 			}
 		_pendientes_por_alumno[alumno_id]["respuestas"].append(r)

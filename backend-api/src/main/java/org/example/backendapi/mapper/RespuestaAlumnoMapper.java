@@ -12,6 +12,8 @@ import java.util.List;
 public interface RespuestaAlumnoMapper {
     @Mapping(source = "alumno.id", target = "alumnoId")
     @Mapping(source = "alumno.nombreUsuario", target = "nombreUsuario")
+    @Mapping(source = "alumno.nombreReal", target = "nombreReal")
+    @Mapping(source = "alumno.apellidos", target = "apellidos")
     @Mapping(source = "pregunta.id", target = "preguntaId")
     @Mapping(source = "pregunta.enunciado", target = "enunciadoPregunta")
     @Mapping(source = "pregunta.valorPuntos", target = "valorPuntosPregunta")

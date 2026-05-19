@@ -28,6 +28,8 @@ extends Control
 
 @onready var vbox_estadisticas = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas
 @onready var cmb_pruebas_stats = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/HBoxSelectorPrueba/CmbPruebas
+@onready var chk_por_alumno = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/HBoxSelectorPrueba/ChkPorAlumno
+@onready var lbl_hint_stats = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/LblHintStats
 @onready var tree_stats = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/TreeStats
 
 @onready var scroll_gestion = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion
@@ -53,6 +55,15 @@ var alumno_seleccionado: Dictionary = {}
 var pruebas_stats: Array = []
 var aula_seleccionada_idx: int = -1
 var _botones_aulas: Array = []
+# alumno_id (int) → número de respuestas pendientes de corregir. Se carga al
+# entrar al dashboard para poder mostrar un badge "🔔 N" en las cards de alumnos
+# sin que el profesor tenga que abrir "Corregir pendientes".
+var _pendientes_por_alumno: Dictionary = {}
+# Caché de puntuaciones del aula actual (cargada al abrir estadísticas) para
+# poder mostrar la vista "Por alumno" sin re-pedirla.
+var _puntuaciones_aula_cache: Array = []
+# Modo de la vista de estadísticas: "PREGUNTA" o "ALUMNO".
+var _modo_stats: String = "PREGUNTA"
 
 # Estado del panel flotante de generación:
 # - false → modo "crear aula + generar alumnos" (botón engranaje / + nueva aula)
@@ -72,6 +83,7 @@ func _ready():
 	btn_corregir.pressed.connect(_on_corregir_pendientes)
 	btn_estadisticas.pressed.connect(_on_abrir_estadisticas)
 	cmb_pruebas_stats.item_selected.connect(_on_prueba_stats_elegida)
+	chk_por_alumno.toggled.connect(_on_toggle_modo_stats)
 	btn_cerrar_flotante.pressed.connect(_cerrar_panel_flotante)
 	btn_nueva_aula.pressed.connect(_on_abrir_generacion)
 	btn_anadir_alumno.pressed.connect(_on_anadir_alumno_individual)
@@ -95,6 +107,7 @@ func _ready():
 
 	_actualizar_avatar()
 	_cargar_aulas()
+	_cargar_pendientes_global()
 
 func _actualizar_avatar():
 	var nombre = ""
@@ -227,14 +240,30 @@ func _crear_card_alumno(alu: Dictionary) -> Control:
 	fila.add_theme_constant_override("separation", 12)
 
 	var nombre_lbl := Label.new()
-	var nombre_str = str(alu.get("nombreUsuario", alu.get("usuario", "Anónimo")))
-	nombre_lbl.text = nombre_str
+	# Preferimos nombreReal + apellidos; caemos a nombreUsuario si no están.
+	nombre_lbl.text = GameManager.nombre_alumno(alu)
 	nombre_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nombre_lbl.add_theme_color_override("font_color", COLOR_TEXT)
 	nombre_lbl.add_theme_font_size_override("font_size", 16)
 	nombre_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	nombre_lbl.tooltip_text = "Doble clic para editar / añadir nota"
 	fila.add_child(nombre_lbl)
+
+	# Badge de respuestas pendientes — solo si el alumno tiene alguna esperando
+	# corrección. Va antes del LV para que destaque más.
+	var alumno_id = GameManager.id_int(alu.get("id"))
+	var n_pendientes = int(_pendientes_por_alumno.get(alumno_id, 0))
+	if n_pendientes > 0:
+		var badge_pend := PanelContainer.new()
+		badge_pend.add_theme_stylebox_override("panel", _styles_node.get_meta("sb_badge_pend"))
+		badge_pend.size_flags_horizontal = Control.SIZE_SHRINK_END
+		badge_pend.tooltip_text = "%d respuesta(s) pendiente(s) de corregir" % n_pendientes
+		var pend_lbl := Label.new()
+		pend_lbl.text = "! %d" % n_pendientes
+		pend_lbl.add_theme_color_override("font_color", Color(1, 0.55, 0.55, 1))
+		pend_lbl.add_theme_font_size_override("font_size", 14)
+		badge_pend.add_child(pend_lbl)
+		fila.add_child(badge_pend)
 
 	var badge := PanelContainer.new()
 	badge.add_theme_stylebox_override("panel", _styles_node.get_meta("sb_badge_lv"))
@@ -261,6 +290,37 @@ func _on_card_alumno_input(event: InputEvent, card: Control):
 func _limpiar_contenedor(cont: Container):
 	for c in cont.get_children():
 		c.queue_free()
+
+# =====================================================================
+# PENDIENTES DE CORRECCIÓN — contador global por alumno para el badge
+# =====================================================================
+
+func _cargar_pendientes_global():
+	ConexionManager.peticion_get("/respuestas/pendientes-correccion", _on_pendientes_globales_recibidas)
+
+func _on_pendientes_globales_recibidas(data, code):
+	_pendientes_por_alumno.clear()
+	if code == 200 and data is Array:
+		for r in data:
+			var alumno_id = GameManager.id_int(r.get("alumnoId", -1))
+			if alumno_id < 0:
+				continue
+			_pendientes_por_alumno[alumno_id] = int(_pendientes_por_alumno.get(alumno_id, 0)) + 1
+	# Si ya hay un aula seleccionada con alumnos pintados, los repintamos con
+	# el badge actualizado. Si aún no, se aplicará en el primer pintado.
+	if aula_seleccionada_idx >= 0 and not alumnos_data.is_empty():
+		_repintar_alumnos()
+
+func _repintar_alumnos():
+	_limpiar_contenedor(contenedor_alumnos)
+	if alumnos_data.is_empty():
+		var vacio = Label.new()
+		vacio.text = "(Aula vacía)"
+		vacio.add_theme_color_override("font_color", COLOR_MUTED)
+		contenedor_alumnos.add_child(vacio)
+		return
+	for alu in alumnos_data:
+		contenedor_alumnos.add_child(_crear_card_alumno(alu))
 
 # =====================================================================
 # GENERACIÓN MASIVA / AÑADIR ALUMNO
@@ -403,7 +463,7 @@ func _on_puntuaciones_recibidas(data, code):
 
 	var agregados: Dictionary = {}
 	for p in data:
-		var nombre = str(p.get("nombreUsuario", "Alumno"))
+		var nombre = GameManager.nombre_alumno(p)
 		var puntos_raw = p.get("puntosObtenidos")
 		var puntos = 0 if puntos_raw == null else int(puntos_raw)
 		var nivel_raw = p.get("nivelActual")
@@ -579,23 +639,57 @@ func _on_abrir_estadisticas():
 	vbox_estadisticas.visible = true
 	panel_flotante.visible = true
 
-	tree_stats.clear()
-	tree_stats.set_column_title(0, "Pregunta")
-	tree_stats.set_column_title(1, "Saltadas")
-	tree_stats.set_column_title(2, "Contestadas")
-	tree_stats.set_column_title(3, "Total")
-	tree_stats.set_column_expand(0, true)
-	tree_stats.set_column_expand(1, false)
-	tree_stats.set_column_expand(2, false)
-	tree_stats.set_column_expand(3, false)
+	# Reset del toggle: por defecto entramos en modo "Por pregunta".
+	chk_por_alumno.set_pressed_no_signal(false)
+	_modo_stats = "PREGUNTA"
+	_configurar_columnas_stats()
 
 	cmb_pruebas_stats.clear()
 	cmb_pruebas_stats.add_item("Cargando...")
 	pruebas_stats.clear()
+	# Precargamos las puntuaciones del aula para la vista "Por alumno".
+	# Como el aula puede tener muchas pruebas, así una sola petición sirve para
+	# cualquier prueba que se seleccione luego.
+	_puntuaciones_aula_cache.clear()
+	ConexionManager.peticion_get(
+		"/puntuacion/aula/%s" % GameManager.aula_seleccionada_id,
+		_on_puntuaciones_para_stats
+	)
 	ConexionManager.peticion_get(
 		"/pruebas/aula/%s" % GameManager.aula_seleccionada_id,
 		_on_pruebas_para_stats
 	)
+
+func _configurar_columnas_stats():
+	if _modo_stats == "ALUMNO":
+		tree_stats.columns = 3
+		tree_stats.set_column_title(0, "Alumno")
+		tree_stats.set_column_title(1, "Puntos")
+		tree_stats.set_column_title(2, "Pendientes")
+		tree_stats.set_column_expand(0, true)
+		tree_stats.set_column_expand(1, false)
+		tree_stats.set_column_expand(2, false)
+		lbl_hint_stats.text = "Puntos obtenidos por alumno en la prueba seleccionada. \"Pendientes\" = respuestas suyas aún por corregir."
+	else:
+		tree_stats.columns = 4
+		tree_stats.set_column_title(0, "Pregunta")
+		tree_stats.set_column_title(1, "Saltadas")
+		tree_stats.set_column_title(2, "Contestadas")
+		tree_stats.set_column_title(3, "Total")
+		tree_stats.set_column_expand(0, true)
+		tree_stats.set_column_expand(1, false)
+		tree_stats.set_column_expand(2, false)
+		tree_stats.set_column_expand(3, false)
+		lbl_hint_stats.text = "Las preguntas con más \"saltadas\" salen arriba — son las que conviene revisar."
+
+func _on_puntuaciones_para_stats(data, code):
+	if code == 200 and data is Array:
+		_puntuaciones_aula_cache = data
+	else:
+		_puntuaciones_aula_cache = []
+	# Si ya estamos en modo alumno con una prueba elegida, repintamos.
+	if _modo_stats == "ALUMNO" and cmb_pruebas_stats.selected >= 0 and not pruebas_stats.is_empty():
+		_pintar_stats_por_alumno()
 
 func _on_pruebas_para_stats(data, code):
 	cmb_pruebas_stats.clear()
@@ -617,8 +711,19 @@ func _on_pruebas_para_stats(data, code):
 	cmb_pruebas_stats.selected = 0
 	_on_prueba_stats_elegida(0)
 
+func _on_toggle_modo_stats(presionado: bool):
+	_modo_stats = "ALUMNO" if presionado else "PREGUNTA"
+	_configurar_columnas_stats()
+	# Repintamos lo que toque, sin re-pedir si ya hay datos.
+	if pruebas_stats.is_empty() or cmb_pruebas_stats.selected < 0:
+		return
+	_on_prueba_stats_elegida(cmb_pruebas_stats.selected)
+
 func _on_prueba_stats_elegida(idx: int):
 	if idx < 0 or idx >= pruebas_stats.size():
+		return
+	if _modo_stats == "ALUMNO":
+		_pintar_stats_por_alumno()
 		return
 	var prueba = pruebas_stats[idx]
 	var prueba_id = GameManager.id_str(prueba.get("id"))
@@ -629,6 +734,10 @@ func _on_prueba_stats_elegida(idx: int):
 	ConexionManager.peticion_get("/pruebas/%s/estadisticas" % prueba_id, _on_stats_recibidas)
 
 func _on_stats_recibidas(data, code):
+	# Si el profesor ha cambiado a "por alumno" mientras llegaba la respuesta,
+	# ignoramos para no pisar la vista activa.
+	if _modo_stats != "PREGUNTA":
+		return
 	tree_stats.clear()
 	var root = tree_stats.create_item()
 	if code != 200 or not (data is Array):
@@ -655,6 +764,53 @@ func _on_stats_recibidas(data, code):
 			item.set_custom_color(1, Color(1, 0.55, 0.4, 1))
 		elif saltadas > 0:
 			item.set_custom_color(1, Color(1, 0.85, 0.4, 1))
+
+# Vista "Por alumno": filtra _puntuaciones_aula_cache por la prueba seleccionada
+# y muestra puntos por alumno, más cuántas pendientes de corrección tiene en
+# total (de cualquier prueba — sirve como aviso global).
+func _pintar_stats_por_alumno():
+	tree_stats.clear()
+	var root = tree_stats.create_item()
+	if cmb_pruebas_stats.selected < 0 or pruebas_stats.is_empty():
+		var item = tree_stats.create_item(root)
+		item.set_text(0, "Selecciona una prueba")
+		return
+	var prueba = pruebas_stats[cmb_pruebas_stats.selected]
+	var prueba_id = GameManager.id_int(prueba.get("id"))
+	if _puntuaciones_aula_cache.is_empty():
+		var item = tree_stats.create_item(root)
+		item.set_text(0, "Cargando puntuaciones...")
+		return
+	# Filtramos las puntuaciones de la prueba seleccionada y agrupamos por
+	# alumno por si hubiera duplicados (no debería, pero defensivo).
+	var por_alumno: Dictionary = {}
+	for p in _puntuaciones_aula_cache:
+		if GameManager.id_int(p.get("pruebaId", -1)) != prueba_id:
+			continue
+		var alumno_id = GameManager.id_int(p.get("alumnoId", -1))
+		if alumno_id < 0:
+			continue
+		if not por_alumno.has(alumno_id):
+			por_alumno[alumno_id] = {
+				"nombre": GameManager.nombre_alumno(p),
+				"puntos": 0
+			}
+		por_alumno[alumno_id]["puntos"] += int(p.get("puntosObtenidos", 0))
+	if por_alumno.is_empty():
+		var item = tree_stats.create_item(root)
+		item.set_text(0, "Ningún alumno ha completado esta prueba todavía")
+		return
+	# Orden descendente por puntos para que destaquen quienes la han bordado.
+	var ordenados: Array = por_alumno.keys()
+	ordenados.sort_custom(func(a, b): return por_alumno[a]["puntos"] > por_alumno[b]["puntos"])
+	for alumno_id in ordenados:
+		var item = tree_stats.create_item(root)
+		item.set_text(0, str(por_alumno[alumno_id]["nombre"]))
+		item.set_text(1, str(por_alumno[alumno_id]["puntos"]))
+		var n_pend = int(_pendientes_por_alumno.get(alumno_id, 0))
+		item.set_text(2, str(n_pend) if n_pend > 0 else "—")
+		if n_pend > 0:
+			item.set_custom_color(2, Color(1, 0.55, 0.55, 1))
 
 func _on_historial_notas(data, code, alumno_id: int):
 	historial_notas.clear()

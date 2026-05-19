@@ -10,10 +10,13 @@ public class PuntuacionResponseDTO {
     private Instant fechaCompletado;
     private Integer puntosObtenidos;
     private String nombreUsuario;
+    private String nombreReal;
+    private String apellidos;
     private String tituloPrueba;
     private Integer nivelActual;
     private Integer experienciaActual;
     private String motivo;
     private String tipoPrueba;
     private Long alumnoId;
+    private Long pruebaId;
 }

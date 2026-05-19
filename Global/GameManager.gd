@@ -102,6 +102,24 @@ func id_int(valor) -> int:
 		return int(float(valor))
 	return int(valor)
 
+# Devuelve el nombre legible de un alumno a partir de un dict con cualquier
+# combinación de nombreReal/apellidos/nombreUsuario/alumnoId. Pensado para que
+# el profesor vea "Juan García" en lugar de "alumno_aula1_3".
+func nombre_alumno(data: Dictionary) -> String:
+	var nombre := str(data.get("nombreReal", "")).strip_edges()
+	var apellidos := str(data.get("apellidos", "")).strip_edges()
+	var completo := (nombre + " " + apellidos).strip_edges()
+	if not completo.is_empty():
+		return completo
+	var usuario := str(data.get("nombreUsuario", "")).strip_edges()
+	if not usuario.is_empty():
+		return usuario
+	var alumno_id = data.get("alumnoId", data.get("id", -1))
+	var aid := id_int(alumno_id)
+	if aid >= 0:
+		return "Alumno %d" % aid
+	return "Alumno"
+
 # Aplica los datos devueltos por /puntuacion/alta sobre el usuario_actual
 # y devuelve true si el alumno ha subido de nivel.
 func aplicar_recompensa(data) -> bool:

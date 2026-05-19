@@ -108,6 +108,22 @@ content_margin_top = 3.0
 content_margin_right = 10.0
 content_margin_bottom = 3.0
 
+[sub_resource type="StyleBoxFlat" id="SB_BadgePend"]
+bg_color = Color(0.18, 0.04, 0.04, 0.65)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.35, 0.35, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 10.0
+content_margin_top = 3.0
+content_margin_right = 10.0
+content_margin_bottom = 3.0
+
 [sub_resource type="StyleBoxFlat" id="SB_CTA"]
 bg_color = Color(1, 0.176, 0.835, 0.95)
 border_width_left = 0
@@ -618,6 +634,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 38)
 
+[node name="ChkPorAlumno" type="CheckButton" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/HBoxSelectorPrueba"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 38)
+text = "Ver por alumno"
+theme_override_colors/font_color = Color(0.925, 0.937, 1, 1)
+
 [node name="LblHintStats" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.55)
@@ -816,3 +838,4 @@ metadata/sb_aula_activa = SubResource("SB_AulaActiva")
 metadata/sb_alumno_card = SubResource("SB_AlumnoCard")
 metadata/sb_alumno_hover = SubResource("SB_AlumnoHover")
 metadata/sb_badge_lv = SubResource("SB_BadgeLv")
+metadata/sb_badge_pend = SubResource("SB_BadgePend")

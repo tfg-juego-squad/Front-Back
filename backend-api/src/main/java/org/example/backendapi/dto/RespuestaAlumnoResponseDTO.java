@@ -18,6 +18,8 @@ public class RespuestaAlumnoResponseDTO {
     // Datos derivados para que la pantalla de corrección no tenga que hacer
     // peticiones extra por cada respuesta pendiente (alumno + pregunta + prueba).
     private String nombreUsuario;
+    private String nombreReal;
+    private String apellidos;
     private String enunciadoPregunta;
     private Integer valorPuntosPregunta;
     private String tituloPrueba;
