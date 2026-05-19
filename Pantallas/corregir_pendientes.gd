@@ -88,7 +88,10 @@ func _corregir(resp_id: int, puntos: int, tarjeta: Node):
 		_on_correccion_enviada.bind(puntos, tarjeta)
 	)
 
-func _on_correccion_enviada(puntos: int, tarjeta: Node, data, code):
+func _on_correccion_enviada(data, code, puntos: int, tarjeta: Node):
+	# Callable.bind añade puntos/tarjeta AL FINAL: ConexionManager llama el
+	# callback con (data, code) y los args bindeados van detrás. Antes el orden
+	# estaba al revés y rompía el tipado tras corregir cualquier respuesta.
 	if code == 200 or code == 201:
 		Notificador.notificar("Corregida con %d puntos" % puntos, Color.GREEN)
 		tarjeta.queue_free()

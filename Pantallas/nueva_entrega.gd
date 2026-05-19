@@ -53,6 +53,11 @@ var _preguntas_payload: Array = []
 var _prueba_id_actual: int = -1
 var _npc_seleccionado: String = ""
 var _adjunto_path: String = ""
+# Contadores para el reporte final cuando se sube la cola de preguntas. Si
+# alguna falla, seguimos con la siguiente en lugar de cortar la cola en seco
+# (antes una pregunta rota dejaba la prueba a medio crear sin avisar bien).
+var _preguntas_total: int = 0
+var _preguntas_fallidas: int = 0
 
 func _ready():
 	btn_volver.pressed.connect(_on_volver)
@@ -807,13 +812,22 @@ func _on_prueba_guardada(data, code):
 		get_tree().change_scene_to_file("res://Pantallas/profesor_dashboard.tscn")
 		return
 
-	Notificador.notificar("Subiendo preguntas (%d)..." % _preguntas_payload.size(), Color.CYAN)
+	_preguntas_total = _preguntas_payload.size()
+	_preguntas_fallidas = 0
+	Notificador.notificar("Subiendo preguntas (%d)..." % _preguntas_total, Color.CYAN)
 	_enviar_siguiente_pregunta(1)
 
 func _enviar_siguiente_pregunta(num: int):
 	if _preguntas_payload.is_empty():
-		Notificador.notificar("Prueba y preguntas creadas con éxito", Color.GREEN)
-		await get_tree().create_timer(1.2).timeout
+		var subidas = _preguntas_total - _preguntas_fallidas
+		if _preguntas_fallidas == 0:
+			Notificador.notificar("Prueba y preguntas creadas con éxito", Color.GREEN)
+		else:
+			Notificador.notificar(
+				"Subidas %d/%d preguntas (%d fallaron)" % [subidas, _preguntas_total, _preguntas_fallidas],
+				Color.ORANGE
+			)
+		await get_tree().create_timer(1.6).timeout
 		get_tree().change_scene_to_file("res://Pantallas/profesor_dashboard.tscn")
 		return
 
@@ -830,13 +844,15 @@ func _enviar_siguiente_pregunta(num: int):
 
 func _on_pregunta_guardada(data, code, num: int):
 	# Callable.bind añade el num al final, por eso este orden.
-	if code == 200 or code == 201:
-		_enviar_siguiente_pregunta(num + 1)
-	else:
+	# Si una pregunta falla, anotamos el fallo pero SEGUIMOS con la siguiente
+	# para no dejar la prueba a medio crear sin avisar al profesor.
+	if not (code == 200 or code == 201):
+		_preguntas_fallidas += 1
 		Notificador.notificar(
 			"Error en pregunta %d: %s" % [num, ConexionManager.mensaje_error(data, code)],
 			Color.RED
 		)
+	_enviar_siguiente_pregunta(num + 1)
 
 func _on_volver():
 	get_tree().change_scene_to_file("res://Pantallas/profesor_dashboard.tscn")
