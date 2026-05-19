@@ -1080,10 +1080,8 @@ position = Vector2(3, 1)
 script = SubResource("GDScript_nivel")
 
 [node name="HUDAlumno" parent="." unique_id=1054642509 instance=ExtResource("1_hud")]
-visible = false
 
 [node name="MenuPausa" parent="." unique_id=1422402578 instance=ExtResource("1_pausa")]
-visible = false
 
 [node name="water" type="TileMapLayer" parent="." unique_id=1475603149]
 position = Vector2(-3, 0)
