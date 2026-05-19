@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POKEDUCATION · Presentación TFG</title>
+<style>
+  :root {
+    --bg: #0a0a14;
+    --bg-2: #11112a;
+    --surface: #1a1a35;
+    --surface-2: #232347;
+    --border: #2d2d5f;
+    --cyan: #00f0ff;
+    --magenta: #ff2dd5;
+    --gold: #ffd60a;
+    --text: #ecefff;
+    --muted: #8a8ab8;
+    --glow-cyan: 0 0 20px rgba(0, 240, 255, .35), 0 0 40px rgba(0, 240, 255, .15);
+    --glow-magenta: 0 0 20px rgba(255, 45, 213, .35), 0 0 40px rgba(255, 45, 213, .15);
+    --glow-gold: 0 0 20px rgba(255, 214, 10, .35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.55;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse at top left, rgba(0, 240, 255, .08), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(255, 45, 213, .08), transparent 55%),
+      var(--bg);
+    min-height: 100vh;
+  }
+
+  /* ===== Estructura general slide ===== */
+  .slide {
+    min-height: 100vh;
+    padding: 80px 8vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+  }
+  .slide-num {
+    position: absolute;
+    top: 32px;
+    right: 8vw;
+    font-family: 'Consolas', monospace;
+    color: var(--muted);
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+  .slide-label {
+    position: absolute;
+    top: 32px;
+    left: 8vw;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .slide-label::before {
+    content: '◆ ';
+    color: var(--magenta);
+  }
+
+  /* ===== Tipografía ===== */
+  h1, h2, h3 { font-weight: 800; letter-spacing: -.02em; }
+  h1 { font-size: clamp(48px, 7vw, 96px); line-height: 1; }
+  h2 { font-size: clamp(36px, 4.5vw, 64px); line-height: 1.05; margin-bottom: 24px; }
+  h3 { font-size: clamp(20px, 1.8vw, 28px); margin-bottom: 12px; }
+  p  { font-size: clamp(16px, 1.2vw, 19px); color: var(--text); }
+  .lead { font-size: clamp(18px, 1.4vw, 22px); color: var(--muted); max-width: 720px; }
+
+  .grad-text {
+    background: linear-gradient(90deg, var(--cyan), var(--magenta) 60%, var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .cyan { color: var(--cyan); }
+  .magenta { color: var(--magenta); }
+  .gold { color: var(--gold); }
+
+  /* ===== Hero ===== */
+  .hero { text-align: center; align-items: center; }
+  .hero-eyebrow {
+    font-family: 'Consolas', monospace;
+    letter-spacing: 6px;
+    color: var(--cyan);
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+  .hero h1 { margin-bottom: 16px; }
+  .hero .tagline {
+    font-size: clamp(20px, 2vw, 28px);
+    color: var(--muted);
+    margin-bottom: 56px;
+    font-weight: 300;
+  }
+  .hero-divider {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+    margin: 24px auto;
+    border-radius: 2px;
+  }
+  .hero-authors {
+    display: flex;
+    gap: 64px;
+    justify-content: center;
+    margin-top: 32px;
+  }
+  .author-chip {
+    text-align: center;
+  }
+  .author-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--bg);
+    box-shadow: var(--glow-cyan);
+  }
+  .author-chip .name { font-weight: 700; font-size: 18px; }
+  .author-chip .role { color: var(--muted); font-size: 13px; }
+
+  .hero-meta {
+    margin-top: 80px;
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    color: var(--muted);
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+  .hero-meta span::before { content: '· '; color: var(--cyan); margin-right: 6px; }
+
+  /* ===== Tarjetas ===== */
+  .card {
+    background: linear-gradient(135deg, rgba(26,26,53,.85), rgba(35,35,71,.65));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    backdrop-filter: blur(10px);
+    transition: border-color .3s ease, transform .3s ease;
+  }
+  .card:hover { border-color: var(--cyan); transform: translateY(-2px); }
+  .card .ico {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 18px;
+    background: rgba(0, 240, 255, .1);
+    color: var(--cyan);
+    border: 1px solid rgba(0, 240, 255, .25);
+  }
+  .card.magenta .ico { background: rgba(255, 45, 213, .1); color: var(--magenta); border-color: rgba(255, 45, 213, .25); }
+  .card.gold    .ico { background: rgba(255, 214, 10, .1); color: var(--gold);    border-color: rgba(255, 214, 10, .25); }
+  .card p { color: var(--muted); font-size: 15px; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  @media (max-width: 900px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Slide 2: problema ===== */
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; align-items: center; }
+  @media (max-width: 1000px) { .split { grid-template-columns: 1fr; } }
+
+  .stats { display: flex; gap: 32px; margin-top: 32px; flex-wrap: wrap; }
+  .stat .n {
+    font-size: 64px;
+    font-weight: 800;
+    background: linear-gradient(180deg, var(--magenta), var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1;
+  }
+  .stat .lbl { color: var(--muted); font-size: 14px; margin-top: 6px; max-width: 160px; }
+
+  .pain-list { list-style: none; }
+  .pain-list li {
+    padding: 14px 0;
+    border-bottom: 1px dashed var(--border);
+    color: var(--text);
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pain-list li::before {
+    content: '✕';
+    color: var(--magenta);
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  /* ===== Slide 3: solución ===== */
+  .pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 48px; }
+  @media (max-width: 900px) { .pillars { grid-template-columns: repeat(2, 1fr); } }
+  .pillar {
+    text-align: center;
+    padding: 32px 20px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.02);
+    border: 1px solid var(--border);
+  }
+  .pillar .big {
+    font-size: 40px;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .pillar h3 { font-size: 18px; }
+  .pillar p { font-size: 14px; color: var(--muted); }
+
+  /* ===== Stack tech ===== */
+  .stack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 32px; }
+  @media (max-width: 900px) { .stack-grid { grid-template-columns: 1fr; } }
+  .stack-col h3 {
+    color: var(--cyan);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .stack-col.magenta h3 { color: var(--magenta); }
+  .tech-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px dashed rgba(255,255,255,.05);
+  }
+  .tech-row .name { font-weight: 600; }
+  .tech-row .v { color: var(--muted); font-family: 'Consolas', monospace; font-size: 14px; }
+
+  /* ===== Arquitectura ===== */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 32px;
+  }
+  @media (max-width: 900px) { .arch-grid { grid-template-columns: repeat(2, 1fr); } }
+  .folder {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .folder .path {
+    font-family: 'Consolas', monospace;
+    color: var(--cyan);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .folder .desc { font-size: 13px; color: var(--muted); }
+
+  .autoloads {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 900px) { .autoloads { grid-template-columns: repeat(2, 1fr); } }
+  .autoload {
+    text-align: center;
+    padding: 24px 16px;
+    background: linear-gradient(180deg, rgba(0,240,255,.08), transparent);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .autoload .label {
+    font-family: 'Consolas', monospace;
+    color: var(--gold);
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .autoload h4 { font-size: 18px; margin-bottom: 6px; }
+  .autoload p { font-size: 13px; color: var(--muted); }
+
+  /* ===== Galería mockups ===== */
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 32px; }
+  @media (max-width: 900px) { .gallery { grid-template-columns: 1fr; } }
+  .mockup {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color .3s, transform .3s;
+  }
+  .mockup:hover { border-color: var(--cyan); transform: translateY(-4px); }
+  .mockup-frame {
+    aspect-ratio: 16/10;
+    background: linear-gradient(135deg, #0d0d22, #1a1a3a);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 14px;
+    overflow: hidden;
+  }
+  .mockup-frame::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 24px;
+    background: rgba(0,0,0,.4);
+    border-bottom: 1px solid var(--border);
+  }
+  .mockup-frame::after {
+    content: '● ● ●';
+    position: absolute;
+    top: 4px; left: 10px;
+    color: var(--magenta);
+    font-size: 8px;
+    letter-spacing: 4px;
+  }
+  .mockup-caption {
+    padding: 16px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .mockup-caption h4 { font-size: 16px; margin-bottom: 4px; }
+  .mockup-caption p  { font-size: 13px; color: var(--muted); }
+
+  .placeholder-note {
+    position: absolute;
+    inset: 24px 0 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    text-align: center;
+    padding: 16px;
+    opacity: .6;
+  }
+
+  /* ===== Mockup interno: login ===== */
+  .mk-login {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    justify-content: center;
+  }
+  .mk-login .logo { color: var(--cyan); font-weight: 800; font-size: 16px; letter-spacing: 2px; }
+  .mk-input { width: 70%; height: 18px; background: rgba(255,255,255,.06); border-radius: 4px; border: 1px solid var(--border); }
+  .mk-btn { width: 70%; height: 22px; background: linear-gradient(90deg, var(--cyan), var(--magenta)); border-radius: 4px; }
+
+  /* ===== Mockup interno: dashboard ===== */
+  .mk-dash {
+    margin-top: 32px;
+    flex: 1;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 8px;
+  }
+  .mk-dash .side { background: rgba(0,240,255,.08); border-radius: 4px; }
+  .mk-dash .main { display: grid; grid-template-rows: 18px 1fr; gap: 8px; }
+  .mk-dash .top { background: rgba(255,255,255,.06); border-radius: 4px; }
+  .mk-dash .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .mk-dash .cards div { background: rgba(255,45,213,.1); border: 1px solid rgba(255,45,213,.3); border-radius: 4px; }
+
+  /* ===== Mockup HUD ===== */
+  .mk-hud {
+    flex: 1;
+    margin-top: 32px;
+    position: relative;
+    background: linear-gradient(180deg, #0a2a1a, #0a0a14);
+    border-radius: 4px;
+  }
+  .mk-hud::before {
+    content: '';
+    position: absolute;
+    inset: 30% 30%;
+    background: radial-gradient(circle, var(--cyan), transparent);
+    opacity: .5;
+    border-radius: 50%;
+  }
+  .mk-hud .xp {
+    position: absolute;
+    bottom: 12px; left: 12px; right: 12px;
+    height: 8px;
+    background: rgba(0,0,0,.4);
+    border: 1px solid var(--cyan);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mk-hud .xp::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 65%;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+  }
+  .mk-hud .lvl {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: var(--gold);
+    color: #000;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ===== Minijuegos ===== */
+  .mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 40px; }
+  @media (max-width: 900px) { .mini-grid { grid-template-columns: 1fr; } }
+  .mini {
+    background: linear-gradient(180deg, var(--surface) 0%, var(--bg-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .3s, border-color .3s;
+  }
+  .mini:hover { transform: translateY(-4px); border-color: var(--cyan); }
+  .mini::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+  }
+  .mini .tag {
+    display: inline-block;
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .mini h3 { font-size: 24px; margin-bottom: 12px; }
+  .mini p  { color: var(--muted); font-size: 14px; }
+  .mini .visual {
+    margin: 20px 0;
+    height: 120px;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .mini-esquiva .visual { background: radial-gradient(circle at 30% 50%, rgba(0,240,255,.2), transparent 60%); }
+  .mini-esquiva .visual::before {
+    content: '';
+    width: 14px; height: 14px;
+    background: var(--cyan);
+    border-radius: 50%;
+    box-shadow: 30px 0 0 var(--magenta), -40px 10px 0 var(--gold), 50px -20px 0 var(--magenta);
+  }
+  .mini-hotline .visual { background: linear-gradient(135deg, rgba(255,45,213,.15), transparent); }
+  .mini-hotline .visual::before {
+    content: '◉';
+    color: var(--magenta);
+    font-size: 36px;
+    text-shadow: var(--glow-magenta);
+  }
+  .mini-secuencia .visual {
+    background: rgba(255,214,10,.05);
+  }
+  .mini-secuencia .visual::before {
+    content: '';
+    width: 100px; height: 60px;
+    background:
+      linear-gradient(90deg, var(--cyan) 24%, transparent 25% 49%, var(--magenta) 50% 74%, transparent 75% 99%, var(--gold) 100%);
+    background-size: 25% 100%;
+    border-radius: 6px;
+    opacity: .8;
+  }
+  .mini ul { list-style: none; margin-top: 14px; }
+  .mini li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 4px 0;
+  }
+  .mini li::before {
+    content: '▸ ';
+    color: var(--cyan);
+  }
+
+  /* ===== Conclusiones ===== */
+  .learn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+  @media (max-width: 900px) { .learn-grid { grid-template-columns: 1fr; } }
+  .learn {
+    padding: 28px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(0,240,255,.06), transparent);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--cyan);
+  }
+  .learn:nth-child(2) {
+    background: linear-gradient(135deg, rgba(255,45,213,.06), transparent);
+    border-left-color: var(--magenta);
+  }
+  .learn:nth-child(3) {
+    background: linear-gradient(135deg, rgba(255,214,10,.06), transparent);
+    border-left-color: var(--gold);
+  }
+  .learn h3 { font-size: 18px; margin-bottom: 8px; }
+  .learn p { color: var(--muted); font-size: 14px; }
+
+  /* ===== Cierre ===== */
+  .ending {
+    text-align: center;
+    align-items: center;
+  }
+  .ending .big-thanks {
+    font-size: clamp(80px, 12vw, 180px);
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .ending .signature {
+    color: var(--muted);
+    font-family: 'Consolas', monospace;
+    letter-spacing: 4px;
+    font-size: 13px;
+    margin-top: 48px;
+  }
+  .qr-placeholder {
+    width: 140px;
+    height: 140px;
+    margin: 32px auto 0;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'Consolas', monospace;
+    text-align: center;
+    padding: 10px;
+  }
+
+  /* ===== Glow util ===== */
+  .glow { text-shadow: var(--glow-cyan); }
+
+  /* ===== Spotlight slides (detalles por función) ===== */
+  .spot-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 48px;
+    margin-top: 32px;
+    align-items: start;
+  }
+  @media (max-width: 1000px) { .spot-grid { grid-template-columns: 1fr; } }
+
+  .spot-aside {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px;
+  }
+  .spot-aside h4 {
+    font-size: 11px;
+    font-family: 'Consolas', monospace;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .spot-aside .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 14px;
+    gap: 16px;
+  }
+  .spot-aside .row:last-child { border-bottom: none; }
+  .spot-aside .row .k { color: var(--muted); }
+  .spot-aside .row .v { font-family: 'Consolas', monospace; color: var(--text); text-align: right; }
+  .spot-aside .pill-list {
+    list-style: none;
+    margin-top: 8px;
+  }
+  .spot-aside .pill-list li {
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background: rgba(0, 240, 255, .06);
+    border: 1px solid rgba(0, 240, 255, .2);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  /* Horizontal flow */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .flow-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    min-width: 140px;
+    text-align: center;
+    flex: 1;
+    transition: border-color .3s, transform .3s;
+  }
+  .flow-node:hover { border-color: var(--cyan); transform: translateY(-2px); }
+  .flow-node.accent { border-color: var(--magenta); background: linear-gradient(135deg, rgba(255,45,213,.08), var(--surface)); }
+  .flow-node .step {
+    display: block;
+    font-family: 'Consolas', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .flow-node .lbl { font-size: 14px; font-weight: 700; }
+  .flow-node .sub { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: 'Consolas', monospace; }
+  .flow-arrow {
+    color: var(--cyan);
+    font-size: 22px;
+    font-weight: bold;
+    flex: 0;
+  }
+
+  /* Branch arrow */
+  .flow-branch {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 30px;
+    border-left: 2px dashed var(--magenta);
+  }
+  .flow-branch .branch-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    border-left: 3px solid var(--gold);
+  }
+  .flow-branch .branch-item .role { color: var(--gold); font-weight: 700; font-family: 'Consolas', monospace; font-size: 12px; letter-spacing: 2px; margin-right: 12px; }
+
+  /* Vertical steps */
+  .steps-v {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .step-v {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 18px;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    border-left: 3px solid var(--cyan);
+  }
+  .step-v .num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    color: var(--bg);
+    font-size: 14px;
+  }
+  .step-v h4 { font-size: 15px; margin-bottom: 2px; }
+  .step-v p { font-size: 13px; color: var(--muted); }
+
+  /* Big wireframe (dashboard) */
+  .wf {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    grid-template-rows: 48px 1fr;
+    gap: 12px;
+    height: 420px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .wf-header {
+    grid-column: 1 / -1;
+    background: linear-gradient(90deg, rgba(0,240,255,.1), transparent);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    color: var(--cyan);
+  }
+  .wf-side {
+    background: rgba(255,255,255,.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .wf-side .ttl { font-family: 'Consolas', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 4px; }
+  .wf-side .item {
+    padding: 8px 12px;
+    background: rgba(0,240,255,.06);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--cyan);
+    font-family: 'Consolas', monospace;
+  }
+  .wf-side .item.active { background: var(--cyan); color: var(--bg); font-weight: 700; }
+  .wf-main {
+    background: rgba(255,255,255,.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+  .wf-main .ttl { font-family: 'Consolas', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 6px; }
+  .wf-main .alumno {
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .wf-main .alumno .lvl-mini { font-size: 10px; color: var(--gold); font-family: 'Consolas', monospace; padding: 2px 8px; border: 1px solid var(--gold); border-radius: 4px; }
+  .wf-main .cta {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, var(--magenta), var(--cyan));
+    color: var(--bg);
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 12px;
+    box-shadow: var(--glow-magenta);
+  }
+
+  /* Anatomy (HUD) */
+  .anatomy {
+    display: grid;
+    grid-template-columns: 1fr 420px 1fr;
+    gap: 28px;
+    align-items: center;
+  }
+  @media (max-width: 1100px) { .anatomy { grid-template-columns: 1fr; } }
+  .anatomy-center {
+    aspect-ratio: 16/10;
+    background: linear-gradient(135deg, #0a2818, #050518);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .anatomy-center::before {
+    content: '';
+    position: absolute;
+    top: 38%; left: 45%;
+    width: 24px; height: 24px;
+    background: var(--cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 20px var(--cyan);
+  }
+  .anatomy-center .a-lvl {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: var(--gold);
+    color: #000;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 6px;
+  }
+  .anatomy-center .a-xp {
+    position: absolute;
+    bottom: 50px; left: 14px; right: 14px;
+    height: 12px;
+    background: rgba(0,0,0,.5);
+    border: 1px solid var(--cyan);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .anatomy-center .a-xp::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 65%;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+  }
+  .anatomy-center .a-tareas {
+    position: absolute;
+    bottom: 14px; left: 14px; right: 14px;
+    height: 26px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'Consolas', monospace;
+    letter-spacing: 1px;
+  }
+  .anatomy-labels { display: flex; flex-direction: column; gap: 14px; }
+  .anatomy-label {
+    padding: 14px 16px;
+    background: var(--surface);
+    border-left: 3px solid var(--magenta);
+    border-radius: 0 10px 10px 0;
+  }
+  .anatomy-labels.right .anatomy-label {
+    border-left: none;
+    border-right: 3px solid var(--cyan);
+    border-radius: 10px 0 0 10px;
+    text-align: right;
+  }
+  .anatomy-label h5 { font-size: 13px; color: var(--magenta); margin-bottom: 4px; font-family: 'Consolas', monospace; letter-spacing: 1px; }
+  .anatomy-labels.right .anatomy-label h5 { color: var(--cyan); }
+  .anatomy-label p { font-size: 12px; color: var(--muted); }
+
+  /* Timeline (notificación lifecycle) */
+  .timeline {
+    margin-top: 48px;
+    position: relative;
+    padding: 60px 0 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 90px;
+    left: 5%; right: 5%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--gold));
+  }
+  .tl-track {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+  }
+  .tl-event {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+  }
+  .tl-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 3px solid var(--cyan);
+    z-index: 1;
+  }
+  .tl-event:nth-child(even) .tl-dot { border-color: var(--magenta); }
+  .tl-time {
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    margin-top: 6px;
+  }
+  .tl-label {
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    max-width: 130px;
+  }
+  .tl-desc {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 130px;
+    font-family: 'Consolas', monospace;
+  }
+
+  /* Map preview (NPC) */
+  .map-preview {
+    aspect-ratio: 16/9;
+    background:
+      linear-gradient(135deg, #0a2818 0%, #0a3a28 50%, #052818 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-preview .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,240,255,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,240,255,.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .map-preview .player {
+    position: absolute;
+    top: 50%; left: 35%;
+    width: 24px; height: 24px;
+    background: var(--cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 16px var(--cyan);
+  }
+  .map-preview .npc {
+    position: absolute;
+    top: 45%; left: 55%;
+    width: 24px; height: 24px;
+    background: var(--magenta);
+    border-radius: 4px;
+    box-shadow: 0 0 16px var(--magenta);
+  }
+  .map-preview .area {
+    position: absolute;
+    top: 38%; left: 48%;
+    width: 60px; height: 60px;
+    border: 2px dashed var(--cyan);
+    border-radius: 50%;
+    opacity: .5;
+  }
+  .map-preview .tooltip {
+    position: absolute;
+    top: 25%; left: 55%;
+    background: rgba(10,10,20,.95);
+    border: 1px solid var(--cyan);
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: var(--cyan);
+    font-size: 11px;
+    font-family: 'Consolas', monospace;
+  }
+
+  /* Notification preview */
+  .notif-preview {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: rgba(10, 10, 30, .7);
+    border: 1px solid var(--cyan);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--glow-cyan);
+    max-width: 360px;
+  }
+  .notif-preview .nt-ttl { color: var(--cyan); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .notif-preview .nt-msg { color: var(--text); font-size: 13px; }
+
+  /* ===== Print friendly ===== */
+  @media print {
+    .slide { page-break-after: always; min-height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =========================================== SLIDE 1: HERO -->
+<section class="slide hero">
+  <span class="slide-label">Trabajo Fin de Grado · 2º DAM</span>
+  <span class="slide-num">01 / 16</span>
+
+  <div class="hero-eyebrow">UN PROYECTO DE</div>
+  <h1 class="grad-text glow">POKEDUCATION</h1>
+  <div class="hero-divider"></div>
+  <p class="tagline">Aprender es subir de nivel</p>
+
+  <div class="hero-authors">
+    <div class="author-chip">
+      <div class="author-avatar">A</div>
+      <div class="name">Alex</div>
+      <div class="role">2º DAM</div>
+    </div>
+    <div class="author-chip">
+      <div class="author-avatar" style="background: linear-gradient(135deg, var(--magenta), var(--gold)); box-shadow: var(--glow-magenta);">D</div>
+      <div class="name">David</div>
+      <div class="role">2º DAM</div>
+    </div>
+  </div>
+
+  <div class="hero-meta">
+    <span>Godot 4.6</span>
+    <span>GDScript</span>
+    <span>Spring Boot</span>
+    <span>MariaDB</span>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 2: PROBLEMA -->
+<section class="slide">
+  <span class="slide-label">El contexto</span>
+  <span class="slide-num">02 / 16</span>
+
+  <div class="split">
+    <div>
+      <h2>El aula tradicional <span class="magenta">no engancha</span>.</h2>
+      <p class="lead">Los métodos clásicos de evaluación no consiguen captar la atención de un alumnado nativo digital. Los exámenes en papel se viven como un castigo, no como un reto.</p>
+
+      <ul class="pain-list" style="margin-top: 32px;">
+        <li>Desmotivación creciente del alumnado adolescente</li>
+        <li>Feedback lento y descontextualizado</li>
+        <li>Sin sentido de progreso ni de recompensa</li>
+        <li>Los profesores carecen de herramientas dinámicas</li>
+      </ul>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="n">73%</div>
+        <div class="lbl">de alumnos prefieren aprender jugando</div>
+      </div>
+      <div class="stat">
+        <div class="n">2x</div>
+        <div class="lbl">retención de contenidos con gamificación</div>
+      </div>
+      <div class="stat">
+        <div class="n">0</div>
+        <div class="lbl">plataformas que mezclen RPG + evaluación real</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 3: SOLUCIÓN -->
+<section class="slide">
+  <span class="slide-label">La propuesta</span>
+  <span class="slide-num">03 / 16</span>
+
+  <h2>Pokeducation es <span class="grad-text">una plataforma educativa</span><br>con alma de <span class="cyan">videojuego RPG</span>.</h2>
+  <p class="lead">Los profesores diseñan pruebas y misiones desde un panel web. Los alumnos las viven dentro de un mundo donde explorar, hablar con NPCs, ganar XP y subir de nivel forman parte del aprendizaje.</p>
+
+  <div class="pillars">
+    <div class="pillar">
+      <span class="big">🎮</span>
+      <h3>Mundo abierto</h3>
+      <p>Niveles explorables con NPCs y misiones</p>
+    </div>
+    <div class="pillar">
+      <span class="big">📊</span>
+      <h3>Dashboard pro</h3>
+      <p>El profesor gestiona aulas y entregas</p>
+    </div>
+    <div class="pillar">
+      <span class="big">⚡</span>
+      <h3>Sistema XP</h3>
+      <p>Cada respuesta correcta cuenta y desbloquea</p>
+    </div>
+    <div class="pillar">
+      <span class="big">🕹️</span>
+      <h3>Minijuegos</h3>
+      <p>Evaluaciones que se sienten como retos</p>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 4: STACK -->
+<section class="slide">
+  <span class="slide-label">Stack tecnológico</span>
+  <span class="slide-num">04 / 16</span>
+
+  <h2>Dos repos, <span class="cyan">una sola experiencia</span>.</h2>
+  <p class="lead">Frontend desacoplado del backend mediante una API REST. Cada parte hace lo que mejor sabe: Godot para la experiencia, Spring para los datos.</p>
+
+  <div class="stack-grid">
+    <div class="stack-col">
+      <h3>◆ Frontend · Godot</h3>
+      <div class="tech-row"><span class="name">Engine</span><span class="v">Godot 4.6</span></div>
+      <div class="tech-row"><span class="name">Lenguaje</span><span class="v">GDScript</span></div>
+      <div class="tech-row"><span class="name">UI</span><span class="v">Control nodes + Tweens</span></div>
+      <div class="tech-row"><span class="name">Estado global</span><span class="v">Autoloads (Singletons)</span></div>
+      <div class="tech-row"><span class="name">Persistencia local</span><span class="v">JSON</span></div>
+      <div class="tech-row"><span class="name">Red</span><span class="v">HTTPRequest (REST)</span></div>
+    </div>
+
+    <div class="stack-col magenta">
+      <h3>◆ Backend · API</h3>
+      <div class="tech-row"><span class="name">Framework</span><span class="v">Spring Boot 4.0</span></div>
+      <div class="tech-row"><span class="name">Lenguaje</span><span class="v">Java 17</span></div>
+      <div class="tech-row"><span class="name">Auth</span><span class="v">JWT</span></div>
+      <div class="tech-row"><span class="name">BBDD</span><span class="v">MariaDB</span></div>
+      <div class="tech-row"><span class="name">ORM</span><span class="v">Spring Data JPA</span></div>
+      <div class="tech-row"><span class="name">Deploy</span><span class="v">Docker Compose</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 5: ARQUITECTURA -->
+<section class="slide">
+  <span class="slide-label">Arquitectura del frontend</span>
+  <span class="slide-num">05 / 16</span>
+
+  <h2>Modular, escalable, <span class="gold">limpia</span>.</h2>
+  <p class="lead">Organización por responsabilidad. Cada carpeta sabe qué hace, y los singletons (Autoloads) centralizan el estado para que ninguna escena dependa de otra.</p>
+
+  <div class="arch-grid">
+    <div class="folder">
+      <div class="path">res://Global/</div>
+      <div class="desc">Autoloads y servicios globales</div>
+    </div>
+    <div class="folder">
+      <div class="path">res://Niveles/</div>
+      <div class="desc">Mundo, HUD, menú de pausa</div>
+    </div>
+    <div class="folder">
+      <div class="path">res://Pantallas/</div>
+      <div class="desc">Toda la UI: login, dashboard, minijuegos</div>
+    </div>
+    <div class="folder">
+      <div class="path">res://Assets/</div>
+      <div class="desc">Sprites, tilesets y texturas</div>
+    </div>
+  </div>
+
+  <div class="autoloads">
+    <div class="autoload">
+      <div class="label">AUTOLOAD #1</div>
+      <h4>GameManager</h4>
+      <p>Sesión, JWT, rol, XP y nivel</p>
+    </div>
+    <div class="autoload">
+      <div class="label">AUTOLOAD #2</div>
+      <h4>ConexionManager</h4>
+      <p>Capa HTTP centralizada</p>
+    </div>
+    <div class="autoload">
+      <div class="label">AUTOLOAD #3</div>
+      <h4>Notificador</h4>
+      <p>Toasts glassmorphism animados</p>
+    </div>
+    <div class="autoload">
+      <div class="label">AUTOLOAD #4</div>
+      <h4>NpcManager</h4>
+      <p>Catálogo de NPCs y asignaciones</p>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 6: CARACTERÍSTICAS -->
+<section class="slide">
+  <span class="slide-label">Características clave del frontend</span>
+  <span class="slide-num">06 / 16</span>
+
+  <h2>Lo que ya <span class="cyan">funciona</span>.</h2>
+
+  <div class="grid-3" style="margin-top: 40px;">
+    <div class="card">
+      <div class="ico">🔐</div>
+      <h3>Login & Registro</h3>
+      <p>Pantalla inicial conectada al backend con validación, JWT y enrutado por rol (profesor / alumno).</p>
+    </div>
+    <div class="card magenta">
+      <div class="ico">🧑‍🏫</div>
+      <h3>Dashboard Profesor</h3>
+      <p>Gestión de aulas y alumnos, creador de entregas con preguntas TEST y desarrollo, adjuntos y configuración fina.</p>
+    </div>
+    <div class="card gold">
+      <div class="ico">📋</div>
+      <h3>Nueva Entrega</h3>
+      <p>Constructor avanzado de exámenes con tipos mixtos, validaciones, puntos por pregunta y temporizadores.</p>
+    </div>
+    <div class="card">
+      <div class="ico">⭐</div>
+      <h3>HUD del Alumno</h3>
+      <p>Barra de XP, indicador de nivel, lista de tareas con toggle <code>TAB</code> y ranking en tiempo real.</p>
+    </div>
+    <div class="card magenta">
+      <div class="ico">🗺️</div>
+      <h3>Mapa con NPCs</h3>
+      <p>Nivel jugable con físicas, colisiones, interacción <code>E</code> con NPCs y misiones asignadas dinámicamente.</p>
+    </div>
+    <div class="card gold">
+      <div class="ico">✨</div>
+      <h3>Notificaciones Neón</h3>
+      <p>Sistema global de toasts con animaciones por Tween, glassmorphism y feedback en tiempo real.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 7: DETALLE LOGIN -->
+<section class="slide">
+  <span class="slide-label">Función 01 · Login & Registro</span>
+  <span class="slide-num">07 / 16</span>
+
+  <h2><span class="cyan">◆ Login</span> — autenticación con JWT y enrutado por rol.</h2>
+  <p class="lead">Una sola pantalla resuelve registro y acceso. El backend devuelve un token JWT que se guarda en el singleton GameManager, y el frontend decide a dónde llevar al usuario según su rol.</p>
+
+  <div class="spot-grid">
+    <div>
+      <div class="flow" style="margin-top: 16px;">
+        <div class="flow-node">
+          <span class="step">PASO 1</span>
+          <div class="lbl">Pantalla Login</div>
+          <div class="sub">login.tscn</div>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node">
+          <span class="step">PASO 2</span>
+          <div class="lbl">HTTP Request</div>
+          <div class="sub">POST /alta o /login</div>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node accent">
+          <span class="step">PASO 3</span>
+          <div class="lbl">Backend valida</div>
+          <div class="sub">JWT firmado</div>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node">
+          <span class="step">PASO 4</span>
+          <div class="lbl">Guardar sesión</div>
+          <div class="sub">GameManager</div>
+        </div>
+      </div>
+
+      <div class="flow-branch">
+        <div class="branch-item"><span class="role">PROFESOR →</span> profesor_dashboard.tscn</div>
+        <div class="branch-item"><span class="role">ALUMNO &nbsp;&nbsp;→</span> pantalla_carga.tscn → mapa nivel_01</div>
+      </div>
+    </div>
+
+    <aside class="spot-aside">
+      <h4>◆ Bajo el capó</h4>
+      <div class="row"><span class="k">Endpoint</span><span class="v">/tfg/usuarios</span></div>
+      <div class="row"><span class="k">Auth</span><span class="v">JWT (Bearer)</span></div>
+      <div class="row"><span class="k">Singleton</span><span class="v">GameManager.gd</span></div>
+      <div class="row"><span class="k">Routing</span><span class="v">por rol</span></div>
+      <div class="row"><span class="k">Validación</span><span class="v">cliente + server</span></div>
+    </aside>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 8: DETALLE DASHBOARD -->
+<section class="slide">
+  <span class="slide-label">Función 02 · Dashboard Profesor</span>
+  <span class="slide-num">08 / 16</span>
+
+  <h2><span class="magenta">◆ Dashboard</span> — gestionar aulas y alumnos sin fricción.</h2>
+  <p class="lead">El profesor accede a su panel y ve, en un vistazo, todas sus aulas, los alumnos de cada una y un botón directo para crear una nueva entrega.</p>
+
+  <div class="spot-grid">
+    <div class="wf">
+      <div class="wf-header">
+        <span>POKEDUCATION · Panel Profesor</span>
+        <span>👤 Alex · ⚙</span>
+      </div>
+      <div class="wf-side">
+        <div class="ttl">AULAS</div>
+        <div class="item active">1º DAM A</div>
+        <div class="item">1º DAM B</div>
+        <div class="item">2º DAM A</div>
+        <div class="item">2º DAM B</div>
+      </div>
+      <div class="wf-main">
+        <div class="ttl">ALUMNOS · 1º DAM A</div>
+        <div class="alumno"><span>María González</span><span class="lvl-mini">LV 12</span></div>
+        <div class="alumno"><span>Juan Pérez</span><span class="lvl-mini">LV 8</span></div>
+        <div class="alumno"><span>Lucía Torres</span><span class="lvl-mini">LV 15</span></div>
+        <div class="alumno"><span>Pablo Ruiz</span><span class="lvl-mini">LV 5</span></div>
+        <div class="cta">+ NUEVA ENTREGA</div>
+      </div>
+    </div>
+
+    <aside class="spot-aside">
+      <h4>◆ Componentes</h4>
+      <ul class="pill-list">
+        <li>Header con sesión activa</li>
+        <li>Sidebar con combobox de aulas</li>
+        <li>Lista de alumnos (doble clic = gestionar)</li>
+        <li>CTA "Nueva Entrega" → constructor</li>
+        <li>Panel de estadísticas por alumno</li>
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 9: DETALLE NUEVA ENTREGA -->
+<section class="slide">
+  <span class="slide-label">Función 03 · Constructor de Entregas</span>
+  <span class="slide-num">09 / 16</span>
+
+  <h2><span class="gold">◆ Nueva Entrega</span> — un examen en 5 pasos.</h2>
+  <p class="lead">El profesor configura puntuación, tiempo y tipo (formulario clásico, avanzado con minijuego o diálogo narrativo). El sistema valida todo automáticamente antes de publicar.</p>
+
+  <div class="spot-grid">
+    <div class="steps-v" style="margin-top: 16px;">
+      <div class="step-v">
+        <div class="num">1</div>
+        <div>
+          <h4>Datos básicos</h4>
+          <p>Título, descripción y puntuación máxima objetivo.</p>
+        </div>
+      </div>
+      <div class="step-v">
+        <div class="num">2</div>
+        <div>
+          <h4>Elegir tipo</h4>
+          <p>3 pestañas: Formulario · Avanzado (con minijuego) · Diálogo.</p>
+        </div>
+      </div>
+      <div class="step-v">
+        <div class="num">3</div>
+        <div>
+          <h4>Añadir preguntas dinámicas</h4>
+          <p>TEST o DESARROLLO. Puntos y tiempo por pregunta. Se renumeran solas.</p>
+        </div>
+      </div>
+      <div class="step-v">
+        <div class="num">4</div>
+        <div>
+          <h4>Validación automática</h4>
+          <p>Solo 1 pestaña activa · TEST con 1 correcta · suma de puntos = objetivo.</p>
+        </div>
+      </div>
+      <div class="step-v">
+        <div class="num">5</div>
+        <div>
+          <h4>Publicar</h4>
+          <p>POST a /tfg/prueba → disponible en el aula seleccionada.</p>
+        </div>
+      </div>
+    </div>
+
+    <aside class="spot-aside">
+      <h4>◆ Highlights técnicos</h4>
+      <div class="row"><span class="k">Tipos</span><span class="v">TEST · DESARROLLO</span></div>
+      <div class="row"><span class="k">Adjuntos</span><span class="v">multipart upload</span></div>
+      <div class="row"><span class="k">Nodos dinámicos</span><span class="v">~20 por pregunta</span></div>
+      <div class="row"><span class="k">Validación</span><span class="v">en cliente</span></div>
+      <div class="row"><span class="k">Endpoint</span><span class="v">POST /prueba/alta</span></div>
+    </aside>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 10: DETALLE HUD -->
+<section class="slide">
+  <span class="slide-label">Función 04 · HUD del Alumno</span>
+  <span class="slide-num">10 / 16</span>
+
+  <h2><span class="cyan">◆ HUD</span> — el progreso del alumno, siempre a la vista.</h2>
+  <p class="lead">Cada elemento del HUD está pensado para reforzar la sensación de avance: nivel, barra de XP y tareas activas. Se oculta y muestra con la tecla <code>TAB</code> para no estorbar al jugar.</p>
+
+  <div class="anatomy">
+    <div class="anatomy-labels">
+      <div class="anatomy-label">
+        <h5>NIVEL ACTUAL</h5>
+        <p>Badge dorado en esquina superior derecha. Sube al alcanzar XP umbral.</p>
+      </div>
+      <div class="anatomy-label">
+        <h5>RANKING EN VIVO</h5>
+        <p>Posición del alumno respecto al aula, destacando al jugador.</p>
+      </div>
+      <div class="anatomy-label">
+        <h5>NOTIFICACIONES</h5>
+        <p>Avisos de XP ganada y subidas de nivel aparecen aquí.</p>
+      </div>
+    </div>
+
+    <div class="anatomy-center">
+      <div class="a-lvl">LV 7</div>
+      <div class="a-xp"></div>
+      <div class="a-tareas">► 3 TAREAS · PULSA TAB ◄</div>
+    </div>
+
+    <div class="anatomy-labels right">
+      <div class="anatomy-label">
+        <h5>BARRA XP</h5>
+        <p>Gradiente cian → magenta que se llena hasta el siguiente nivel.</p>
+      </div>
+      <div class="anatomy-label">
+        <h5>LISTA DE TAREAS</h5>
+        <p>Pruebas activas. Se abre/cierra con <code>TAB</code>.</p>
+      </div>
+      <div class="anatomy-label">
+        <h5>MENÚ PAUSA</h5>
+        <p>Tecla <code>ESC</code>: reanudar, menú o salir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 11: DETALLE NPCs -->
+<section class="slide">
+  <span class="slide-label">Función 05 · Mapa con NPCs</span>
+  <span class="slide-num">11 / 16</span>
+
+  <h2><span class="magenta">◆ Mapa & NPCs</span> — las pruebas viven dentro del mundo.</h2>
+  <p class="lead">El alumno camina por el mapa con físicas reales. Cuando se acerca a un NPC, aparece un tooltip de interacción; al pulsar <code>E</code>, se abren las pruebas asignadas a ese personaje.</p>
+
+  <div class="spot-grid">
+    <div>
+      <div class="map-preview">
+        <div class="grid-bg"></div>
+        <div class="area"></div>
+        <div class="player"></div>
+        <div class="npc"></div>
+        <div class="tooltip">PULSA [E] PARA HABLAR</div>
+      </div>
+
+      <div class="flow" style="margin-top: 28px;">
+        <div class="flow-node">
+          <span class="step">EVENTO</span>
+          <div class="lbl">Player entra Area2D</div>
+          <div class="sub">_on_body_entered</div>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node">
+          <span class="step">UI</span>
+          <div class="lbl">Tooltip "Pulsa E"</div>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node accent">
+          <span class="step">INPUT</span>
+          <div class="lbl">Tecla E / Enter</div>
+          <div class="sub">_input(event)</div>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node">
+          <span class="step">PANTALLA</span>
+          <div class="lbl">Pruebas pendientes</div>
+          <div class="sub">del NPC</div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="spot-aside">
+      <h4>◆ Detalles del mundo</h4>
+      <div class="row"><span class="k">Físicas</span><span class="v">CharacterBody2D</span></div>
+      <div class="row"><span class="k">Detección</span><span class="v">Area2D</span></div>
+      <div class="row"><span class="k">Catálogo</span><span class="v">NpcManager (JSON)</span></div>
+      <div class="row"><span class="k">Tilemap</span><span class="v">grass + colisiones</span></div>
+      <div class="row"><span class="k">Tecla</span><span class="v">E / Enter</span></div>
+      <div class="row"><span class="k">Asignación</span><span class="v">prueba ↔ NPC</span></div>
+    </aside>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 12: DETALLE NOTIFICACIONES -->
+<section class="slide">
+  <span class="slide-label">Función 06 · Sistema Notificador</span>
+  <span class="slide-num">12 / 16</span>
+
+  <h2><span class="gold">◆ Notificaciones</span> — feedback inmediato, estilo Glassmorphism.</h2>
+  <p class="lead">Cualquier script puede emitir una notificación llamando a <code>Notificador.notificar()</code>. Un Autoload global se encarga del ciclo de vida: aparece, se mantiene y desaparece con Tweens fluidos.</p>
+
+  <div class="notif-preview">
+    <div class="nt-ttl">★ ¡Has subido al nivel 7!</div>
+    <div class="nt-msg">+50 XP &nbsp;·&nbsp; Nueva habilidad desbloqueada</div>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-track">
+      <div class="tl-event">
+        <div class="tl-label">signal notificar()</div>
+        <div class="tl-dot"></div>
+        <div class="tl-time">t = 0ms</div>
+        <div class="tl-desc">cualquier script</div>
+      </div>
+      <div class="tl-event">
+        <div class="tl-label">Instanciar panel</div>
+        <div class="tl-dot"></div>
+        <div class="tl-time">t = 0ms</div>
+        <div class="tl-desc">add_child()</div>
+      </div>
+      <div class="tl-event">
+        <div class="tl-label">Tween fade-in</div>
+        <div class="tl-dot"></div>
+        <div class="tl-time">+300ms</div>
+        <div class="tl-desc">scale + opacity</div>
+      </div>
+      <div class="tl-event">
+        <div class="tl-label">Visible</div>
+        <div class="tl-dot"></div>
+        <div class="tl-time">3000ms</div>
+        <div class="tl-desc">lectura cómoda</div>
+      </div>
+      <div class="tl-event">
+        <div class="tl-label">Tween fade-out</div>
+        <div class="tl-dot"></div>
+        <div class="tl-time">200ms</div>
+        <div class="tl-desc">slide + opacity</div>
+      </div>
+      <div class="tl-event">
+        <div class="tl-label">queue_free()</div>
+        <div class="tl-dot"></div>
+        <div class="tl-time">END</div>
+        <div class="tl-desc">limpieza memoria</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 7: GALERÍA -->
+<section class="slide">
+  <span class="slide-label">Galería de pantallas</span>
+  <span class="slide-num">13 / 16</span>
+
+  <h2>Una <span class="magenta">interfaz pensada</span> al detalle.</h2>
+  <p class="lead">Mockups orientativos. Sustituir por capturas reales del juego antes de la defensa.</p>
+
+  <div class="gallery">
+    <div class="mockup">
+      <div class="mockup-frame">
+        <div class="mk-login">
+          <div class="logo">POKEDUCATION</div>
+          <div class="mk-input"></div>
+          <div class="mk-input"></div>
+          <div class="mk-btn"></div>
+        </div>
+        <div class="placeholder-note">[ INSERTAR CAPTURA: login.tscn ]</div>
+      </div>
+      <div class="mockup-caption">
+        <h4>Login</h4>
+        <p>Acceso unificado para alumnos y profesores.</p>
+      </div>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-frame">
+        <div class="mk-dash">
+          <div class="side"></div>
+          <div class="main">
+            <div class="top"></div>
+            <div class="cards"><div></div><div></div><div></div></div>
+          </div>
+        </div>
+        <div class="placeholder-note">[ INSERTAR CAPTURA: profesor_dashboard.tscn ]</div>
+      </div>
+      <div class="mockup-caption">
+        <h4>Dashboard Profesor</h4>
+        <p>Gestión de aulas, alumnos y entregas en un solo lugar.</p>
+      </div>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-frame">
+        <div class="mk-hud">
+          <div class="lvl">LV 7</div>
+          <div class="xp"></div>
+        </div>
+        <div class="placeholder-note">[ INSERTAR CAPTURA: nivel_01.tscn + HUD ]</div>
+      </div>
+      <div class="mockup-caption">
+        <h4>HUD en partida</h4>
+        <p>Barra de XP, nivel y misiones activas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 8: MINIJUEGOS -->
+<section class="slide">
+  <span class="slide-label">Showcase de minijuegos</span>
+  <span class="slide-num">14 / 16</span>
+
+  <h2>Evaluar jugando: <span class="gold">3 mecánicas</span>.</h2>
+  <p class="lead">Cada minijuego se conecta al sistema de pruebas y devuelve puntuación al backend. Reemplazan a un examen tradicional convirtiendo la evaluación en una experiencia.</p>
+
+  <div class="mini-grid">
+    <div class="mini mini-esquiva">
+      <span class="tag">MINIJUEGO 01</span>
+      <h3>Esquiva-bloques</h3>
+      <div class="visual"></div>
+      <p>Reacción y reflejos: esquivar obstáculos en patrones generados por subtipo.</p>
+      <ul>
+        <li>Varios subtipos seleccionables</li>
+        <li>Puntuación por tiempo sobrevivido</li>
+      </ul>
+    </div>
+
+    <div class="mini mini-hotline">
+      <span class="tag">MINIJUEGO 02</span>
+      <h3>Hotline</h3>
+      <div class="visual"></div>
+      <p>Acción top-down con toma de decisiones rápidas y control preciso.</p>
+      <ul>
+        <li>Movimiento WASD + apuntado</li>
+        <li>Recompensa basada en eficacia</li>
+      </ul>
+    </div>
+
+    <div class="mini mini-secuencia">
+      <span class="tag">MINIJUEGO 03</span>
+      <h3>Secuencia</h3>
+      <div class="visual"></div>
+      <p>Memoria visual estilo Simon: repetir patrones de colores cada vez más largos.</p>
+      <ul>
+        <li>Dificultad progresiva</li>
+        <li>Feedback inmediato por botón</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 9: CONCLUSIONES -->
+<section class="slide">
+  <span class="slide-label">Conclusiones · Aprendizajes</span>
+  <span class="slide-num">15 / 16</span>
+
+  <h2>Lo que nos llevamos <span class="cyan">del TFG</span>.</h2>
+
+  <div class="learn-grid">
+    <div class="learn">
+      <h3>◆ Pensar como producto</h3>
+      <p>No basta con que funcione: cada pantalla debe ser usable, coherente y entendible al primer vistazo. La UX importa tanto como el código.</p>
+    </div>
+    <div class="learn">
+      <h3>◆ Arquitectura primero</h3>
+      <p>Decidir los Autoloads, las carpetas y la API antes de meter código nos ahorró semanas de refactor. Modular = escalable.</p>
+    </div>
+    <div class="learn">
+      <h3>◆ Frontend ≠ pintar</h3>
+      <p>Routing, estado, validación, conexión a API, animaciones, físicas… el frontend es ingeniería de pleno derecho.</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 56px; padding: 28px; border-radius: 14px; background: linear-gradient(135deg, rgba(0,240,255,.05), rgba(255,45,213,.05)); border: 1px solid var(--border);">
+    <h3 class="grad-text" style="font-size: 22px; margin-bottom: 8px;">Próximos pasos</h3>
+    <p style="color: var(--muted);">Más niveles, sistema de inventario, ranking global persistido en backend, sonidos y música original, build empaquetada para Windows y Web.</p>
+  </div>
+</section>
+
+<!-- =========================================== SLIDE 10: CIERRE -->
+<section class="slide ending">
+  <span class="slide-label">Gracias por su atención</span>
+  <span class="slide-num">16 / 16</span>
+
+  <div class="big-thanks grad-text glow">¡GRACIAS!</div>
+  <p class="lead" style="margin: 0 auto;">¿Preguntas?</p>
+
+  <div class="qr-placeholder">[ QR al repo opcional ]</div>
+
+  <div class="signature">ALEX &nbsp;·&nbsp; DAVID &nbsp;·&nbsp; 2º DAM &nbsp;·&nbsp; 2026</div>
+</section>
+
+</body>
+</html>

@@ -1,19 +1,19 @@
 extends Control
 
-@onready var lista_alumnos = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/ListaAlumnos
-@onready var cmb_aulas = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula/CmbAulas
-@onready var btn_crear_aula = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula/BtnCrearAula
-@onready var btn_importar_csv = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula/BtnImportarCSV
+@onready var titulo_alumnos = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HeaderAlumnos/TituloAlumnos
+@onready var contenedor_aulas = $Layout/MainContent/PanelAulas/MargenAulas/VBoxAulas/ScrollAulas/ContenedorAulas
+@onready var contenedor_alumnos = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/ScrollAlumnos/ContenedorAlumnos
+@onready var btn_nueva_aula = $Layout/MainContent/PanelAulas/MargenAulas/VBoxAulas/BtnNuevaAula
+@onready var btn_anadir_alumno = $Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HeaderAlumnos/BtnAnadirAlumno
 
-@onready var dialogo_csv = $DialogoCSV
-@onready var dialogo_exportar = $DialogoExportar
+@onready var btn_nueva_entrega = $Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones/BtnNuevaEntrega
+@onready var btn_revisar = $Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones/BtnRevisar
+@onready var btn_corregir = $Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones/BtnCorregir
+@onready var btn_estadisticas = $Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones/BtnEstadisticas
 
-@onready var btn_nueva_entrega = $Layout/MainContent/PanelBotones/VBoxBotones/BtnNuevaEntrega
-@onready var btn_revisar = $Layout/MainContent/PanelBotones/VBoxBotones/BtnRevisar
-@onready var btn_corregir = $Layout/MainContent/PanelBotones/VBoxBotones/BtnCorregir
-@onready var btn_estadisticas = $Layout/MainContent/PanelBotones/VBoxBotones/BtnEstadisticas
-@onready var btn_ajustes = $Layout/MainContent/PanelBotones/VBoxBotones/BtnAjustes
-@onready var btn_cerrar_sesion = $Layout/Header/HBoxHeader/BtnCerrarSesion
+@onready var btn_ajustes = $Layout/Header/MargenHeader/HBoxHeader/BtnAjustes
+@onready var btn_avatar = $Layout/Header/MargenHeader/HBoxHeader/BtnAvatar
+@onready var popup_sesion: PopupMenu = $Layout/Header/MargenHeader/HBoxHeader/BtnAvatar/PopupSesion
 
 @onready var panel_flotante = $PanelFlotante
 @onready var titulo_flotante = $PanelFlotante/MargenFlotante/VBoxFlotante/HeaderFlotante/TituloFlotante
@@ -26,14 +26,11 @@ extends Control
 @onready var spin_alumnos = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/SpinAlumnos
 @onready var btn_confirmar_generar = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/BtnConfirmarGenerar
 @onready var text_resultado = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/TextResultado
-@onready var btn_exportar_csv = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion/BtnExportarCSV
 
-# --- Estadísticas de pruebas ---
 @onready var vbox_estadisticas = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas
 @onready var cmb_pruebas_stats = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/HBoxSelectorPrueba/CmbPruebas
 @onready var tree_stats = $PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/TreeStats
 
-# --- Gestión de alumno ---
 @onready var scroll_gestion = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion
 @onready var lbl_gestion_titulo = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/LblGestionTitulo
 @onready var edit_usuario = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos/EditUsuario
@@ -41,6 +38,7 @@ extends Control
 @onready var edit_apellidos = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos/EditApellidos
 @onready var edit_email = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos/EditEmail
 @onready var edit_password = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos/EditPassword
+@onready var edit_experiencia: SpinBox = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos/EditExperiencia
 @onready var btn_guardar_alumno = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxAccionesAlumno/BtnGuardarAlumno
 @onready var btn_borrar_alumno = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxAccionesAlumno/BtnBorrarAlumno
 @onready var puntos_nota_spin = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxNotaManual/PuntosNotaSpin
@@ -48,11 +46,26 @@ extends Control
 @onready var btn_anadir_nota = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxNotaManual/BtnAnadirNota
 @onready var historial_notas = $PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HistorialNotas
 
+@onready var _styles_node = $StylesPlantillas
+
 var aulas_data: Array = []
 var alumnos_data: Array = []
 var alumno_seleccionado: Dictionary = {}
-var credenciales_recientes: Array = []
-var pruebas_stats: Array = []  # cached para el panel de estadísticas
+var pruebas_stats: Array = []
+var aula_seleccionada_idx: int = -1
+var _botones_aulas: Array = []
+
+# Estado del panel flotante de generación:
+# - false → modo "crear aula + generar alumnos" (botón engranaje / + nueva aula)
+# - true  → modo "añadir alumnos al aula actual" (botón + del header de alumnos)
+var _modo_solo_alumnos: bool = false
+var _aula_id_para_anadir: String = ""
+
+const COLOR_GOLD := Color(1, 0.839, 0.039, 1)
+const COLOR_CYAN := Color(0, 0.941, 1, 1)
+const COLOR_MAGENTA := Color(1, 0.176, 0.835, 1)
+const COLOR_TEXT := Color(0.925, 0.937, 1, 1)
+const COLOR_MUTED := Color(0.541, 0.541, 0.722, 1)
 
 func _ready():
 	btn_nueva_entrega.pressed.connect(_on_nueva_entrega)
@@ -61,30 +74,51 @@ func _ready():
 	btn_estadisticas.pressed.connect(_on_abrir_estadisticas)
 	cmb_pruebas_stats.item_selected.connect(_on_prueba_stats_elegida)
 	btn_ajustes.pressed.connect(_on_abrir_generacion)
-	btn_cerrar_sesion.pressed.connect(_on_cerrar_sesion)
 	btn_cerrar_flotante.pressed.connect(_cerrar_panel_flotante)
-	btn_crear_aula.pressed.connect(_on_abrir_generacion)
-	cmb_aulas.item_selected.connect(_on_aula_seleccionada)
+	btn_nueva_aula.pressed.connect(_on_abrir_generacion)
+	btn_anadir_alumno.pressed.connect(_on_anadir_alumno_individual)
 	btn_confirmar_generar.pressed.connect(_on_iniciar_proceso_generacion)
-	btn_importar_csv.pressed.connect(_on_pulsar_importar_csv)
-	btn_exportar_csv.pressed.connect(_on_pulsar_exportar_csv)
-	dialogo_csv.file_selected.connect(_on_csv_seleccionado)
-	dialogo_exportar.file_selected.connect(_on_destino_exportar_seleccionado)
 
-	lista_alumnos.item_activated.connect(_on_alumno_activado)
 	btn_guardar_alumno.pressed.connect(_on_guardar_alumno)
 	btn_borrar_alumno.pressed.connect(_on_borrar_alumno)
 	btn_anadir_nota.pressed.connect(_on_anadir_nota_manual)
 
+	btn_avatar.pressed.connect(_on_avatar_pressed)
+	popup_sesion.clear()
+	popup_sesion.add_item("Cerrar sesión", 0)
+	popup_sesion.id_pressed.connect(_on_popup_sesion_id)
+
 	panel_flotante.visible = false
-	btn_exportar_csv.visible = false
 
 	tree_puntuaciones.set_column_title(0, "#")
 	tree_puntuaciones.set_column_title(1, "Alumno")
 	tree_puntuaciones.set_column_title(2, "Puntos")
 	tree_puntuaciones.set_column_title(3, "Nivel")
 
+	_actualizar_avatar()
 	_cargar_aulas()
+
+func _actualizar_avatar():
+	var nombre = ""
+	if typeof(GameManager.usuario_actual) == TYPE_DICTIONARY:
+		nombre = str(GameManager.usuario_actual.get("nombreUsuario", ""))
+		if nombre.is_empty():
+			nombre = str(GameManager.usuario_actual.get("usuario", ""))
+	if nombre.is_empty():
+		nombre = "Profesor"
+	btn_avatar.text = "  %s  ▾  " % nombre
+
+func _on_avatar_pressed():
+	var pos = btn_avatar.global_position + Vector2(0, btn_avatar.size.y + 4)
+	popup_sesion.popup(Rect2i(Vector2i(pos), Vector2i(180, 0)))
+
+func _on_popup_sesion_id(id: int):
+	if id == 0:
+		GameManager.cerrar_sesion()
+
+# =====================================================================
+# AULAS — sidebar dinámico
+# =====================================================================
 
 func _cargar_aulas():
 	var prof_id = GameManager.id_str(GameManager.usuario_actual.get("id"))
@@ -95,54 +129,183 @@ func _cargar_aulas():
 func _on_aulas_recibidas(data, code):
 	if code == 200 and data is Array:
 		aulas_data = data
-		cmb_aulas.clear()
-		for aula in aulas_data:
-			cmb_aulas.add_item(aula.get("nombre", "Sin nombre"))
-		if cmb_aulas.item_count > 0:
-			_on_aula_seleccionada(0)
+		_pintar_botones_aulas()
+		if aulas_data.size() > 0:
+			_seleccionar_aula(0)
+		else:
+			_mostrar_aulas_vacias()
 	elif code == 204:
-		cmb_aulas.clear()
-		cmb_aulas.add_item("Sin aulas creadas")
+		aulas_data = []
+		_mostrar_aulas_vacias()
 	else:
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.ORANGE)
 
-func _on_aula_seleccionada(index):
-	if aulas_data.is_empty(): return
-	var aula_id = GameManager.id_str(aulas_data[index].get("id"))
+func _mostrar_aulas_vacias():
+	_limpiar_contenedor(contenedor_aulas)
+	_botones_aulas.clear()
+	var aviso = Label.new()
+	aviso.text = "Sin aulas creadas"
+	aviso.add_theme_color_override("font_color", COLOR_MUTED)
+	contenedor_aulas.add_child(aviso)
+	titulo_alumnos.text = "ALUMNOS · Crea un aula"
+	_limpiar_contenedor(contenedor_alumnos)
+
+func _pintar_botones_aulas():
+	_limpiar_contenedor(contenedor_aulas)
+	_botones_aulas.clear()
+	for i in range(aulas_data.size()):
+		var aula = aulas_data[i]
+		var btn := Button.new()
+		btn.text = str(aula.get("nombre", "Aula"))
+		btn.custom_minimum_size = Vector2(0, 48)
+		btn.add_theme_font_size_override("font_size", 15)
+		btn.add_theme_color_override("font_color", COLOR_CYAN)
+		btn.add_theme_color_override("font_hover_color", COLOR_CYAN)
+		btn.add_theme_color_override("font_pressed_color", COLOR_CYAN)
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		_aplicar_estilo_aula(btn, false)
+		btn.pressed.connect(_seleccionar_aula.bind(i))
+		contenedor_aulas.add_child(btn)
+		_botones_aulas.append(btn)
+
+func _aplicar_estilo_aula(btn: Button, activo: bool):
+	var st_normal: StyleBox = _styles_node.get_meta("sb_aula_activa") if activo else _styles_node.get_meta("sb_aula_normal")
+	var st_hover: StyleBox = _styles_node.get_meta("sb_aula_activa") if activo else _styles_node.get_meta("sb_aula_hover")
+	btn.add_theme_stylebox_override("normal", st_normal)
+	btn.add_theme_stylebox_override("hover", st_hover)
+	btn.add_theme_stylebox_override("pressed", st_hover)
+	btn.add_theme_stylebox_override("focus", st_normal)
+
+func _seleccionar_aula(idx: int):
+	if idx < 0 or idx >= aulas_data.size():
+		return
+	aula_seleccionada_idx = idx
+	for i in range(_botones_aulas.size()):
+		_aplicar_estilo_aula(_botones_aulas[i], i == idx)
+	var aula = aulas_data[idx]
+	var aula_id = GameManager.id_str(aula.get("id"))
 	GameManager.aula_seleccionada_id = aula_id
-	lista_alumnos.clear()
-	lista_alumnos.add_item("Cargando alumnos...")
+	titulo_alumnos.text = "ALUMNOS · %s" % str(aula.get("nombre", ""))
+	_limpiar_contenedor(contenedor_alumnos)
+	var cargando = Label.new()
+	cargando.text = "Cargando alumnos..."
+	cargando.add_theme_color_override("font_color", COLOR_MUTED)
+	contenedor_alumnos.add_child(cargando)
 	ConexionManager.peticion_get("/aulas/%s/alumnos" % aula_id, _on_alumnos_recibidos)
 
+# =====================================================================
+# ALUMNOS — cards dinámicas
+# =====================================================================
+
 func _on_alumnos_recibidos(data, code):
-	lista_alumnos.clear()
+	_limpiar_contenedor(contenedor_alumnos)
 	alumnos_data.clear()
 	if code == 200 and data is Array:
 		if data.size() == 0:
-			lista_alumnos.add_item("(Aula vacía)")
-		else:
-			alumnos_data = data
-			for i in range(data.size()):
-				var alu = data[i]
-				var nombre = alu.get("nombreUsuario", alu.get("usuario", "Anónimo"))
-				var nivel = alu.get("nivelActual", null)
-				var sufijo = "  ·  Nv %s" % str(nivel) if nivel != null else ""
-				var idx = lista_alumnos.add_item("%s%s" % [nombre, sufijo])
-				lista_alumnos.set_item_metadata(idx, alu)
-				lista_alumnos.set_item_tooltip(idx, "Doble clic para editar / añadir nota")
+			var vacio = Label.new()
+			vacio.text = "(Aula vacía)"
+			vacio.add_theme_color_override("font_color", COLOR_MUTED)
+			contenedor_alumnos.add_child(vacio)
+			return
+		alumnos_data = data
+		for i in range(data.size()):
+			contenedor_alumnos.add_child(_crear_card_alumno(data[i]))
 	else:
-		lista_alumnos.add_item("Sin alumnos")
+		var err = Label.new()
+		err.text = "Sin alumnos"
+		err.add_theme_color_override("font_color", COLOR_MUTED)
+		contenedor_alumnos.add_child(err)
+
+func _crear_card_alumno(alu: Dictionary) -> Control:
+	var card := PanelContainer.new()
+	card.add_theme_stylebox_override("panel", _styles_node.get_meta("sb_alumno_card"))
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.set_meta("alumno", alu)
+	card.gui_input.connect(_on_card_alumno_input.bind(card))
+	card.mouse_entered.connect(func(): card.add_theme_stylebox_override("panel", _styles_node.get_meta("sb_alumno_hover")))
+	card.mouse_exited.connect(func(): card.add_theme_stylebox_override("panel", _styles_node.get_meta("sb_alumno_card")))
+
+	var fila := HBoxContainer.new()
+	fila.add_theme_constant_override("separation", 12)
+
+	var nombre_lbl := Label.new()
+	var nombre_str = str(alu.get("nombreUsuario", alu.get("usuario", "Anónimo")))
+	nombre_lbl.text = nombre_str
+	nombre_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nombre_lbl.add_theme_color_override("font_color", COLOR_TEXT)
+	nombre_lbl.add_theme_font_size_override("font_size", 16)
+	nombre_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	nombre_lbl.tooltip_text = "Doble clic para editar / añadir nota"
+	fila.add_child(nombre_lbl)
+
+	var badge := PanelContainer.new()
+	badge.add_theme_stylebox_override("panel", _styles_node.get_meta("sb_badge_lv"))
+	badge.size_flags_horizontal = Control.SIZE_SHRINK_END
+	var nivel_raw = alu.get("nivelActual")
+	var nivel_txt = "LV %s" % str(nivel_raw) if nivel_raw != null else "LV –"
+	var badge_lbl := Label.new()
+	badge_lbl.text = nivel_txt
+	badge_lbl.add_theme_color_override("font_color", COLOR_GOLD)
+	badge_lbl.add_theme_font_size_override("font_size", 13)
+	badge.add_child(badge_lbl)
+	fila.add_child(badge)
+
+	card.add_child(fila)
+	return card
+
+func _on_card_alumno_input(event: InputEvent, card: Control):
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
+			var alu = card.get_meta("alumno", {})
+			if typeof(alu) == TYPE_DICTIONARY and not alu.is_empty():
+				_abrir_gestion_alumno(alu)
+
+func _limpiar_contenedor(cont: Container):
+	for c in cont.get_children():
+		c.queue_free()
+
+# =====================================================================
+# GENERACIÓN MASIVA / AÑADIR ALUMNO
+# =====================================================================
 
 func _on_abrir_generacion():
+	_modo_solo_alumnos = false
+	_aula_id_para_anadir = ""
 	_limpiar_paneles_flotantes()
-	titulo_flotante.text = "CREAR AULA Y GENERAR ALUMNOS"
+	titulo_flotante.text = "◆  CREAR AULA Y GENERAR ALUMNOS"
 	vbox_generacion.visible = true
 	panel_flotante.visible = true
 	text_resultado.text = ""
-	btn_exportar_csv.visible = false
-	credenciales_recientes.clear()
+	btn_confirmar_generar.disabled = false
+	btn_confirmar_generar.text = "Generar Credenciales"
+	# Mostramos el campo "nombre del aula" (oculto en modo "solo alumnos").
+	var lbl_aula = vbox_generacion.get_node_or_null("LabelAula")
+	if lbl_aula:
+		lbl_aula.visible = true
+	edit_nombre_aula.visible = true
+	edit_nombre_aula.editable = true
+	edit_nombre_aula.placeholder_text = "Nombre del aula"
+	edit_nombre_aula.text = ""
+	spin_alumnos.editable = true
+	spin_alumnos.value = 15
 
 func _on_iniciar_proceso_generacion():
+	# Modo "añadir alumnos al aula existente": no se crea aula, solo se generan.
+	if _modo_solo_alumnos:
+		if _aula_id_para_anadir.is_empty():
+			Notificador.notificar("Aula no válida", Color.RED)
+			return
+		var cant_sa = int(spin_alumnos.value)
+		Notificador.notificar("Generando %d alumno(s)..." % cant_sa, Color.GOLD)
+		btn_confirmar_generar.disabled = true
+		ConexionManager.peticion_post(
+			"/aulas/%s/generar-alumnos" % _aula_id_para_anadir,
+			{"cantidad": cant_sa},
+			_on_generacion_completada
+		)
+		return
+
+	# Modo "crear aula + alumnos".
 	var nombre = edit_nombre_aula.text.strip_edges()
 	if nombre.is_empty():
 		Notificador.notificar("Nombre de aula requerido", Color.MAGENTA)
@@ -167,84 +330,67 @@ func _on_aula_creada(data, code):
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 
 func _on_generacion_completada(data, code):
+	btn_confirmar_generar.disabled = false
 	if code == 200 and data is Array:
-		credenciales_recientes = data.duplicate(true)
 		text_resultado.text = "CREDENCIALES (¡guárdalas, no se volverán a mostrar!):\n"
 		text_resultado.text += "==========================================\n\n"
 		for item in data:
 			text_resultado.text += "USER: %-15s | PASS: %s\n" % [item.get("usuario"), item.get("password")]
-		btn_exportar_csv.visible = data.size() > 0
 		Notificador.notificar("Proceso completado", Color.GREEN)
-		_cargar_aulas()
+		if _modo_solo_alumnos and aula_seleccionada_idx >= 0:
+			# Refrescamos solo el panel de alumnos del aula actual: si recargáramos
+			# las aulas, _on_aulas_recibidas saltaría a la aula 0.
+			_seleccionar_aula(aula_seleccionada_idx)
+		else:
+			_cargar_aulas()
 	else:
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 
-# ------- Importar CSV -------
-
-func _on_pulsar_importar_csv():
-	if GameManager.aula_seleccionada_id.is_empty():
+func _on_anadir_alumno_individual():
+	if aulas_data.is_empty() or aula_seleccionada_idx < 0:
 		Notificador.notificar("Selecciona un aula primero", Color.ORANGE)
 		return
-	dialogo_csv.popup_centered_ratio(0.6)
-
-func _on_csv_seleccionado(path: String):
-	Notificador.notificar("Subiendo CSV...", Color.CYAN)
-	ConexionManager.peticion_multipart(
-		"/aulas/%s/importar-csv" % GameManager.aula_seleccionada_id,
-		"file",
-		path,
-		_on_import_csv_completado
-	)
-
-func _on_import_csv_completado(data, code):
-	if code == 200 and data is Array:
-		credenciales_recientes = data.duplicate(true)
-		_limpiar_paneles_flotantes()
-		titulo_flotante.text = "ALUMNOS IMPORTADOS DEL CSV"
-		vbox_generacion.visible = true
-		panel_flotante.visible = true
-		text_resultado.text = "CREDENCIALES IMPORTADAS (¡guárdalas!):\n"
-		text_resultado.text += "==========================================\n\n"
-		for item in data:
-			text_resultado.text += "USER: %-15s | PASS: %s\n" % [item.get("usuario"), item.get("password")]
-		btn_exportar_csv.visible = data.size() > 0
-		Notificador.notificar("CSV importado: %d alumnos" % data.size(), Color.GREEN)
-		_cargar_aulas()
-	else:
-		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
-
-# ------- Exportar credenciales -------
-
-func _on_pulsar_exportar_csv():
-	if credenciales_recientes.is_empty():
-		Notificador.notificar("No hay credenciales que exportar", Color.ORANGE)
+	var aula_id = GameManager.id_str(aulas_data[aula_seleccionada_idx].get("id"))
+	if aula_id.is_empty():
+		Notificador.notificar("Aula sin id válido", Color.RED)
 		return
-	dialogo_exportar.popup_centered_ratio(0.6)
 
-func _on_destino_exportar_seleccionado(path: String):
-	var file = FileAccess.open(path, FileAccess.WRITE)
-	if file == null:
-		Notificador.notificar("No se pudo escribir el archivo", Color.RED)
-		return
-	file.store_line("usuario,password")
-	for item in credenciales_recientes:
-		file.store_line("%s,%s" % [str(item.get("usuario", "")), str(item.get("password", ""))])
-	file.close()
-	Notificador.notificar("Credenciales guardadas en %s" % path.get_file(), Color.GREEN)
+	# Abrimos el panel en modo "solo alumnos": no creamos el alumno hasta que
+	# el profesor pulse "Generar". Antes la petición salía sola al abrir, y
+	# luego aparecía el menú con un alumno ya creado de más.
+	_modo_solo_alumnos = true
+	_aula_id_para_anadir = aula_id
+	var nombre_aula = str(aulas_data[aula_seleccionada_idx].get("nombre", "Aula"))
+	_limpiar_paneles_flotantes()
+	titulo_flotante.text = "◆  AÑADIR ALUMNOS · %s" % nombre_aula
+	vbox_generacion.visible = true
+	panel_flotante.visible = true
+	text_resultado.text = ""
+	btn_confirmar_generar.disabled = false
+	btn_confirmar_generar.text = "Generar alumno(s)"
+	# Ocultamos el campo "nombre del aula": no aplica en este modo.
+	var lbl_aula = vbox_generacion.get_node_or_null("LabelAula")
+	if lbl_aula:
+		lbl_aula.visible = false
+	edit_nombre_aula.visible = false
+	spin_alumnos.editable = true
+	spin_alumnos.value = 1
 
-# ------- Ranking del aula -------
+# =====================================================================
+# RANKING
+# =====================================================================
 
 func _on_revisar_puntuaciones():
-	if aulas_data.is_empty() or cmb_aulas.selected < 0:
+	if aulas_data.is_empty() or aula_seleccionada_idx < 0:
 		Notificador.notificar("Selecciona un aula primero", Color.ORANGE)
 		return
 
 	_limpiar_paneles_flotantes()
-	titulo_flotante.text = "RANKING DEL AULA"
+	titulo_flotante.text = "◆  RANKING DEL AULA"
 	tree_puntuaciones.visible = true
 	panel_flotante.visible = true
 
-	var aula_id = GameManager.id_str(aulas_data[cmb_aulas.selected].get("id"))
+	var aula_id = GameManager.id_str(aulas_data[aula_seleccionada_idx].get("id"))
 	ConexionManager.peticion_get("/puntuacion/aula/%s" % aula_id, _on_puntuaciones_recibidas)
 
 func _on_puntuaciones_recibidas(data, code):
@@ -292,7 +438,6 @@ func _limpiar_paneles_flotantes():
 	contenido_texto.visible = false
 	tree_puntuaciones.visible = false
 	vbox_generacion.visible = false
-	btn_exportar_csv.visible = false
 	scroll_gestion.visible = false
 	vbox_estadisticas.visible = false
 
@@ -305,29 +450,23 @@ func _on_nueva_entrega():
 func _on_corregir_pendientes():
 	get_tree().change_scene_to_file("res://Pantallas/corregir_pendientes.tscn")
 
-func _on_cerrar_sesion():
-	GameManager.cerrar_sesion()
-
 # =====================================================================
 # GESTIÓN DE ALUMNO (edición + nota manual)
 # =====================================================================
 
-func _on_alumno_activado(index: int):
-	var meta = lista_alumnos.get_item_metadata(index)
-	if typeof(meta) != TYPE_DICTIONARY:
-		return
-	_abrir_gestion_alumno(meta)
-
 func _abrir_gestion_alumno(alu: Dictionary):
 	alumno_seleccionado = alu
 	_limpiar_paneles_flotantes()
-	titulo_flotante.text = "ALUMNO · %s" % str(alu.get("nombreUsuario", "—"))
+	titulo_flotante.text = "◆  ALUMNO · %s" % str(alu.get("nombreUsuario", "—"))
 	lbl_gestion_titulo.text = "Datos del alumno (id %s)" % GameManager.id_str(alu.get("id"))
 	edit_usuario.text = str(alu.get("nombreUsuario", ""))
 	edit_nombre.text = str(alu.get("nombreReal", ""))
 	edit_apellidos.text = str(alu.get("apellidos", ""))
 	edit_email.text = str(alu.get("email", ""))
 	edit_password.text = ""
+	var xp_raw = alu.get("experienciaActual")
+	edit_experiencia.value = 0.0 if xp_raw == null else float(xp_raw)
+	edit_experiencia.set_meta("valor_original", int(edit_experiencia.value))
 	puntos_nota_spin.value = 10
 	edit_motivo_nota.text = ""
 	historial_notas.clear()
@@ -360,6 +499,11 @@ func _on_guardar_alumno():
 			Notificador.notificar("La contraseña debe tener al menos 6 caracteres", Color.ORANGE)
 			return
 		payload["passwordPlana"] = password
+	# Experiencia: si el valor del SpinBox difiere del cargado, lo enviamos.
+	var xp_nueva: int = int(edit_experiencia.value)
+	var xp_original: int = int(edit_experiencia.get_meta("valor_original", -1))
+	if xp_nueva != xp_original:
+		payload["experienciaActual"] = xp_nueva
 	if payload.is_empty():
 		Notificador.notificar("No hay cambios que guardar", Color.GOLD)
 		return
@@ -370,8 +514,7 @@ func _on_alumno_guardado(data, code):
 	if code == 200 and typeof(data) == TYPE_DICTIONARY:
 		Notificador.notificar("Alumno actualizado", Color.GREEN)
 		alumno_seleccionado = data
-		_on_aula_seleccionada(cmb_aulas.selected)
-		# Reflejar los nuevos datos en el panel
+		_seleccionar_aula(aula_seleccionada_idx)
 		_abrir_gestion_alumno(data)
 	else:
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
@@ -390,7 +533,7 @@ func _on_alumno_borrado(data, code):
 		Notificador.notificar("Alumno eliminado", Color.GREEN)
 		alumno_seleccionado = {}
 		_cerrar_panel_flotante()
-		_on_aula_seleccionada(cmb_aulas.selected)
+		_seleccionar_aula(aula_seleccionada_idx)
 	else:
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 
@@ -419,7 +562,6 @@ func _cargar_historial_notas(alu: Dictionary):
 	if GameManager.aula_seleccionada_id.is_empty():
 		historial_notas.clear()
 		return
-	# Reutilizamos el endpoint del aula y filtramos por alumno en cliente.
 	var alumno_id = GameManager.id_int(alu.get("id"))
 	ConexionManager.peticion_get(
 		"/puntuacion/aula/%s" % GameManager.aula_seleccionada_id,
@@ -435,7 +577,7 @@ func _on_abrir_estadisticas():
 		Notificador.notificar("Selecciona un aula primero", Color.ORANGE)
 		return
 	_limpiar_paneles_flotantes()
-	titulo_flotante.text = "ESTADÍSTICAS DE PRUEBAS"
+	titulo_flotante.text = "◆  ESTADÍSTICAS DE PRUEBAS"
 	vbox_estadisticas.visible = true
 	panel_flotante.visible = true
 
@@ -463,7 +605,6 @@ func _on_pruebas_para_stats(data, code):
 	if code != 200 or not (data is Array) or data.is_empty():
 		cmb_pruebas_stats.add_item("(Sin pruebas)")
 		return
-	# Filtramos las NOTA_MANUAL y DIALOGO (no tienen preguntas con stats)
 	pruebas_stats.clear()
 	for p in data:
 		var tipo = str(p.get("tipo", "")).to_upper()
@@ -512,7 +653,6 @@ func _on_stats_recibidas(data, code):
 		item.set_text(1, str(saltadas))
 		item.set_text(2, str(contestadas))
 		item.set_text(3, str(total))
-		# Resaltamos en naranja las preguntas con saltadas > contestadas
 		if total > 0 and saltadas > contestadas:
 			item.set_custom_color(1, Color(1, 0.55, 0.4, 1))
 		elif saltadas > 0:

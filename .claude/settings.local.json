@@ -11,7 +11,14 @@
       "Bash(backend-api/mvnw.cmd -f backend-api/pom.xml -q -DskipTests compile)",
       "Bash(backend-api/mvnw.cmd -f backend-api/pom.xml -DskipTests compile)",
       "Bash(backend-api/mvnw.cmd -f backend-api/pom.xml -DskipTests clean compile)",
-      "Bash(git pull *)"
+      "Bash(git pull *)",
+      "Bash(awk *)",
+      "Bash(where godot *)",
+      "Bash(where godot.exe)",
+      "Bash(where Godot_v4.3-stable_win64.exe)",
+      "Bash(\"/c/Users/Alex/Downloads/Godot_v4.6.1-stable_win64.exe/Godot_v4.6.1-stable_win64_console.exe\" --headless --path \"C:/Users/Alex/Documents/PersonalProjects/godot-frontend\" --check-only --script \"res://Pantallas/minijuego_esquiva.gd\")",
+      "Bash(\"/c/Users/Alex/Downloads/Godot_v4.6.1-stable_win64.exe/Godot_v4.6.1-stable_win64_console.exe\" --headless --path \"C:/Users/Alex/Documents/PersonalProjects/godot-frontend\" --quit-after 30)",
+      "Bash(\"/c/Users/Alex/Downloads/Godot_v4.6.1-stable_win64.exe/Godot_v4.6.1-stable_win64_console.exe\" --headless --editor --path \"C:/Users/Alex/Documents/PersonalProjects/godot-frontend\" --quit)"
     ]
   }
 }

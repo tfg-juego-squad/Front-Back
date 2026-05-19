@@ -117,6 +117,8 @@ func _iniciar_siguiente_nivel():
 	lbl_tu_turno.text = ""
 	_set_botones_habilitados(false)
 	await get_tree().create_timer(0.6).timeout
+	if not is_inside_tree():
+		return
 	await _reproducir_secuencia()
 	if not is_inside_tree():
 		return
@@ -134,8 +136,12 @@ func _generar_secuencia(longitud: int):
 
 func _reproducir_secuencia():
 	for indice in _secuencia_actual:
+		if not is_inside_tree():
+			return
 		_encender_boton(indice)
 		await get_tree().create_timer(TIEMPO_FLASH).timeout
+		if not is_inside_tree():
+			return
 		_apagar_boton(indice)
 		await get_tree().create_timer(TIEMPO_ENTRE_FLASH).timeout
 
@@ -178,6 +184,8 @@ func _on_boton_color(indice: int):
 	# Mini-flash visual al pulsar
 	_encender_boton(indice)
 	await get_tree().create_timer(0.18).timeout
+	if not is_inside_tree():
+		return
 	_apagar_boton(indice)
 
 	var esperado = _secuencia_actual[_pos_alumno]
@@ -188,6 +196,8 @@ func _on_boton_color(indice: int):
 		lbl_estado.text = "¡Fallaste la secuencia!"
 		lbl_tu_turno.text = ""
 		await get_tree().create_timer(TIEMPO_CONTINUAR).timeout
+		if not is_inside_tree():
+			return
 		_lanzar_pregunta_aleatoria()
 		return
 
@@ -199,6 +209,8 @@ func _on_boton_color(indice: int):
 		_niveles_pasados += 1
 		lbl_estado.text = "¡Secuencia correcta!"
 		await get_tree().create_timer(TIEMPO_CONTINUAR).timeout
+		if not is_inside_tree():
+			return
 		_lanzar_pregunta_aleatoria()
 
 # =====================================================================
@@ -318,6 +330,8 @@ func _cerrar_modal_y_continuar(motivo: String):
 	_limpiar_contenedor_respuesta()
 	lbl_estado.text = motivo
 	await get_tree().create_timer(0.8).timeout
+	if not is_inside_tree():
+		return
 	_continuar_tras_pregunta()
 
 func _continuar_tras_pregunta():

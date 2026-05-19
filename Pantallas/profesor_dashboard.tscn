@@ -1,20 +1,244 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://Pantallas/profesor_dashboard.gd" id="1"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_PanelFlotante"]
-bg_color = Color(0.14, 0.16, 0.22, 1)
+[sub_resource type="StyleBoxFlat" id="SB_Fondo"]
+bg_color = Color(0.039, 0.039, 0.078, 1)
+
+[sub_resource type="StyleBoxFlat" id="SB_Header"]
+bg_color = Color(0.067, 0.067, 0.137, 0.95)
+border_width_bottom = 1
+border_color = Color(0.176, 0.176, 0.373, 1)
+
+[sub_resource type="StyleBoxFlat" id="SB_PanelSurface"]
+bg_color = Color(0.102, 0.102, 0.208, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.176, 0.176, 0.373, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="SB_AulaNormal"]
+bg_color = Color(0.137, 0.137, 0.278, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.176, 0.176, 0.373, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="SB_AulaHover"]
+bg_color = Color(0.176, 0.176, 0.345, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.941, 1, 0.6)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="SB_AulaActiva"]
+bg_color = Color(0, 0.941, 1, 0.18)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.35, 0.4, 0.55, 1)
+border_color = Color(0, 0.941, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0.941, 1, 0.35)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="SB_AlumnoCard"]
+bg_color = Color(0.122, 0.122, 0.243, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.176, 0.176, 0.373, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 18.0
+content_margin_top = 14.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxFlat" id="SB_AlumnoHover"]
+bg_color = Color(0.176, 0.176, 0.345, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.941, 1, 0.5)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 18.0
+content_margin_top = 14.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxFlat" id="SB_BadgeLv"]
+bg_color = Color(0.1, 0.08, 0.02, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.839, 0.039, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
-shadow_color = Color(0, 0, 0, 0.5)
-shadow_size = 8
+content_margin_left = 10.0
+content_margin_top = 3.0
+content_margin_right = 10.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxFlat" id="SB_CTA"]
+bg_color = Color(1, 0.176, 0.835, 0.95)
+border_width_left = 0
+border_width_top = 0
+border_width_right = 0
+border_width_bottom = 0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(1, 0.176, 0.835, 0.45)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="SB_CTAHover"]
+bg_color = Color(1, 0.31, 0.871, 1)
+border_width_left = 0
+border_width_top = 0
+border_width_right = 0
+border_width_bottom = 0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(1, 0.176, 0.835, 0.6)
+shadow_size = 20
+
+[sub_resource type="StyleBoxFlat" id="SB_BtnSec"]
+bg_color = Color(0.137, 0.137, 0.278, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.941, 1, 0.45)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="SB_BtnSecHover"]
+bg_color = Color(0, 0.941, 1, 0.15)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.941, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="SB_IconBtn"]
+bg_color = Color(0.137, 0.137, 0.278, 0.7)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.176, 0.176, 0.373, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SB_IconBtnHover"]
+bg_color = Color(0, 0.941, 1, 0.15)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.941, 1, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SB_PanelFlotante"]
+bg_color = Color(0.039, 0.039, 0.114, 0.97)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.941, 1, 0.6)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0.941, 1, 0.25)
+shadow_size = 24
+
+[sub_resource type="StyleBoxFlat" id="SB_BtnCerrarFlotante"]
+bg_color = Color(0.176, 0.176, 0.345, 0.7)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.176, 0.835, 0.6)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SB_Input"]
+bg_color = Color(0.067, 0.067, 0.137, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.176, 0.176, 0.373, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="SB_AvatarPill"]
+bg_color = Color(0.137, 0.137, 0.278, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.176, 0.176, 0.373, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
 
 [node name="ProfesorDashboard" type="Control"]
 layout_mode = 3
@@ -25,184 +249,248 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 
-[node name="Fondo" type="ColorRect" parent="."]
+[node name="Fondo" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.11, 0.12, 0.16, 1)
+theme_override_styles/panel = SubResource("SB_Fondo")
 
 [node name="Layout" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/separation = 0
+theme_override_constants/separation = 16
 
 [node name="Header" type="PanelContainer" parent="Layout"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 72)
+theme_override_styles/panel = SubResource("SB_Header")
 
-[node name="HBoxHeader" type="HBoxContainer" parent="Layout/Header"]
+[node name="MargenHeader" type="MarginContainer" parent="Layout/Header"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 8
 
-[node name="MargenIzq" type="Control" parent="Layout/Header/HBoxHeader"]
+[node name="HBoxHeader" type="HBoxContainer" parent="Layout/Header/MargenHeader"]
 layout_mode = 2
-custom_minimum_size = Vector2(15, 0)
+theme_override_constants/separation = 14
 
-[node name="Titulo" type="Label" parent="Layout/Header/HBoxHeader"]
+[node name="TituloApp" type="Label" parent="Layout/Header/MargenHeader/HBoxHeader"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Panel del Profesor - POKEDUCATION"
-theme_override_font_sizes/font_size = 30
+text = "POKEDUCATION · Panel Profesor"
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
+theme_override_font_sizes/font_size = 22
 vertical_alignment = 1
 
-[node name="BtnCerrarSesion" type="Button" parent="Layout/Header/HBoxHeader"]
+[node name="BtnAjustes" type="Button" parent="Layout/Header/MargenHeader/HBoxHeader"]
 layout_mode = 2
-custom_minimum_size = Vector2(180, 50)
-theme_override_font_sizes/font_size = 16
-text = "Cerrar Sesion"
+custom_minimum_size = Vector2(44, 44)
+tooltip_text = "Ajustes Alumnado (generación masiva)"
+theme_override_font_sizes/font_size = 18
+text = "⚙︎"
+theme_override_styles/normal = SubResource("SB_IconBtn")
+theme_override_styles/hover = SubResource("SB_IconBtnHover")
+theme_override_styles/pressed = SubResource("SB_IconBtnHover")
+theme_override_styles/focus = SubResource("SB_IconBtn")
 
-[node name="MargenDer" type="Control" parent="Layout/Header/HBoxHeader"]
+[node name="BtnAvatar" type="Button" parent="Layout/Header/MargenHeader/HBoxHeader"]
 layout_mode = 2
-custom_minimum_size = Vector2(15, 0)
+custom_minimum_size = Vector2(0, 44)
+tooltip_text = "Sesión"
+theme_override_font_sizes/font_size = 15
+text = "  Cargando…  ▾"
+theme_override_styles/normal = SubResource("SB_AvatarPill")
+theme_override_styles/hover = SubResource("SB_IconBtnHover")
+theme_override_styles/pressed = SubResource("SB_AvatarPill")
+theme_override_styles/focus = SubResource("SB_AvatarPill")
+theme_override_colors/font_color = Color(0.925, 0.937, 1, 1)
+
+[node name="PopupSesion" type="PopupMenu" parent="Layout/Header/MargenHeader/HBoxHeader/BtnAvatar"]
+size = Vector2i(180, 40)
 
 [node name="MainContent" type="HBoxContainer" parent="Layout"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 0
+theme_override_constants/separation = 16
 
-[node name="PanelAlumnos" type="PanelContainer" parent="Layout/MainContent"]
-self_modulate = Color(1, 1, 1, 0.8)
+[node name="MargenIzq" type="Control" parent="Layout/MainContent"]
+layout_mode = 2
+custom_minimum_size = Vector2(12, 0)
+
+[node name="PanelAulas" type="PanelContainer" parent="Layout/MainContent"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 0)
+theme_override_styles/panel = SubResource("SB_PanelSurface")
+
+[node name="MargenAulas" type="MarginContainer" parent="Layout/MainContent/PanelAulas"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 22
+
+[node name="VBoxAulas" type="VBoxContainer" parent="Layout/MainContent/PanelAulas/MargenAulas"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TituloAulas" type="Label" parent="Layout/MainContent/PanelAulas/MargenAulas/VBoxAulas"]
+layout_mode = 2
+text = "AULAS"
+theme_override_colors/font_color = Color(1, 0.176, 0.835, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="ScrollAulas" type="ScrollContainer" parent="Layout/MainContent/PanelAulas/MargenAulas/VBoxAulas"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ContenedorAulas" type="VBoxContainer" parent="Layout/MainContent/PanelAulas/MargenAulas/VBoxAulas/ScrollAulas"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.2
+theme_override_constants/separation = 10
+
+[node name="BtnNuevaAula" type="Button" parent="Layout/MainContent/PanelAulas/MargenAulas/VBoxAulas"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 44)
+text = "+ Nueva aula"
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("SB_BtnSec")
+theme_override_styles/hover = SubResource("SB_BtnSecHover")
+theme_override_styles/pressed = SubResource("SB_BtnSecHover")
+theme_override_styles/focus = SubResource("SB_BtnSec")
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
+
+[node name="PanelAlumnos" type="PanelContainer" parent="Layout/MainContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.6
+theme_override_styles/panel = SubResource("SB_PanelSurface")
 
 [node name="MargenAlumnos" type="MarginContainer" parent="Layout/MainContent/PanelAlumnos"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 22
 
 [node name="VBoxAlumnos" type="VBoxContainer" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 14
 
-[node name="TituloAlumnos" type="Label" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
+[node name="HeaderAlumnos" type="HBoxContainer" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
-text = "Lista de Alumnos"
-theme_override_font_sizes/font_size = 22
+theme_override_constants/separation = 10
 
-[node name="SepAlumnos" type="HSeparator" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
-layout_mode = 2
-
-[node name="HBoxAula" type="HBoxContainer" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="CmbAulas" type="OptionButton" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
+[node name="TituloAlumnos" type="Label" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HeaderAlumnos"]
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 42)
-theme_override_font_sizes/font_size = 15
-item_count = 1
-selected = 0
-popup/item_0/text = "Cargando aulas..."
-popup/item_0/id = 0
+text = "ALUMNOS · Selecciona un aula"
+theme_override_colors/font_color = Color(1, 0.176, 0.835, 1)
+theme_override_font_sizes/font_size = 14
+vertical_alignment = 1
 
-[node name="BtnCrearAula" type="Button" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
+[node name="BtnAnadirAlumno" type="Button" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HeaderAlumnos"]
 layout_mode = 2
-custom_minimum_size = Vector2(60, 42)
-theme_override_font_sizes/font_size = 18
-text = " + "
-tooltip_text = "Crear nueva aula"
+custom_minimum_size = Vector2(40, 40)
+tooltip_text = "Añadir alumno al aula"
+text = "+"
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("SB_IconBtn")
+theme_override_styles/hover = SubResource("SB_IconBtnHover")
+theme_override_styles/pressed = SubResource("SB_IconBtnHover")
+theme_override_styles/focus = SubResource("SB_IconBtn")
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
 
-[node name="BtnImportarCSV" type="Button" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/HBoxAula"]
-layout_mode = 2
-custom_minimum_size = Vector2(150, 42)
-theme_override_font_sizes/font_size = 15
-text = "Importar CSV"
-tooltip_text = "Importa una lista de alumnos desde un archivo CSV"
-
-[node name="DialogoCSV" type="FileDialog" parent="."]
-title = "Selecciona el CSV de alumnos"
-initial_position = 2
-size = Vector2i(700, 500)
-file_mode = 0
-access = 2
-filters = PackedStringArray("*.csv ; Archivos CSV")
-
-[node name="DialogoExportar" type="FileDialog" parent="."]
-title = "Guardar credenciales como"
-initial_position = 2
-size = Vector2i(700, 500)
-file_mode = 4
-access = 2
-filters = PackedStringArray("*.csv ; Archivos CSV")
-current_file = "credenciales.csv"
-
-[node name="ListaAlumnos" type="ItemList" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
+[node name="ScrollAlumnos" type="ScrollContainer" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_font_sizes/font_size = 15
+horizontal_scroll_mode = 0
 
-[node name="SeparadorV" type="VSeparator" parent="Layout/MainContent"]
-layout_mode = 2
-
-[node name="PanelBotones" type="PanelContainer" parent="Layout/MainContent"]
-self_modulate = Color(1, 1, 1, 0.8)
+[node name="ContenedorAlumnos" type="VBoxContainer" parent="Layout/MainContent/PanelAlumnos/MargenAlumnos/VBoxAlumnos/ScrollAlumnos"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.0
+theme_override_constants/separation = 10
 
-[node name="VBoxBotones" type="VBoxContainer" parent="Layout/MainContent/PanelBotones"]
+[node name="PanelBotones" type="PanelContainer" parent="Layout/MainContent"]
 layout_mode = 2
-theme_override_constants/separation = 15
-alignment = 1
+custom_minimum_size = Vector2(260, 0)
+theme_override_styles/panel = SubResource("SB_PanelSurface")
 
-[node name="TituloBotones" type="Label" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+[node name="MargenBotones" type="MarginContainer" parent="Layout/MainContent/PanelBotones"]
 layout_mode = 2
-text = "Tareas"
-horizontal_alignment = 1
-theme_override_font_sizes/font_size = 24
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 22
 
-[node name="Sep" type="HSeparator" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+[node name="VBoxBotones" type="VBoxContainer" parent="Layout/MainContent/PanelBotones/MargenBotones"]
 layout_mode = 2
+theme_override_constants/separation = 14
 
-[node name="BtnNuevaEntrega" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+[node name="TituloBotones" type="Label" parent="Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 64)
-theme_override_font_sizes/font_size = 18
-text = "Añadir Nueva Entrega"
+text = "TAREAS"
+theme_override_colors/font_color = Color(1, 0.839, 0.039, 1)
+theme_override_font_sizes/font_size = 13
 
-[node name="BtnRevisar" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+[node name="BtnNuevaEntrega" type="Button" parent="Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 64)
-theme_override_font_sizes/font_size = 18
-text = "Ranking del Aula"
+custom_minimum_size = Vector2(0, 64)
+text = "+ NUEVA ENTREGA"
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("SB_CTA")
+theme_override_styles/hover = SubResource("SB_CTAHover")
+theme_override_styles/pressed = SubResource("SB_CTAHover")
+theme_override_styles/focus = SubResource("SB_CTA")
+theme_override_colors/font_color = Color(0.039, 0.039, 0.078, 1)
+theme_override_colors/font_hover_color = Color(0.039, 0.039, 0.078, 1)
+theme_override_colors/font_pressed_color = Color(0.039, 0.039, 0.078, 1)
 
-[node name="BtnCorregir" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+[node name="BtnRevisar" type="Button" parent="Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 64)
-theme_override_font_sizes/font_size = 18
-text = "Corregir Pendientes"
+custom_minimum_size = Vector2(0, 52)
+text = "★  Ranking del Aula"
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("SB_BtnSec")
+theme_override_styles/hover = SubResource("SB_BtnSecHover")
+theme_override_styles/pressed = SubResource("SB_BtnSecHover")
+theme_override_styles/focus = SubResource("SB_BtnSec")
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
 
-[node name="Sep2" type="HSeparator" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+[node name="BtnCorregir" type="Button" parent="Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones"]
 layout_mode = 2
+custom_minimum_size = Vector2(0, 52)
+text = "✓  Corregir Pendientes"
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("SB_BtnSec")
+theme_override_styles/hover = SubResource("SB_BtnSecHover")
+theme_override_styles/pressed = SubResource("SB_BtnSecHover")
+theme_override_styles/focus = SubResource("SB_BtnSec")
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
 
-[node name="BtnEstadisticas" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+[node name="BtnEstadisticas" type="Button" parent="Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 64)
-theme_override_font_sizes/font_size = 18
-text = "Estadísticas de pruebas"
+custom_minimum_size = Vector2(0, 52)
+text = "Estadísticas"
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("SB_BtnSec")
+theme_override_styles/hover = SubResource("SB_BtnSecHover")
+theme_override_styles/pressed = SubResource("SB_BtnSecHover")
+theme_override_styles/focus = SubResource("SB_BtnSec")
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
 
-[node name="BtnAjustes" type="Button" parent="Layout/MainContent/PanelBotones/VBoxBotones"]
+[node name="MargenDer" type="Control" parent="Layout/MainContent"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 64)
-theme_override_font_sizes/font_size = 18
-text = "Ajustes Alumnado"
+custom_minimum_size = Vector2(12, 0)
+
+[node name="MargenInferior" type="Control" parent="Layout"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 12)
 
 [node name="PanelFlotante" type="PanelContainer" parent="."]
 visible = false
@@ -214,18 +502,18 @@ anchor_top = 0.06
 anchor_right = 0.88
 anchor_bottom = 0.94
 mouse_filter = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_PanelFlotante")
+theme_override_styles/panel = SubResource("SB_PanelFlotante")
 
 [node name="MargenFlotante" type="MarginContainer" parent="PanelFlotante"]
 layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 15
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
 
 [node name="VBoxFlotante" type="VBoxContainer" parent="PanelFlotante/MargenFlotante"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 12
 
 [node name="HeaderFlotante" type="HBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
 layout_mode = 2
@@ -233,13 +521,20 @@ layout_mode = 2
 [node name="TituloFlotante" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/HeaderFlotante"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Detalles:"
-theme_override_font_sizes/font_size = 22
+text = "Detalles"
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
+theme_override_font_sizes/font_size = 20
 
 [node name="BtnCerrarFlotante" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/HeaderFlotante"]
 layout_mode = 2
-custom_minimum_size = Vector2(30, 30)
+custom_minimum_size = Vector2(34, 34)
 text = "X"
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("SB_BtnCerrarFlotante")
+theme_override_styles/hover = SubResource("SB_BtnSecHover")
+theme_override_styles/pressed = SubResource("SB_BtnSecHover")
+theme_override_styles/focus = SubResource("SB_BtnCerrarFlotante")
+theme_override_colors/font_color = Color(1, 0.176, 0.835, 1)
 
 [node name="SepFlotante" type="HSeparator" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
 layout_mode = 2
@@ -268,15 +563,19 @@ theme_override_constants/separation = 10
 [node name="LabelAula" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
 layout_mode = 2
 text = "Nombre del Aula:"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
 
 [node name="EditNombreAula" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 35)
+custom_minimum_size = Vector2(0, 38)
 placeholder_text = "Nombre del aula"
+theme_override_styles/normal = SubResource("SB_Input")
+theme_override_styles/focus = SubResource("SB_Input")
 
 [node name="LabelCant" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
 layout_mode = 2
 text = "Cantidad de Alumnos a generar:"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
 
 [node name="SpinAlumnos" type="SpinBox" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
 layout_mode = 2
@@ -286,26 +585,29 @@ value = 15.0
 
 [node name="BtnConfirmarGenerar" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 44)
 text = "Generar Credenciales"
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("SB_CTA")
+theme_override_styles/hover = SubResource("SB_CTAHover")
+theme_override_styles/pressed = SubResource("SB_CTAHover")
+theme_override_styles/focus = SubResource("SB_CTA")
+theme_override_colors/font_color = Color(0.039, 0.039, 0.078, 1)
+theme_override_colors/font_hover_color = Color(0.039, 0.039, 0.078, 1)
+theme_override_colors/font_pressed_color = Color(0.039, 0.039, 0.078, 1)
 
 [node name="LabelResultado" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
 layout_mode = 2
 text = "Credenciales generadas (copia esto):"
+theme_override_colors/font_color = Color(1, 0.839, 0.039, 1)
 
 [node name="TextResultado" type="TextEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
 layout_mode = 2
 size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 150)
+custom_minimum_size = Vector2(0, 180)
 editable = false
 wrap_mode = 1
 placeholder_text = "Las credenciales aparecerán aquí..."
-
-[node name="BtnExportarCSV" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxGeneracion"]
-visible = false
-layout_mode = 2
-custom_minimum_size = Vector2(0, 35)
-text = "Exportar credenciales a CSV"
 
 [node name="VBoxEstadisticas" type="VBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante"]
 visible = false
@@ -320,6 +622,7 @@ theme_override_constants/separation = 12
 [node name="LblPrueba" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/HBoxSelectorPrueba"]
 layout_mode = 2
 text = "Prueba:"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
 
 [node name="CmbPruebas" type="OptionButton" parent="PanelFlotante/MargenFlotante/VBoxFlotante/VBoxEstadisticas/HBoxSelectorPrueba"]
 layout_mode = 2
@@ -353,56 +656,86 @@ theme_override_constants/separation = 10
 [node name="LblGestionTitulo" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
 layout_mode = 2
 text = "Datos del alumno"
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
+theme_override_font_sizes/font_size = 16
 
 [node name="GridDatos" type="GridContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
 layout_mode = 2
 columns = 2
 theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 6
+theme_override_constants/v_separation = 8
 
 [node name="LblUsuario" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
 text = "Usuario:"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
 
 [node name="EditUsuario" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 32)
+custom_minimum_size = Vector2(280, 34)
 placeholder_text = "Nombre de usuario"
+theme_override_styles/normal = SubResource("SB_Input")
+theme_override_styles/focus = SubResource("SB_Input")
 
 [node name="LblNombre" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
 text = "Nombre real:"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
 
 [node name="EditNombre" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 32)
+custom_minimum_size = Vector2(280, 34)
+theme_override_styles/normal = SubResource("SB_Input")
+theme_override_styles/focus = SubResource("SB_Input")
 
 [node name="LblApellidos" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
 text = "Apellidos:"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
 
 [node name="EditApellidos" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 32)
+custom_minimum_size = Vector2(280, 34)
+theme_override_styles/normal = SubResource("SB_Input")
+theme_override_styles/focus = SubResource("SB_Input")
 
 [node name="LblEmail" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
 text = "Email:"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
 
 [node name="EditEmail" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 32)
+custom_minimum_size = Vector2(280, 34)
+theme_override_styles/normal = SubResource("SB_Input")
+theme_override_styles/focus = SubResource("SB_Input")
 
 [node name="LblPassword" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
 text = "Contraseña nueva:"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
 
 [node name="EditPassword" type="LineEdit" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
 layout_mode = 2
-custom_minimum_size = Vector2(280, 32)
+custom_minimum_size = Vector2(280, 34)
 placeholder_text = "(dejar vacío para no cambiar)"
 secret = true
+theme_override_styles/normal = SubResource("SB_Input")
+theme_override_styles/focus = SubResource("SB_Input")
+
+[node name="LblExperiencia" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+text = "Experiencia (XP):"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
+
+[node name="EditExperiencia" type="SpinBox" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/GridDatos"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 34)
+min_value = 0.0
+max_value = 999999.0
+step = 1.0
+value = 0.0
+tooltip_text = "Sobrescribe el valor de XP del alumno (se aplica al pulsar Guardar)"
 
 [node name="HBoxAccionesAlumno" type="HBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
 layout_mode = 2
@@ -410,14 +743,25 @@ theme_override_constants/separation = 12
 
 [node name="BtnGuardarAlumno" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxAccionesAlumno"]
 layout_mode = 2
-custom_minimum_size = Vector2(180, 38)
+custom_minimum_size = Vector2(180, 40)
 text = "Guardar cambios"
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("SB_BtnSec")
+theme_override_styles/hover = SubResource("SB_BtnSecHover")
+theme_override_styles/pressed = SubResource("SB_BtnSecHover")
+theme_override_styles/focus = SubResource("SB_BtnSec")
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
 
 [node name="BtnBorrarAlumno" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxAccionesAlumno"]
 layout_mode = 2
-custom_minimum_size = Vector2(180, 38)
+custom_minimum_size = Vector2(180, 40)
 text = "Borrar alumno"
-theme_override_colors/font_color = Color(1, 0.55, 0.55, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("SB_BtnCerrarFlotante")
+theme_override_styles/hover = SubResource("SB_BtnSecHover")
+theme_override_styles/pressed = SubResource("SB_BtnSecHover")
+theme_override_styles/focus = SubResource("SB_BtnCerrarFlotante")
+theme_override_colors/font_color = Color(1, 0.4, 0.5, 1)
 
 [node name="SepNota" type="HSeparator" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
 layout_mode = 2
@@ -425,7 +769,8 @@ layout_mode = 2
 [node name="LblTituloNota" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
 layout_mode = 2
 text = "Asignar nota manual"
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 0.176, 0.835, 1)
+theme_override_font_sizes/font_size = 16
 
 [node name="HBoxNotaManual" type="HBoxContainer" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
 layout_mode = 2
@@ -434,6 +779,7 @@ theme_override_constants/separation = 10
 [node name="LblPuntos" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxNotaManual"]
 layout_mode = 2
 text = "Puntos:"
+theme_override_colors/font_color = Color(0.541, 0.541, 0.722, 1)
 
 [node name="PuntosNotaSpin" type="SpinBox" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxNotaManual"]
 layout_mode = 2
@@ -446,11 +792,19 @@ value = 10.0
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Motivo (opcional)"
+theme_override_styles/normal = SubResource("SB_Input")
+theme_override_styles/focus = SubResource("SB_Input")
 
 [node name="BtnAnadirNota" type="Button" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno/HBoxNotaManual"]
 layout_mode = 2
 custom_minimum_size = Vector2(140, 32)
 text = "+ Añadir nota"
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("SB_BtnSec")
+theme_override_styles/hover = SubResource("SB_BtnSecHover")
+theme_override_styles/pressed = SubResource("SB_BtnSecHover")
+theme_override_styles/focus = SubResource("SB_BtnSec")
+theme_override_colors/font_color = Color(0, 0.941, 1, 1)
 
 [node name="SepHistorial" type="HSeparator" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
 layout_mode = 2
@@ -458,9 +812,18 @@ layout_mode = 2
 [node name="LblHistorial" type="Label" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
 layout_mode = 2
 text = "Historial de notas"
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(1, 0.839, 0.039, 1)
+theme_override_font_sizes/font_size = 15
 
 [node name="HistorialNotas" type="ItemList" parent="PanelFlotante/MargenFlotante/VBoxFlotante/ScrollGestion/VBoxGestionAlumno"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 180)
 theme_override_font_sizes/font_size = 13
+
+[node name="StylesPlantillas" type="Node" parent="."]
+metadata/sb_aula_normal = SubResource("SB_AulaNormal")
+metadata/sb_aula_hover = SubResource("SB_AulaHover")
+metadata/sb_aula_activa = SubResource("SB_AulaActiva")
+metadata/sb_alumno_card = SubResource("SB_AlumnoCard")
+metadata/sb_alumno_hover = SubResource("SB_AlumnoHover")
+metadata/sb_badge_lv = SubResource("SB_BadgeLv")

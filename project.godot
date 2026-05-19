@@ -21,6 +21,7 @@ Notificador="*res://Global/Notificador.gd"
 GameManager="*res://Global/GameManager.gd"
 ConexionManager="*res://Global/ConexionManager.gd"
 NpcManager="*res://Global/NpcManager.gd"
+SafeArea="*res://Global/SafeArea.gd"
 
 [display]
 

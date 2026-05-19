@@ -30,7 +30,7 @@ layout_mode = 2
 horizontal_alignment = 1
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 theme_override_font_sizes/font_size = 14
-text = "🔍  MODO PREVISUALIZACIÓN — Lo que verá el alumno (no se envía nada)"
+text = "MODO PREVISUALIZACIÓN — Lo que verá el alumno (no se envía nada)"
 
 [node name="Centro" type="CenterContainer" parent="."]
 layout_mode = 1

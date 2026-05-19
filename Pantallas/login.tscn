@@ -46,7 +46,7 @@ theme_override_constants/separation = 12
 [node name="Titulo" type="Label" parent="CenterContainer/Panel/Margen/VBox" unique_id=1702925872]
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
-text = "🎮 POKEDUCATION"
+text = "POKEDUCATION"
 horizontal_alignment = 1
 
 [node name="Subtitulo" type="Label" parent="CenterContainer/Panel/Margen/VBox" unique_id=821158149]

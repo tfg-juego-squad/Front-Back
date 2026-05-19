@@ -1,9 +1,14 @@
 extends Control
 
 # Minijuego "Conducción" (subtipo ESQUIVA): el alumno avanza por una pista
-# de 3 carriles y debe cambiar de carril para esquivar coches que aparecen
-# arriba. Hay dos disparadores educativos:
-#   - Al chocar con un coche → pregunta sorpresa (sigues vivo, breve invuln).
+# con 3 carriles visibles pero **movimiento horizontal libre**. Tiene que
+# esquivar distintos tipos de obstáculos que vienen por arriba:
+#   - COCHE   → choque + pregunta sorpresa
+#   - CONO    → choque + pregunta sorpresa (más pequeño y lento)
+#   - BARRERA → choque + pregunta sorpresa (recorte de carretera, ocupa lateral)
+#   - ACEITE  → no rompe pero te frena (slow) durante un instante
+# Disparadores educativos:
+#   - Al chocar con un coche / cono / barrera → pregunta sorpresa.
 #   - Cada N metros recorridos → pregunta sorpresa.
 # El nivel termina cuando se alcanzan los metros objetivo (escala con nivel).
 
@@ -14,6 +19,7 @@ extends Control
 @onready var jugador: ColorRect = $Layout/CentroPanel/PanelJuego/VBoxCentro/MargenJuego/AreaJuego/Jugador
 @onready var lbl_estado = $Layout/CentroPanel/PanelJuego/VBoxCentro/HBoxEstado/LblEstado
 @onready var lbl_tiempo = $Layout/CentroPanel/PanelJuego/VBoxCentro/HBoxEstado/LblTiempo
+@onready var lbl_countdown: Label = $LblCountdown
 
 @onready var overlay_pregunta = $OverlayPregunta
 @onready var lbl_enunciado = $OverlayPregunta/ModalPregunta/MarginModal/VBoxModal/LblEnunciado
@@ -26,10 +32,13 @@ extends Control
 
 # --- Parámetros del juego ---
 const NUM_CARRILES := 3
+const MARGEN_PISTA := 30.0                    # padding lateral de la pista
 const VEL_METROS_POR_SEG := 28.0
 const METROS_BASE_NIVEL := 220.0
 const METROS_INCREMENTO := 80.0
-const METROS_ENTRE_PREGUNTAS := 90.0
+# Antes 90 m → preguntas muy seguidas. Ahora 180 m: una pregunta cada ~6.5 s
+# de conducción real, deja más margen para jugar.
+const METROS_ENTRE_PREGUNTAS := 180.0
 const SPAWN_INTERVALO_BASE := 1.10
 const SPAWN_INTERVALO_MIN := 0.45
 const SPAWN_INTERVALO_RED := 0.07
@@ -37,7 +46,11 @@ const VEL_BLOQUE_PX := 280.0
 const VEL_BLOQUE_INCR := 35.0
 const TIEMPO_CONTINUAR := 0.9
 const INVULN_TRAS_CHOQUE := 1.2
-const TIEMPO_CAMBIO_CARRIL := 0.12
+
+# Movimiento lateral continuo (en vez de saltos de carril).
+const VEL_LATERAL := 520.0                    # px/seg horizontal
+const FACTOR_SLOW_ACEITE := 0.35              # multiplicador de velocidad sobre aceite
+const DURACION_SLOW_ACEITE := 0.45            # cuánto dura el efecto tras pasar el aceite
 
 const COLORES_COCHE = [
 	Color(1, 0.35, 0.35, 1),  # rojo
@@ -48,6 +61,9 @@ const COLORES_COCHE = [
 ]
 const COLOR_JUGADOR = Color(0.3, 0.95, 1.0, 1)
 const COLOR_JUGADOR_HIT = Color(1, 0.5, 0.3, 1)
+const COLOR_CONO = Color(1, 0.55, 0.15, 1)
+const COLOR_ACEITE = Color(0.05, 0.05, 0.1, 0.85)
+const COLOR_BARRERA = Color(0.95, 0.85, 0.15, 1)
 
 var _prueba_id: int = -1
 var _prueba_titulo: String = ""
@@ -57,10 +73,7 @@ var _nivel_actual: int = 0
 var _niveles_pasados: int = 0
 
 # Estado del nivel actual
-var _carril_actual: int = 1                  # 0 / 1 / 2
-var _carril_target: int = 1
-var _cambio_carril_t: float = 0.0
-var _bloques: Array = []                     # [{rect, vel, carril}]
+var _bloques: Array = []                     # [{rect, vel, tipo}]
 var _metros_recorridos: float = 0.0
 var _metros_objetivo: float = 0.0
 var _spawn_acumulado: float = 0.0
@@ -68,9 +81,11 @@ var _spawn_intervalo: float = SPAWN_INTERVALO_BASE
 var _vel_bloque_px: float = VEL_BLOQUE_PX
 var _ultima_pregunta_metros: float = 0.0
 var _invulnerable_hasta: float = 0.0
+var _slow_hasta: float = 0.0
 var _nivel_en_curso: bool = false
 var _input_activo: bool = false
-var _x_carril: Array = []                    # posiciones x de cada carril
+var _en_countdown: bool = false
+var _x_carril: Array = []                    # posiciones x de cada carril (centros)
 var _rng := RandomNumberGenerator.new()
 var _marcas_carretera: Array = []  # líneas de carretera que se mueven hacia abajo
 
@@ -86,8 +101,9 @@ func _ready():
 	btn_saltar_pregunta.pressed.connect(_on_saltar_pregunta)
 	timer_pregunta.timeout.connect(_tick_pregunta)
 	overlay_pregunta.visible = false
+	lbl_countdown.visible = false
 	_rng.randomize()
-	titulo.text = "Conducción · 3 carriles"
+	titulo.text = "Conducción"
 	jugador.color = COLOR_JUGADOR
 
 	# Recalcular carriles cuando cambia el tamaño del área (full screen, etc.)
@@ -131,10 +147,10 @@ func _recalcular_carriles():
 	var alto = area_juego.size.y
 	if ancho <= 0 or alto <= 0:
 		return
-	# Jugador ~8% del ancho de carril → coches pequeños y proporcionados
+	# Jugador ~6% del ancho de carril → coches pequeños y proporcionados.
 	var ancho_carril = ancho / float(NUM_CARRILES)
-	var tam_x = clamp(ancho_carril * 0.08, 28, 60)
-	var tam_y = tam_x * 1.8
+	var tam_x = clamp(ancho_carril * 0.06, 22, 42)
+	var tam_y = tam_x * 1.7
 	jugador.custom_minimum_size = Vector2(tam_x, tam_y)
 	jugador.size = Vector2(tam_x, tam_y)
 	# Ajustar parabrisas del jugador
@@ -142,13 +158,16 @@ func _recalcular_carriles():
 	if parabrisas:
 		parabrisas.size = Vector2(tam_x * 0.7, tam_y * 0.15)
 		parabrisas.position = Vector2(tam_x * 0.15, tam_y * 0.1)
-	var margen = 30.0
-	var ancho_util = max(ancho - 2 * margen, 60.0)
+	var ancho_util = max(ancho - 2 * MARGEN_PISTA, 60.0)
 	_x_carril.clear()
 	for i in range(NUM_CARRILES):
 		var t = (float(i) + 0.5) / float(NUM_CARRILES)
-		_x_carril.append(margen + ancho_util * t - jugador.size.x / 2.0)
-	_colocar_jugador_instant(_carril_actual)
+		_x_carril.append(MARGEN_PISTA + ancho_util * t - jugador.size.x / 2.0)
+	# Colocar al jugador en el centro si aún no lo hemos movido
+	jugador.position = Vector2(
+		(ancho - jugador.size.x) / 2.0,
+		alto - jugador.size.y - 18
+	)
 	_crear_marcas_carretera()
 
 func _crear_marcas_carretera():
@@ -159,10 +178,9 @@ func _crear_marcas_carretera():
 	_marcas_carretera.clear()
 	var ancho = area_juego.size.x
 	var alto = area_juego.size.y
-	var ancho_carril = ancho / float(NUM_CARRILES)
 	# Marcas punteadas entre carriles
 	for c in range(1, NUM_CARRILES):
-		var x_linea = 30.0 + (ancho - 60.0) * (float(c) / float(NUM_CARRILES))
+		var x_linea = MARGEN_PISTA + (ancho - 2 * MARGEN_PISTA) * (float(c) / float(NUM_CARRILES))
 		var y = 0.0
 		while y < alto:
 			var marca = ColorRect.new()
@@ -174,14 +192,6 @@ func _crear_marcas_carretera():
 			area_juego.move_child(marca, 0)  # detrás de todo
 			_marcas_carretera.append(marca)
 			y += 55.0
-
-func _colocar_jugador_instant(carril: int):
-	if _x_carril.is_empty():
-		return
-	jugador.position = Vector2(
-		_x_carril[carril],
-		area_juego.size.y - jugador.size.y - 18
-	)
 
 # =====================================================================
 # CICLO DE NIVEL
@@ -203,15 +213,19 @@ func _iniciar_siguiente_nivel():
 		SPAWN_INTERVALO_BASE - SPAWN_INTERVALO_RED * (_nivel_actual - 1)
 	)
 	_vel_bloque_px = VEL_BLOQUE_PX + VEL_BLOQUE_INCR * (_nivel_actual - 1)
-	_carril_actual = 1
-	_carril_target = 1
-	_cambio_carril_t = 1.0
-	_colocar_jugador_instant(1)
+	_slow_hasta = 0.0
+	_invulnerable_hasta = 0.0
 	jugador.modulate = Color.WHITE
 	jugador.color = COLOR_JUGADOR
-	lbl_estado.text = "← A / D → para cambiar de carril · ¡Esquiva los coches!"
-	_nivel_en_curso = true
-	_input_activo = true
+	# Centramos el coche en la pista al empezar el nivel.
+	jugador.position = Vector2(
+		(area_juego.size.x - jugador.size.x) / 2.0,
+		area_juego.size.y - jugador.size.y - 18
+	)
+	lbl_estado.text = "Prepárate..."
+	_nivel_en_curso = false
+	_input_activo = false
+	_mostrar_countdown()
 
 func _limpiar_bloques():
 	for b in _bloques:
@@ -220,88 +234,167 @@ func _limpiar_bloques():
 	_bloques.clear()
 
 # =====================================================================
+# COUNTDOWN 3 · 2 · 1 · YA
+# =====================================================================
+
+func _mostrar_countdown():
+	if _en_countdown:
+		return
+	_en_countdown = true
+	lbl_countdown.visible = true
+	lbl_countdown.pivot_offset = lbl_countdown.size / 2.0
+	for paso in ["3", "2", "1", "¡YA!"]:
+		if not is_inside_tree():
+			return
+		lbl_countdown.text = paso
+		lbl_countdown.scale = Vector2(1.8, 1.8)
+		lbl_countdown.modulate = Color(1, 1, 1, 0)
+		var tw = create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(lbl_countdown, "scale", Vector2.ONE, 0.18)
+		tw.tween_property(lbl_countdown, "modulate:a", 1.0, 0.15)
+		await get_tree().create_timer(0.7).timeout
+	if not is_inside_tree():
+		_en_countdown = false
+		return
+	lbl_countdown.visible = false
+	_en_countdown = false
+	lbl_estado.text = "← A / D → mover libremente · ¡Esquiva los obstáculos!"
+	_nivel_en_curso = true
+	_input_activo = true
+
+# =====================================================================
 # LOOP DE JUEGO
 # =====================================================================
 
 func _process(delta):
-	if not _nivel_en_curso:
+	# Si hay pregunta visible o no estamos jugando, congelamos el juego.
+	if not _nivel_en_curso or overlay_pregunta.visible or _en_countdown:
 		return
-	_actualizar_cambio_carril(delta)
-	_spawnear_coches(delta)
-	_mover_coches(delta)
+	_mover_jugador(delta)
+	_spawnear_obstaculos(delta)
+	_mover_bloques(delta)
 	# Metros avanzados antes de evaluar colisiones para que el HUD se actualice
 	# aunque haya choque inmediato.
 	_metros_recorridos += VEL_METROS_POR_SEG * delta
 	lbl_tiempo.text = "%d / %d m" % [int(_metros_recorridos), int(_metros_objetivo)]
 	_animar_marcas_carretera(delta)
 
-	if _detectar_colision():
-		_on_choque()
-		return
-
-	# Disparador por distancia
-	if _metros_recorridos - _ultima_pregunta_metros >= METROS_ENTRE_PREGUNTAS:
-		_ultima_pregunta_metros = _metros_recorridos
-		_lanzar_pregunta_aleatoria("Checkpoint a los %d m" % int(_metros_recorridos))
-		return
-
-	# Nivel completado
+	# Nivel completado: lo evaluamos PRIMERO para que una recompensa de fin de
+	# nivel no se confunda con un checkpoint si en el mismo frame se cruzan
+	# ambos umbrales.
 	if _metros_recorridos >= _metros_objetivo:
 		_niveles_pasados += 1
 		_nivel_en_curso = false
 		_input_activo = false
 		lbl_estado.text = "¡Nivel %d superado!" % _nivel_actual
 		_lanzar_pregunta_aleatoria("Recompensa de nivel")
+		return
 
-func _input(event):
+	if _detectar_colisiones_y_aplicar_aceite():
+		_on_choque()
+		return
+
+	# Disparador por distancia (solo si aún no hemos alcanzado el objetivo)
+	if _metros_recorridos - _ultima_pregunta_metros >= METROS_ENTRE_PREGUNTAS:
+		_ultima_pregunta_metros = _metros_recorridos
+		_nivel_en_curso = false
+		_input_activo = false
+		_lanzar_pregunta_aleatoria("Checkpoint a los %d m" % int(_metros_recorridos))
+		return
+
+func _mover_jugador(delta):
 	if not _input_activo:
 		return
-	if event.is_echo() or not event.is_pressed():
+	var dir := 0.0
+	if Input.is_action_pressed("ui_left"):
+		dir -= 1.0
+	if Input.is_action_pressed("ui_right"):
+		dir += 1.0
+	if dir == 0.0:
 		return
-	if event.is_action_pressed("ui_left"):
-		_intentar_cambio_carril(-1)
-	elif event.is_action_pressed("ui_right"):
-		_intentar_cambio_carril(1)
-
-func _intentar_cambio_carril(direccion: int):
-	var nuevo = clamp(_carril_target + direccion, 0, NUM_CARRILES - 1)
-	if nuevo == _carril_target:
-		return
-	_carril_actual = _carril_target  # punto de salida = donde realmente estamos
-	_carril_target = nuevo
-	_cambio_carril_t = 0.0
-
-func _actualizar_cambio_carril(delta):
-	if _x_carril.is_empty():
-		return
-	if _cambio_carril_t < 1.0:
-		_cambio_carril_t = min(1.0, _cambio_carril_t + delta / TIEMPO_CAMBIO_CARRIL)
-	var x_origen = _x_carril[_carril_actual]
-	var x_destino = _x_carril[_carril_target]
-	var x = lerp(x_origen, x_destino, _cambio_carril_t)
-	jugador.position.x = x
+	# Si estamos sobre aceite, vamos más lentos.
+	var vel = VEL_LATERAL
+	if Time.get_ticks_msec() / 1000.0 < _slow_hasta:
+		vel *= FACTOR_SLOW_ACEITE
+	var x_min = MARGEN_PISTA
+	var x_max = area_juego.size.x - MARGEN_PISTA - jugador.size.x
+	jugador.position.x = clamp(jugador.position.x + dir * vel * delta, x_min, x_max)
 	jugador.position.y = area_juego.size.y - jugador.size.y - 18
 
-func _spawnear_coches(delta):
+func _spawnear_obstaculos(delta):
 	_spawn_acumulado += delta
 	while _spawn_acumulado >= _spawn_intervalo:
 		_spawn_acumulado -= _spawn_intervalo
-		_spawnear_un_coche()
+		_spawnear_uno()
 
-func _spawnear_un_coche():
+func _spawnear_uno():
 	if _x_carril.is_empty():
 		return
-	var carril = _rng.randi_range(0, NUM_CARRILES - 1)
+	# Guardia: nunca dejamos al jugador con todos los carriles bloqueados arriba.
+	var ocupados = _carriles_ocupados_arriba()
+	var libres: Array = []
+	for i in range(NUM_CARRILES):
+		if not ocupados[i]:
+			libres.append(i)
+	# Si NO hay ningún carril libre arriba, esperamos al siguiente tick.
+	if libres.is_empty():
+		return
+	# Pesos: coche 50%, cono 22%, aceite 18%, barrera 10%.
+	# La barrera solo se permite si quedan al menos 2 carriles libres (porque
+	# ella misma ocupa 2 y debe dejar al menos uno).
+	var roll = _rng.randf()
+	if roll < 0.50:
+		_spawn_coche(libres)
+	elif roll < 0.72:
+		_spawn_cono(libres)
+	elif roll < 0.90:
+		_spawn_aceite()
+	else:
+		if libres.size() >= 3:
+			_spawn_barrera()
+		else:
+			_spawn_coche(libres)
+
+# Devuelve un Array[bool] de tamaño NUM_CARRILES indicando si ese carril
+# tiene un obstáculo SÓLIDO en la zona alta del área (los primeros ~30%).
+# El aceite no cuenta porque se puede pisar.
+func _carriles_ocupados_arriba() -> Array:
+	var ocupados: Array = []
+	for i in range(NUM_CARRILES):
+		ocupados.append(false)
+	var umbral_y = area_juego.size.y * 0.30
+	for b in _bloques:
+		if not is_instance_valid(b.rect):
+			continue
+		var tipo = str(b.get("tipo", ""))
+		if tipo == "ACEITE":
+			continue
+		if b.rect.position.y > umbral_y:
+			continue
+		for c in b.get("carriles", []):
+			var idx = int(c)
+			if idx >= 0 and idx < NUM_CARRILES:
+				ocupados[idx] = true
+	return ocupados
+
+# Centro X del carril i (en coords locales del área de juego).
+func _centro_carril_x(i: int) -> float:
+	var ancho_util = area_juego.size.x - 2 * MARGEN_PISTA
+	return MARGEN_PISTA + ancho_util * (float(i) + 0.5) / float(NUM_CARRILES)
+
+# Coche: ocupa carril completo, tamaño = jugador, velocidad normal.
+func _spawn_coche(libres: Array):
+	var carril = libres[_rng.randi() % libres.size()]
 	var ancho = jugador.size.x
 	var alto = jugador.size.y
-	var color_coche = COLORES_COCHE[_rng.randi() % COLORES_COCHE.size()]
-	# Carrocería principal
+	var color = COLORES_COCHE[_rng.randi() % COLORES_COCHE.size()]
 	var rect = ColorRect.new()
-	rect.color = color_coche
+	rect.color = color
 	rect.size = Vector2(ancho, alto)
-	rect.position = Vector2(_x_carril[carril], -alto)
+	rect.position = Vector2(_centro_carril_x(carril) - ancho / 2.0, -alto)
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Parabrisas (barra oscura en la parte superior del coche)
+	# Parabrisas
 	var parabrisas = ColorRect.new()
 	parabrisas.color = Color(0.15, 0.2, 0.3, 0.85)
 	parabrisas.size = Vector2(ancho * 0.7, alto * 0.15)
@@ -309,7 +402,78 @@ func _spawnear_un_coche():
 	parabrisas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rect.add_child(parabrisas)
 	area_juego.add_child(rect)
-	_bloques.append({"rect": rect, "vel": _vel_bloque_px, "carril": carril})
+	_bloques.append({"rect": rect, "vel": _vel_bloque_px, "tipo": "COCHE", "carriles": [carril]})
+
+# Cono: pequeño, lento, centrado en su carril (sin jitter — feel de 3 carriles).
+func _spawn_cono(libres: Array):
+	var carril = libres[_rng.randi() % libres.size()]
+	var ancho = jugador.size.x * 0.55
+	var alto = jugador.size.y * 0.55
+	var rect = ColorRect.new()
+	rect.color = COLOR_CONO
+	rect.size = Vector2(ancho, alto)
+	rect.position = Vector2(_centro_carril_x(carril) - ancho / 2.0, -alto)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Banda blanca central, look de cono.
+	var banda = ColorRect.new()
+	banda.color = Color(1, 1, 1, 0.85)
+	banda.size = Vector2(ancho, alto * 0.18)
+	banda.position = Vector2(0, alto * 0.4)
+	banda.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.add_child(banda)
+	area_juego.add_child(rect)
+	_bloques.append({"rect": rect, "vel": _vel_bloque_px * 0.7, "tipo": "CONO", "carriles": [carril]})
+
+# Mancha de aceite: ocupa 1 carril completo. No mata, te frena al pisarla.
+# Como NO es sólido, no usa la lista de carriles libres — puede caer sobre
+# cualquier carril.
+func _spawn_aceite():
+	var carril = _rng.randi_range(0, NUM_CARRILES - 1)
+	var ancho_carril = (area_juego.size.x - 2 * MARGEN_PISTA) / float(NUM_CARRILES)
+	var ancho = ancho_carril * 0.9
+	var alto = jugador.size.y * 1.4
+	var rect = ColorRect.new()
+	rect.color = COLOR_ACEITE
+	rect.size = Vector2(ancho, alto)
+	rect.position = Vector2(_centro_carril_x(carril) - ancho / 2.0, -alto)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Reflejo central tipo charco.
+	var brillo = ColorRect.new()
+	brillo.color = Color(0.7, 0.7, 0.85, 0.18)
+	brillo.size = Vector2(ancho * 0.6, alto * 0.3)
+	brillo.position = Vector2(ancho * 0.2, alto * 0.3)
+	brillo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.add_child(brillo)
+	area_juego.add_child(rect)
+	# Algo más lento que la pista, parece estático.
+	_bloques.append({"rect": rect, "vel": _vel_bloque_px * 0.85, "tipo": "ACEITE", "carriles": [carril]})
+
+# Barrera: ocupa exactamente 2 carriles adyacentes — el jugador debe esquivar
+# al carril que queda libre. Se elige el par (0,1) o (1,2) al azar.
+func _spawn_barrera():
+	var pares = [[0, 1], [1, 2]]
+	var par = pares[_rng.randi_range(0, pares.size() - 1)]
+	var ancho_carril = (area_juego.size.x - 2 * MARGEN_PISTA) / float(NUM_CARRILES)
+	var ancho = ancho_carril * 2.0
+	var alto = jugador.size.y * 2.0
+	# X = borde izquierdo del primer carril del par.
+	var x = _centro_carril_x(par[0]) - ancho_carril / 2.0
+	var rect = ColorRect.new()
+	rect.color = COLOR_BARRERA
+	rect.size = Vector2(ancho, alto)
+	rect.position = Vector2(x, -alto)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Franjas negras estilo "obra"
+	for i in range(4):
+		var franja = ColorRect.new()
+		franja.color = Color(0.1, 0.1, 0.1, 0.85)
+		franja.size = Vector2(ancho / 4.0, alto)
+		franja.position = Vector2((ancho / 4.0) * i, 0)
+		franja.modulate.a = 0.0 if i % 2 == 0 else 1.0
+		franja.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		rect.add_child(franja)
+	area_juego.add_child(rect)
+	_bloques.append({"rect": rect, "vel": _vel_bloque_px, "tipo": "BARRERA", "carriles": par})
 
 func _animar_marcas_carretera(delta):
 	var alto = area_juego.size.y
@@ -320,7 +484,7 @@ func _animar_marcas_carretera(delta):
 		if m.position.y > alto:
 			m.position.y -= alto + 55.0
 
-func _mover_coches(delta):
+func _mover_bloques(delta):
 	var alto = area_juego.size.y
 	var vivos: Array = []
 	for b in _bloques:
@@ -333,30 +497,41 @@ func _mover_coches(delta):
 			vivos.append(b)
 	_bloques = vivos
 
-func _detectar_colision() -> bool:
-	if Time.get_ticks_msec() / 1000.0 < _invulnerable_hasta:
-		return false
+# Devuelve true si hay choque sólido (no aceite). El aceite se aplica como
+# slow en este mismo recorrido sin romper el nivel.
+func _detectar_colisiones_y_aplicar_aceite() -> bool:
+	var ahora = Time.get_ticks_msec() / 1000.0
 	var rj = Rect2(jugador.position, jugador.size).grow(-4)
+	var hay_choque = false
 	for b in _bloques:
 		if not is_instance_valid(b.rect):
 			continue
 		var rb = Rect2(b.rect.position, b.rect.size)
-		if rj.intersects(rb):
-			return true
-	return false
+		if not rj.intersects(rb):
+			continue
+		var tipo = str(b.get("tipo", "COCHE"))
+		if tipo == "ACEITE":
+			# Mantener slow mientras el jugador siga sobre el aceite.
+			_slow_hasta = max(_slow_hasta, ahora + DURACION_SLOW_ACEITE)
+		elif ahora >= _invulnerable_hasta:
+			hay_choque = true
+	return hay_choque
 
 func _on_choque():
 	# El choque NO termina el nivel: lanza una pregunta y al cerrar el modal
-	# vuelves al volante con un par de segundos de invulnerabilidad para que
-	# no encadenes choques.
+	# vuelves al volante con un par de segundos de invulnerabilidad.
+	_nivel_en_curso = false
 	_input_activo = false
 	jugador.color = COLOR_JUGADOR_HIT
 	_invulnerable_hasta = Time.get_ticks_msec() / 1000.0 + INVULN_TRAS_CHOQUE
 	lbl_estado.text = "¡Chocaste! Responde para seguir"
-	# Limpiamos los coches solapados con el jugador para que al volver no te
-	# vuelva a impactar inmediatamente.
+	# Limpiamos los obstáculos sólidos solapados con el jugador para no
+	# encadenar choques al volver del modal.
 	for b in _bloques:
 		if not is_instance_valid(b.rect):
+			continue
+		var tipo = str(b.get("tipo", "COCHE"))
+		if tipo == "ACEITE":
 			continue
 		var rj = Rect2(jugador.position, jugador.size).grow(-4)
 		var rb = Rect2(b.rect.position, b.rect.size)
@@ -473,6 +648,8 @@ func _cerrar_modal_y_continuar(_motivo: String, _sin_preguntas: bool):
 	overlay_pregunta.visible = false
 	_limpiar_contenedor_respuesta()
 	await get_tree().create_timer(TIEMPO_CONTINUAR).timeout
+	if not is_inside_tree():
+		return
 	if _metros_recorridos >= _metros_objetivo:
 		_continuar_tras_nivel()
 		return

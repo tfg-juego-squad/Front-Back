@@ -135,7 +135,7 @@ theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 6
 
-[node name="AreaJuego" type="PanelContainer" parent="Layout/CentroPanel/PanelJuego/VBoxCentro/MargenJuego"]
+[node name="AreaJuego" type="Panel" parent="Layout/CentroPanel/PanelJuego/VBoxCentro/MargenJuego"]
 custom_minimum_size = Vector2(640, 360)
 layout_mode = 2
 clip_contents = true
@@ -181,6 +181,27 @@ horizontal_alignment = 2
 text = ""
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.4, 0.95, 0.5, 1)
+
+[node name="LblCountdown" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -140.0
+offset_right = 140.0
+offset_bottom = 140.0
+mouse_filter = 2
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 200
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 8
 
 [node name="OverlayPregunta" type="ColorRect" parent="."]
 visible = false

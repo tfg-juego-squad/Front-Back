@@ -4,13 +4,18 @@ extends Control
 # - Mover: WASD / flechas
 # - Apuntar: el ratón (un pequeño indicador en el jugador marca la dirección)
 # - Atacar: ESPACIO (melee corto en la dirección a la que apunta el jugador)
-# - Disparar: click izquierdo (munición limitada por nivel)
+# - Disparar: click izquierdo (munición limitada, los enemigos pueden soltar)
 #
 # Cada nivel se genera aleatorio entre dos objetivos:
 #   1) LIMPIAR — matar a todos los enemigos generados
 #   2) ESCAPE  — llegar a una zona de salida (los enemigos te complican el camino)
 # Si superas el nivel: pregunta sorpresa.
 # Si mueres antes de game over: pregunta extra de "revivir".
+#
+# Enemigos:
+#   - Cada uno tiene HP (1 → básico rojo, 2 → naranja, 3+ → morado tanque).
+#   - Las balas y el melee restan 1 HP. Solo mueren al llegar a 0.
+#   - Al morir, ~35% de dropear munición que el jugador recoge pisándola.
 
 @onready var btn_salir = $Layout/Header/HBox/BtnSalir
 @onready var titulo = $Layout/Header/HBox/Titulo
@@ -22,6 +27,7 @@ extends Control
 @onready var lbl_estado = $Layout/CentroPanel/PanelJuego/VBoxCentro/HBoxEstado/LblEstado
 @onready var lbl_objetivo = $Layout/CentroPanel/PanelJuego/VBoxCentro/HBoxEstado/LblObjetivo
 @onready var lbl_municion = $Layout/CentroPanel/PanelJuego/VBoxCentro/HBoxEstado/LblMunicion
+@onready var lbl_countdown: Label = $LblCountdown
 
 @onready var overlay_pregunta = $OverlayPregunta
 @onready var lbl_enunciado = $OverlayPregunta/ModalPregunta/MarginModal/VBoxModal/LblEnunciado
@@ -32,17 +38,41 @@ extends Control
 @onready var btn_saltar_pregunta = $OverlayPregunta/ModalPregunta/MarginModal/VBoxModal/HBoxBotonesModal/BtnSaltarPregunta
 @onready var timer_pregunta = $TimerPregunta
 
-const VEL_JUGADOR := 200.0
+const VEL_JUGADOR := 220.0
 const VEL_ENEMIGO_BASE := 80.0
 const VEL_ENEMIGO_INCR := 12.0
 const VEL_BALA := 520.0
-const ALCANCE_MELEE := 50.0
-const COOLDOWN_MELEE := 0.35
+
+# --- Melee mejorado ---
+# Antes: alcance 50, cono 60º (dot >= 0.5), cooldown 0.35.
+# Ahora: más alcance, cono mucho más ancho, cooldown más corto, la distancia
+# se mide al BORDE del enemigo y los enemigos quedan brevemente aturdidos al
+# impactar → se nota el "swing".
+const ALCANCE_MELEE := 80.0
+const COOLDOWN_MELEE := 0.20
+const DOT_CONO_MELEE := 0.20             # cos ~78º → cono frontal de ~155º
+const KNOCKBACK_MELEE := 28.0            # empuje al enemigo al impactar
+const STUN_MELEE_SEG := 0.18             # tiempo que el enemigo queda paralizado
+const ALTO_FLASH_MELEE := 64.0           # alto del rect del flash (visual del cono)
+
+# --- Drops de munición ---
+# Los enemigos sueltan munición con cierta probabilidad. Para evitar rachas
+# pésimas, llevamos un contador "pity": cada 4 kills sin drop, forzamos uno.
+const PROB_DROP_BALAS := 0.50            # 50% de los enemigos sueltan balas
+const BALAS_POR_DROP_MIN := 1
+const BALAS_POR_DROP_MAX := 4
+const PITY_DROP_KILLS := 4               # tras X kills sin drop, siguiente garantizado
+const VIDA_DROP_SEG := 8.0               # tiempo que el pickup queda en el suelo
+const AVISO_SIN_BALAS_COOLDOWN := 1.0    # throttle para la notificación
+
 const COLOR_JUGADOR = Color(0.4, 0.95, 1.0, 1)
 const COLOR_JUGADOR_MUERTO = Color(0.4, 0.4, 0.4, 1)
 const COLOR_ENEMIGO = Color(1, 0.4, 0.4, 1)
+const COLOR_ENEMIGO_MEDIO = Color(1, 0.55, 0.3, 1)
+const COLOR_ENEMIGO_TANQUE = Color(0.85, 0.25, 0.7, 1)
 const COLOR_BALA = Color(1, 0.95, 0.4, 1)
-const COLOR_MELEE_FX = Color(1, 1, 0.5, 0.5)
+const COLOR_MELEE_FX = Color(1, 1, 0.5, 0.55)
+const COLOR_DROP = Color(1, 0.85, 0.2, 1)
 const TIEMPO_CONTINUAR := 0.9
 const OBJETIVO_LIMPIAR := "LIMPIAR"
 const OBJETIVO_ESCAPE := "ESCAPE"
@@ -56,16 +86,20 @@ var _niveles_pasados: int = 0
 var _ya_revivido_este_nivel: bool = false
 
 # Estado de juego activo
-var _enemigos: Array = []  # [{rect, vel}]
+var _enemigos: Array = []  # [{rect, vel, hp, hp_max, hp_fill, stun_hasta}]
 var _balas: Array = []     # [{rect, dir}]
+var _drops: Array = []     # [{rect, vida, balas}]
 var _balas_restantes: int = 0
 var _melee_cooldown: float = 0.0
 var _objetivo_actual: String = OBJETIVO_LIMPIAR
 var _enemigos_totales_nivel: int = 0
 var _enemigos_muertos: int = 0
+var _kills_sin_drop: int = 0
+var _aviso_sin_balas_hasta: float = 0.0
 var _vivo: bool = false
 var _nivel_en_curso: bool = false
 var _input_activo: bool = false
+var _en_countdown: bool = false
 var _rng := RandomNumberGenerator.new()
 
 # Estado de la pregunta activa
@@ -83,6 +117,7 @@ func _ready():
 	timer_pregunta.timeout.connect(_tick_pregunta)
 	overlay_pregunta.visible = false
 	salida.visible = false
+	lbl_countdown.visible = false
 	_rng.randomize()
 	titulo.text = "Hotline · top-down"
 
@@ -129,12 +164,16 @@ func _iniciar_siguiente_nivel():
 	_ya_revivido_este_nivel = false
 	_limpiar_enemigos()
 	_limpiar_balas()
+	_limpiar_drops()
 
 	# Decidimos el objetivo aleatorio para variar el ritmo del juego.
 	_objetivo_actual = OBJETIVO_LIMPIAR if _rng.randi_range(0, 1) == 0 else OBJETIVO_ESCAPE
 	_enemigos_muertos = 0
-	# Munición por nivel: empieza generosa, baja un pelín con la dificultad.
-	_balas_restantes = max(3, 6 - int(_nivel_actual / 2))
+	# Munición por nivel: mínimo garantizado decreciente, pero conservamos
+	# las balas que el alumno haya acumulado de drops/niveles anteriores.
+	# Así, jugar bien (matar enemigos y recoger drops) se nota a largo plazo.
+	var minimo_nivel = max(3, 6 - int(_nivel_actual / 2))
+	_balas_restantes = max(_balas_restantes, minimo_nivel)
 
 	# Generamos enemigos (más por nivel)
 	var n_enemigos = 2 + _nivel_actual
@@ -164,9 +203,10 @@ func _iniciar_siguiente_nivel():
 	_actualizar_municion_label()
 
 	_vivo = true
-	_nivel_en_curso = true
-	_input_activo = true
-	lbl_estado.text = "WASD mover · ESPACIO melee · CLIC disparar"
+	_nivel_en_curso = false
+	_input_activo = false
+	lbl_estado.text = "Prepárate..."
+	_mostrar_countdown()
 
 func _colocar_jugador_centro():
 	var area = area_juego.size
@@ -197,21 +237,61 @@ func _spawnear_enemigo():
 		1: pos = Vector2(area.x - tam.x, _rng.randf_range(0, area.y - tam.y))
 		2: pos = Vector2(_rng.randf_range(0, area.x - tam.x), area.y - tam.y)
 		_: pos = Vector2(0, _rng.randf_range(0, area.y - tam.y))
+
+	# HP escalada con el nivel: en lvl 1 mayormente 1hp, en lvl 5 hasta 3-4hp.
+	var hp_max := 1
+	hp_max += _rng.randi_range(0, min(_nivel_actual / 2, 2))
+	if _nivel_actual >= 3 and _rng.randf() < 0.20:
+		hp_max += 1  # "tanques" puntuales
+
+	var color = COLOR_ENEMIGO
+	if hp_max >= 3:
+		color = COLOR_ENEMIGO_TANQUE
+		tam = Vector2(tam_base * 1.25, tam_base * 1.25)  # los tanques son un poco más grandes
+	elif hp_max == 2:
+		color = COLOR_ENEMIGO_MEDIO
+
 	var rect = ColorRect.new()
-	rect.color = COLOR_ENEMIGO
+	rect.color = color
 	rect.size = tam
 	rect.position = pos
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Ojo rojo pequeño como acento visual
+	# Ojo amarillo como acento visual
 	var ojo = ColorRect.new()
 	ojo.color = Color(1, 0.9, 0.2, 0.9)
-	ojo.size = Vector2(tam_base * 0.3, tam_base * 0.3)
-	ojo.position = Vector2(tam_base * 0.35, tam_base * 0.2)
+	ojo.size = Vector2(tam.x * 0.3, tam.y * 0.3)
+	ojo.position = Vector2(tam.x * 0.35, tam.y * 0.2)
 	ojo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rect.add_child(ojo)
+
+	# Barra de vida: fondo negro semi-transparente + relleno rojo encima.
+	# Solo se ve si el enemigo tiene más de 1 HP (los básicos no la necesitan).
+	var hp_bg = ColorRect.new()
+	hp_bg.color = Color(0, 0, 0, 0.7)
+	hp_bg.size = Vector2(tam.x, 4)
+	hp_bg.position = Vector2(0, tam.y + 3)
+	hp_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hp_bg.visible = hp_max > 1
+	rect.add_child(hp_bg)
+	var hp_fill = ColorRect.new()
+	hp_fill.color = Color(0.95, 0.3, 0.3, 1)
+	hp_fill.size = Vector2(tam.x, 4)
+	hp_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hp_bg.add_child(hp_fill)
+
 	area_juego.add_child(rect)
 	var vel = VEL_ENEMIGO_BASE + VEL_ENEMIGO_INCR * (_nivel_actual - 1) + _rng.randf_range(-15, 15)
-	_enemigos.append({"rect": rect, "vel": vel})
+	# Los tanques son un pelín más lentos para compensar.
+	if hp_max >= 3:
+		vel *= 0.8
+	_enemigos.append({
+		"rect": rect,
+		"vel": vel,
+		"hp": hp_max,
+		"hp_max": hp_max,
+		"hp_fill": hp_fill,
+		"stun_hasta": 0.0
+	})
 
 func _limpiar_enemigos():
 	for e in _enemigos:
@@ -225,15 +305,51 @@ func _limpiar_balas():
 			b.rect.queue_free()
 	_balas.clear()
 
+func _limpiar_drops():
+	for d in _drops:
+		if d.rect and is_instance_valid(d.rect):
+			d.rect.queue_free()
+	_drops.clear()
+
 func _actualizar_municion_label():
 	lbl_municion.text = "Balas: %d" % _balas_restantes
+
+# =====================================================================
+# COUNTDOWN 3 · 2 · 1 · YA
+# =====================================================================
+
+func _mostrar_countdown():
+	if _en_countdown:
+		return
+	_en_countdown = true
+	lbl_countdown.visible = true
+	lbl_countdown.pivot_offset = lbl_countdown.size / 2.0
+	for paso in ["3", "2", "1", "¡YA!"]:
+		if not is_inside_tree():
+			return
+		lbl_countdown.text = paso
+		lbl_countdown.scale = Vector2(1.8, 1.8)
+		lbl_countdown.modulate = Color(1, 1, 1, 0)
+		var tw = create_tween()
+		tw.set_parallel(true)
+		tw.tween_property(lbl_countdown, "scale", Vector2.ONE, 0.18)
+		tw.tween_property(lbl_countdown, "modulate:a", 1.0, 0.15)
+		await get_tree().create_timer(0.7).timeout
+	if not is_inside_tree():
+		_en_countdown = false
+		return
+	lbl_countdown.visible = false
+	_en_countdown = false
+	lbl_estado.text = "WASD mover · ESPACIO melee · CLIC disparar"
+	_nivel_en_curso = true
+	_input_activo = true
 
 # =====================================================================
 # LOOP DE JUEGO
 # =====================================================================
 
 func _process(delta):
-	if not _nivel_en_curso or not _vivo:
+	if not _nivel_en_curso or not _vivo or _en_countdown:
 		return
 	_orientar_mira()
 	_mover_jugador(delta)
@@ -242,6 +358,7 @@ func _process(delta):
 	_mover_enemigos(delta)
 	_mover_balas(delta)
 	_colisiones_balas_enemigos()
+	_procesar_drops(delta)
 	if _colision_jugador_enemigo():
 		_on_muerte()
 		return
@@ -292,15 +409,16 @@ func _mover_jugador(delta):
 
 func _mover_enemigos(delta):
 	var pos_jugador = jugador.position + jugador.size / 2.0
-	var vivos: Array = []
+	var ahora = Time.get_ticks_msec() / 1000.0
 	for e in _enemigos:
 		if not is_instance_valid(e.rect):
+			continue
+		# Enemigos aturdidos por melee se quedan plantados hasta que pase el stun.
+		if float(e.get("stun_hasta", 0.0)) > ahora:
 			continue
 		var centro = e.rect.position + e.rect.size / 2.0
 		var dir = (pos_jugador - centro).normalized()
 		e.rect.position += dir * e.vel * delta
-		vivos.append(e)
-	_enemigos = vivos
 
 func _mover_balas(delta):
 	var area = area_juego.size
@@ -317,19 +435,26 @@ func _mover_balas(delta):
 	_balas = vivas
 
 func _colisiones_balas_enemigos():
+	var balas_vivas: Array = []
 	for b in _balas:
 		if not is_instance_valid(b.rect):
 			continue
 		var rb = Rect2(b.rect.position, b.rect.size)
+		var impacto = false
 		for e in _enemigos:
 			if not is_instance_valid(e.rect):
 				continue
 			var re = Rect2(e.rect.position, e.rect.size)
 			if rb.intersects(re):
-				b.rect.queue_free()
-				e.rect.queue_free()
-				_enemigos_muertos += 1
+				impacto = true
+				_aplicar_dano_enemigo(e, 1, b.dir)
 				break
+		if impacto:
+			b.rect.queue_free()
+		else:
+			balas_vivas.append(b)
+	_balas = balas_vivas
+	_limpiar_enemigos_muertos()
 
 func _colision_jugador_enemigo() -> bool:
 	var rj = Rect2(jugador.position, jugador.size).grow(-2)
@@ -349,16 +474,122 @@ func _colision_jugador_salida() -> bool:
 	return rj.intersects(rs)
 
 # =====================================================================
+# DAÑO Y MUERTE DE ENEMIGOS
+# =====================================================================
+
+func _aplicar_dano_enemigo(e: Dictionary, dano: int, dir_empuje: Vector2 = Vector2.ZERO, es_melee: bool = false):
+	if not is_instance_valid(e.rect):
+		return
+	e.hp -= dano
+	if e.hp <= 0:
+		var centro = e.rect.position + e.rect.size / 2.0
+		_intentar_drop_balas(centro)
+		e.rect.queue_free()
+		_enemigos_muertos += 1
+		return
+	# Actualizar barra de vida.
+	_actualizar_hp_bar(e)
+	# Pequeño knockback si nos llega una dirección de impacto.
+	if dir_empuje != Vector2.ZERO:
+		e.rect.position += dir_empuje * 8.0
+	# El melee aturde brevemente: el enemigo se queda plantado.
+	if es_melee:
+		e["stun_hasta"] = Time.get_ticks_msec() / 1000.0 + STUN_MELEE_SEG
+	# Flash blanco rápido para dar feedback.
+	if e.rect.has_meta("_flash_tween"):
+		var prev = e.rect.get_meta("_flash_tween")
+		if prev is Tween and prev.is_valid():
+			prev.kill()
+	e.rect.modulate = Color(2, 2, 2, 1)
+	var tw = create_tween()
+	tw.tween_property(e.rect, "modulate", Color.WHITE, 0.12)
+	e.rect.set_meta("_flash_tween", tw)
+
+func _actualizar_hp_bar(e: Dictionary):
+	if not e.has("hp_fill") or not is_instance_valid(e.hp_fill):
+		return
+	var parent: Control = e.hp_fill.get_parent()
+	if not is_instance_valid(parent):
+		return
+	var ratio = clamp(float(e.hp) / float(e.hp_max), 0.0, 1.0)
+	e.hp_fill.size.x = parent.size.x * ratio
+
+func _limpiar_enemigos_muertos():
+	var vivos: Array = []
+	for e in _enemigos:
+		if is_instance_valid(e.rect):
+			vivos.append(e)
+	_enemigos = vivos
+
+# =====================================================================
+# DROPS DE MUNICIÓN
+# =====================================================================
+
+func _intentar_drop_balas(pos: Vector2):
+	# Pity timer: si llevas PITY_DROP_KILLS kills sin un drop, el siguiente
+	# enemigo lo suelta seguro. Evita rachas frustrantes de "ningún enemigo
+	# suelta nada en todo el nivel".
+	var forzar_drop = _kills_sin_drop >= PITY_DROP_KILLS
+	if not forzar_drop and _rng.randf() > PROB_DROP_BALAS:
+		_kills_sin_drop += 1
+		return
+	_kills_sin_drop = 0
+	var cantidad = _rng.randi_range(BALAS_POR_DROP_MIN, BALAS_POR_DROP_MAX)
+	var drop = ColorRect.new()
+	drop.color = COLOR_DROP
+	drop.size = Vector2(16, 16)
+	drop.position = pos - drop.size / 2.0
+	drop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Cruz "+" oscura encima para que se lea como "ítem"
+	var barra_h = ColorRect.new()
+	barra_h.color = Color(0.1, 0.1, 0.15, 1)
+	barra_h.size = Vector2(10, 2)
+	barra_h.position = Vector2(3, 7)
+	barra_h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	drop.add_child(barra_h)
+	var barra_v = ColorRect.new()
+	barra_v.color = Color(0.1, 0.1, 0.15, 1)
+	barra_v.size = Vector2(2, 10)
+	barra_v.position = Vector2(7, 3)
+	barra_v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	drop.add_child(barra_v)
+	area_juego.add_child(drop)
+	_drops.append({"rect": drop, "vida": VIDA_DROP_SEG, "balas": cantidad})
+
+func _procesar_drops(delta):
+	var rj = Rect2(jugador.position, jugador.size)
+	var vivos: Array = []
+	for d in _drops:
+		if not is_instance_valid(d.rect):
+			continue
+		d.vida -= delta
+		if d.vida <= 0.0:
+			d.rect.queue_free()
+			continue
+		# Parpadeo final cuando queda poco.
+		if d.vida < 2.0:
+			d.rect.modulate.a = 0.4 + 0.6 * abs(sin(d.vida * 8.0))
+		# Pickup.
+		var rd = Rect2(d.rect.position, d.rect.size)
+		if rj.intersects(rd):
+			_balas_restantes += int(d.balas)
+			_actualizar_municion_label()
+			Notificador.notificar("+%d balas" % int(d.balas), Color(1, 0.85, 0.2))
+			d.rect.queue_free()
+			continue
+		vivos.append(d)
+	_drops = vivos
+
+# =====================================================================
 # INPUT DE COMBATE
 # =====================================================================
 
 func _input(event):
-	if not _input_activo or not _vivo:
+	if not _input_activo or not _vivo or _en_countdown:
 		return
+	# ui_accept ya está mapeado por defecto a SPACE en Godot, así que con un
+	# solo check sirve para teclado físico y para gamepad.
 	if event.is_action_pressed("ui_accept"):
-		_intentar_melee()
-		return
-	if event is InputEventKey and event.pressed and not event.is_echo() and event.physical_keycode == KEY_SPACE:
 		_intentar_melee()
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -370,42 +601,49 @@ func _intentar_melee():
 	_melee_cooldown = COOLDOWN_MELEE
 	var origen = jugador.position + jugador.size / 2.0
 	var dir = _direccion_apuntado()
-	# Flash visual rápido del swing
 	_mostrar_flash_melee(origen, dir)
-	# Cualquier enemigo dentro del cono frontal y a menos de ALCANCE_MELEE muere
-	var sobrevivientes: Array = []
 	for e in _enemigos:
 		if not is_instance_valid(e.rect):
 			continue
 		var centro = e.rect.position + e.rect.size / 2.0
 		var rel = centro - origen
-		if rel.length() > ALCANCE_MELEE:
-			sobrevivientes.append(e)
+		# Distancia desde el centro del jugador al BORDE más cercano del enemigo.
+		# Es más permisivo que medir centro-a-centro; antes con enemigos de 32 px
+		# y alcance 50 había que estar literalmente pegado.
+		var radio_enemigo = max(e.rect.size.x, e.rect.size.y) * 0.5
+		var dist_borde = max(0.0, rel.length() - radio_enemigo)
+		if dist_borde > ALCANCE_MELEE:
 			continue
-		# Cono de 120º (~cos(60º) = 0.5)
-		if rel.normalized().dot(dir) < 0.3:
-			sobrevivientes.append(e)
+		# Cono frontal muy ancho (~155º).
+		if rel.length() > 1.0 and rel.normalized().dot(dir) < DOT_CONO_MELEE:
 			continue
-		e.rect.queue_free()
-		_enemigos_muertos += 1
-	_enemigos = sobrevivientes
+		_aplicar_dano_enemigo(e, 1, dir * (KNOCKBACK_MELEE / 8.0), true)
+	_limpiar_enemigos_muertos()
 
 func _mostrar_flash_melee(origen: Vector2, dir: Vector2):
+	# Flash en forma de "abanico ancho" para que el visual coincida con el
+	# cono real de detección (~155º). Lo hacemos con un rect más alto que
+	# ancho relativo, rotado alrededor del origen.
 	var fx = ColorRect.new()
 	fx.color = COLOR_MELEE_FX
-	fx.size = Vector2(ALCANCE_MELEE, 18)
-	fx.position = origen - Vector2(0, 9)
-	fx.pivot_offset = Vector2(0, 9)
+	fx.size = Vector2(ALCANCE_MELEE + 20.0, ALTO_FLASH_MELEE)
+	fx.position = origen - Vector2(0, ALTO_FLASH_MELEE / 2.0)
+	fx.pivot_offset = Vector2(0, ALTO_FLASH_MELEE / 2.0)
 	fx.rotation = dir.angle()
 	fx.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	area_juego.add_child(fx)
 	var tw = create_tween()
-	tw.tween_property(fx, "modulate:a", 0.0, 0.15)
+	tw.tween_property(fx, "modulate:a", 0.0, 0.18)
 	tw.tween_callback(fx.queue_free)
 
 func _intentar_disparar():
 	if _balas_restantes <= 0:
-		Notificador.notificar("Sin balas, usa el melee (ESPACIO)", Color.ORANGE)
+		# Throttle: solo lanzamos la notificación una vez por segundo aunque
+		# el alumno haga spam-click sin munición.
+		var ahora = Time.get_ticks_msec() / 1000.0
+		if ahora >= _aviso_sin_balas_hasta:
+			Notificador.notificar("Sin balas, usa el melee (ESPACIO)", Color.ORANGE)
+			_aviso_sin_balas_hasta = ahora + AVISO_SIN_BALAS_COOLDOWN
 		return
 	_balas_restantes -= 1
 	_actualizar_municion_label()
@@ -433,6 +671,7 @@ func _on_nivel_superado():
 	# Limpiamos al terminar para que no se quede nadie correteando.
 	_limpiar_enemigos()
 	_limpiar_balas()
+	_limpiar_drops()
 	_pregunta_por_muerte = false
 	_lanzar_pregunta_aleatoria()
 
@@ -446,6 +685,8 @@ func _on_muerte():
 		_nivel_en_curso = false
 		lbl_estado.text = "Has caído. Pasando..."
 		await get_tree().create_timer(1.2).timeout
+		if not is_inside_tree():
+			return
 		_continuar_tras_nivel(false)
 		return
 	_ya_revivido_este_nivel = true
@@ -457,6 +698,7 @@ func _revivir():
 	# Limpiamos la arena para dar aire al alumno y reaparecemos en el centro.
 	_limpiar_enemigos()
 	_limpiar_balas()
+	_limpiar_drops()
 	_enemigos_muertos = 0
 	# Generamos un set reducido para no machacar al alumno.
 	var n_enemigos = max(2, _enemigos_totales_nivel - 2)
@@ -580,6 +822,8 @@ func _cerrar_modal_y_continuar():
 	overlay_pregunta.visible = false
 	_limpiar_contenedor_respuesta()
 	await get_tree().create_timer(TIEMPO_CONTINUAR).timeout
+	if not is_inside_tree():
+		return
 	if _pregunta_por_muerte:
 		_pregunta_por_muerte = false
 		_revivir()
@@ -601,6 +845,7 @@ func _finalizar_minijuego():
 	_input_activo = false
 	_limpiar_enemigos()
 	_limpiar_balas()
+	_limpiar_drops()
 	jugador.visible = false
 	lbl_estado.text = "¡Minijuego completado! · %d / %d niveles" % [_niveles_pasados, _niveles_totales]
 	lbl_objetivo.text = ""

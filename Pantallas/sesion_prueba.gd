@@ -27,6 +27,7 @@ var pregunta_iniciada_en: float = 0.0
 var tiempo_limite_seg: int = TIEMPO_POR_DEFECTO_SEG
 var enviando: bool = false
 var auto_enviada: bool = false
+var _examen_terminado: bool = false
 
 # Cuenta regresiva global del examen (suma de tiempos de todas las preguntas)
 var _tiempo_total_examen: float = 0.0
@@ -118,9 +119,17 @@ func _mostrar_pregunta_actual():
 	_actualizar_tiempo_visible()
 
 func _process(_delta):
-	if indice_actual >= preguntas.size() or enviando:
+	if _examen_terminado or indice_actual >= preguntas.size() or enviando:
 		return
 	_actualizar_tiempo_visible()
+	# Auto-finalizar si se agota el tiempo TOTAL del examen: cortamos en seco
+	# para no spamear notificaciones ni dejar al alumno seguir contestando.
+	var total_transcurrido = Time.get_unix_time_from_system() - _examen_iniciado_en
+	if _tiempo_total_examen > 0 and total_transcurrido >= _tiempo_total_examen:
+		_examen_terminado = true
+		Notificador.notificar("¡Tiempo del examen agotado!", Color.RED)
+		_consolidar_puntuacion()
+		return
 	# Auto-envío si se agota el tiempo de la pregunta actual
 	if not auto_enviada and tiempo_limite_seg > 0:
 		var transcurrido = Time.get_unix_time_from_system() - pregunta_iniciada_en
@@ -129,12 +138,6 @@ func _process(_delta):
 			Notificador.notificar("Tiempo agotado", Color.MAGENTA)
 			_on_enviar()
 			return
-	# Auto-finalizar si se agota el tiempo total del examen
-	var total_transcurrido = Time.get_unix_time_from_system() - _examen_iniciado_en
-	if _tiempo_total_examen > 0 and total_transcurrido >= _tiempo_total_examen:
-		auto_enviada = true
-		Notificador.notificar("¡Tiempo del examen agotado!", Color.RED)
-		_on_enviar()
 
 func _actualizar_tiempo_visible():
 	# Tiempo de la pregunta actual
@@ -160,7 +163,7 @@ func _on_opcion_test_toggled(pressed: bool, resp_id: int):
 		respuesta_elegida_id = resp_id
 
 func _on_enviar():
-	if enviando:
+	if enviando or _examen_terminado:
 		return
 	if indice_actual >= preguntas.size():
 		return
@@ -202,6 +205,8 @@ func _on_enviar():
 
 func _on_respuesta_enviada(data, code):
 	enviando = false
+	if _examen_terminado:
+		return
 	if not (code == 200 or code == 201):
 		Notificador.notificar(ConexionManager.mensaje_error(data, code), Color.RED)
 		btn_enviar.disabled = false
@@ -223,6 +228,8 @@ func _on_respuesta_enviada(data, code):
 		_mostrar_feedback("Pendiente de corrección del profesor", Color(0.5, 0.85, 1, 1))
 
 	await get_tree().create_timer(1.4).timeout
+	if _examen_terminado:
+		return
 	indice_actual += 1
 	_mostrar_pregunta_actual()
 
