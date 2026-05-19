@@ -19,3 +19,6 @@ Thumbs.db
 # Documentación generada (local)
 documentacion_tareas_*.html
 analysis_results.md
+
+# Configuración local de Claude Code (permisos, herramientas habilitadas)
+.claude/
