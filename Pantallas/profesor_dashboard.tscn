@@ -287,17 +287,6 @@ theme_override_colors/font_color = Color(0, 0.941, 1, 1)
 theme_override_font_sizes/font_size = 22
 vertical_alignment = 1
 
-[node name="BtnAjustes" type="Button" parent="Layout/Header/MargenHeader/HBoxHeader"]
-layout_mode = 2
-custom_minimum_size = Vector2(44, 44)
-tooltip_text = "Ajustes Alumnado (generación masiva)"
-theme_override_font_sizes/font_size = 18
-text = "⚙︎"
-theme_override_styles/normal = SubResource("SB_IconBtn")
-theme_override_styles/hover = SubResource("SB_IconBtnHover")
-theme_override_styles/pressed = SubResource("SB_IconBtnHover")
-theme_override_styles/focus = SubResource("SB_IconBtn")
-
 [node name="BtnAvatar" type="Button" parent="Layout/Header/MargenHeader/HBoxHeader"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 44)

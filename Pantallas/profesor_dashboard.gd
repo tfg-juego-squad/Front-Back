@@ -11,7 +11,6 @@ extends Control
 @onready var btn_corregir = $Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones/BtnCorregir
 @onready var btn_estadisticas = $Layout/MainContent/PanelBotones/MargenBotones/VBoxBotones/BtnEstadisticas
 
-@onready var btn_ajustes = $Layout/Header/MargenHeader/HBoxHeader/BtnAjustes
 @onready var btn_avatar = $Layout/Header/MargenHeader/HBoxHeader/BtnAvatar
 @onready var popup_sesion: PopupMenu = $Layout/Header/MargenHeader/HBoxHeader/BtnAvatar/PopupSesion
 
@@ -73,7 +72,6 @@ func _ready():
 	btn_corregir.pressed.connect(_on_corregir_pendientes)
 	btn_estadisticas.pressed.connect(_on_abrir_estadisticas)
 	cmb_pruebas_stats.item_selected.connect(_on_prueba_stats_elegida)
-	btn_ajustes.pressed.connect(_on_abrir_generacion)
 	btn_cerrar_flotante.pressed.connect(_cerrar_panel_flotante)
 	btn_nueva_aula.pressed.connect(_on_abrir_generacion)
 	btn_anadir_alumno.pressed.connect(_on_anadir_alumno_individual)

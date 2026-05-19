@@ -102,6 +102,7 @@ public class RespuestaAlumnoService {
      * Obtiene todas las respuestas enviadas por un alumno para un examen concreto.
      * Seguridad: Un profesor solo puede ver las de sus alumnos. Un alumno solo puede ver las suyas.
      */
+    @Transactional(readOnly = true)
     public List<RespuestaAlumnoResponseDTO> obtenerRespuestasPorPruebaYAlumno(Long pruebaId, Long alumnoId, Usuario usuarioLogueado) {
         if (usuarioLogueado.getRol() == TipoRol.ROL_ESTUDIANTE && !usuarioLogueado.getId().equals(alumnoId)) {
             throw new ForbiddenException("No puedes ver las respuestas de otro alumno.");
@@ -121,7 +122,10 @@ public class RespuestaAlumnoService {
 
     /**
      * Lista de respuestas de desarrollo que el profesor tiene que corregir.
+     * El mapper accede a alumno.nombreUsuario, pregunta.enunciado y pregunta.prueba.titulo
+     * (todos lazy), así que necesitamos sesión activa durante la conversión.
      */
+    @Transactional(readOnly = true)
     public List<RespuestaAlumnoResponseDTO> obtenerPendientesCorreccion(Usuario profesorLogueado) {
         if (profesorLogueado.getRol() != TipoRol.ROL_PROFESOR) {
             throw new ForbiddenException("Solo los profesores pueden ver respuestas pendientes de corrección.");
